@@ -1,0 +1,30 @@
+name: pull-art
+on:
+  push:
+    branches: [art-transfer, portraits-v1]
+    paths: ['.art-pull/request.txt']
+permissions:
+  contents: write
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download art from Modal
+        run: |
+          set -e
+          base=$(sed -n 1p .art-pull/request.txt)
+          dir=$(sed -n 2p .art-pull/request.txt)
+          mkdir -p "$dir"
+          tail -n +3 .art-pull/request.txt | while read key src; do
+            [ -z "$key" ] && continue
+            curl -fsSL --retry 3 "$base?name=$src" -o "$dir/$key.png"
+            echo "ok $key"
+          done
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A art
+          git commit -m "Pull confirmed portraits from Modal" || echo "nothing to commit"
+          git push

@@ -1,0 +1,285 @@
+{
+ "note": "三國LEGEND 40 位角色半身立繪（第一版 prompt，832x1216 PNG，白底未去背）。40 位全部完成。",
+ "characters": [
+  {
+   "no": 1,
+   "id": "zhaoyun",
+   "name": "趙雲",
+   "file": "01_zhaoyun.png",
+   "status": "done"
+  },
+  {
+   "no": 2,
+   "id": "lubu",
+   "name": "呂布",
+   "file": "02_lubu.png",
+   "status": "done"
+  },
+  {
+   "no": 3,
+   "id": "guanyu",
+   "name": "關羽",
+   "file": "03_guanyu.png",
+   "status": "done"
+  },
+  {
+   "no": 4,
+   "id": "zhangfei",
+   "name": "張飛",
+   "file": "04_zhangfei.png",
+   "status": "done"
+  },
+  {
+   "no": 5,
+   "id": "sunshangxiang",
+   "name": "孫尚香",
+   "file": "05_sunshangxiang.png",
+   "status": "done"
+  },
+  {
+   "no": 6,
+   "id": "xiaoqiao",
+   "name": "小喬",
+   "file": "06_xiaoqiao.png",
+   "status": "done"
+  },
+  {
+   "no": 7,
+   "id": "diaochan",
+   "name": "貂蟬",
+   "file": "07_diaochan.png",
+   "status": "done"
+  },
+  {
+   "no": 8,
+   "id": "caocao",
+   "name": "曹操",
+   "file": "08_caocao.png",
+   "status": "done"
+  },
+  {
+   "no": 9,
+   "id": "zhugeliang",
+   "name": "諸葛亮",
+   "file": "09_zhugeliang.png",
+   "status": "done"
+  },
+  {
+   "no": 10,
+   "id": "zhouyu",
+   "name": "周瑜",
+   "file": "10_zhouyu.png",
+   "status": "done"
+  },
+  {
+   "no": 11,
+   "id": "liubei",
+   "name": "劉備",
+   "file": "11_liubei.png",
+   "status": "done"
+  },
+  {
+   "no": 12,
+   "id": "machao",
+   "name": "馬超",
+   "file": "12_machao.png",
+   "status": "done"
+  },
+  {
+   "no": 13,
+   "id": "sunce",
+   "name": "孫策",
+   "file": "13_sunce.png",
+   "status": "done"
+  },
+  {
+   "no": 14,
+   "id": "zhangliao",
+   "name": "張遼",
+   "file": "14_zhangliao.png",
+   "status": "done"
+  },
+  {
+   "no": 15,
+   "id": "xiahoudun",
+   "name": "夏侯惇",
+   "file": "15_xiahoudun.png",
+   "status": "done"
+  },
+  {
+   "no": 16,
+   "id": "taishici",
+   "name": "太史慈",
+   "file": "16_taishici.png",
+   "status": "done"
+  },
+  {
+   "no": 17,
+   "id": "jiangwei",
+   "name": "姜維",
+   "file": "17_jiangwei.png",
+   "status": "done"
+  },
+  {
+   "no": 18,
+   "id": "weiyan",
+   "name": "魏延",
+   "file": "18_weiyan.png",
+   "status": "done"
+  },
+  {
+   "no": 19,
+   "id": "guanyinping",
+   "name": "關銀屏",
+   "file": "19_guanyinping.png",
+   "status": "done"
+  },
+  {
+   "no": 20,
+   "id": "dianwei",
+   "name": "典韋",
+   "file": "20_dianwei.png",
+   "status": "done"
+  },
+  {
+   "no": 21,
+   "id": "xuchu",
+   "name": "許褚",
+   "file": "21_xuchu.png",
+   "status": "done"
+  },
+  {
+   "no": 22,
+   "id": "menghuo",
+   "name": "孟獲",
+   "file": "22_menghuo.png",
+   "status": "done"
+  },
+  {
+   "no": 23,
+   "id": "huangzhong",
+   "name": "黃忠",
+   "file": "23_huangzhong.png",
+   "status": "done"
+  },
+  {
+   "no": 24,
+   "id": "sunquan",
+   "name": "孫權",
+   "file": "24_sunquan.png",
+   "status": "done"
+  },
+  {
+   "no": 25,
+   "id": "daqiao",
+   "name": "大喬",
+   "file": "25_daqiao.png",
+   "status": "done"
+  },
+  {
+   "no": 26,
+   "id": "zhurong",
+   "name": "祝融",
+   "file": "26_zhurong.png",
+   "status": "done"
+  },
+  {
+   "no": 27,
+   "id": "yuanshao",
+   "name": "袁紹",
+   "file": "27_yuanshao.png",
+   "status": "done"
+  },
+  {
+   "no": 28,
+   "id": "xiahouyuan",
+   "name": "夏侯淵",
+   "file": "28_xiahouyuan.png",
+   "status": "done"
+  },
+  {
+   "no": 29,
+   "id": "ganning",
+   "name": "甘寧",
+   "file": "29_ganning.png",
+   "status": "done"
+  },
+  {
+   "no": 30,
+   "id": "lumeng",
+   "name": "呂蒙",
+   "file": "30_lumeng.png",
+   "status": "done"
+  },
+  {
+   "no": 31,
+   "id": "jiaxu",
+   "name": "賈詡",
+   "file": "31_jiaxu.png",
+   "status": "done"
+  },
+  {
+   "no": 32,
+   "id": "guojia",
+   "name": "郭嘉",
+   "file": "32_guojia.png",
+   "status": "done"
+  },
+  {
+   "no": 33,
+   "id": "xushu",
+   "name": "徐庶",
+   "file": "33_xushu.png",
+   "status": "done"
+  },
+  {
+   "no": 34,
+   "id": "wangyi",
+   "name": "王異",
+   "file": "34_wangyi.png",
+   "status": "done"
+  },
+  {
+   "no": 35,
+   "id": "simayi",
+   "name": "司馬懿",
+   "file": "35_simayi.png",
+   "status": "done"
+  },
+  {
+   "no": 36,
+   "id": "zhenji",
+   "name": "甄姬",
+   "file": "36_zhenji.png",
+   "status": "done"
+  },
+  {
+   "no": 37,
+   "id": "pangtong",
+   "name": "龐統",
+   "file": "37_pangtong.png",
+   "status": "done"
+  },
+  {
+   "no": 38,
+   "id": "huangyueying",
+   "name": "黃月英",
+   "file": "38_huangyueying.png",
+   "status": "done"
+  },
+  {
+   "no": 39,
+   "id": "luxun",
+   "name": "陸遜",
+   "file": "39_luxun.png",
+   "status": "done"
+  },
+  {
+   "no": 40,
+   "id": "zhangjiao",
+   "name": "張角",
+   "file": "40_zhangjiao.png",
+   "status": "done"
+  }
+ ]
+}
