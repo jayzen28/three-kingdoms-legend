@@ -1,0 +1,21 @@
+{
+  "note": "三國LEGEND 第一批定案立繪（全身、透明背景 PNG 1152x2016）。由 Illustrious-XL v2.0 生成，rembg isnet-anime 去背。",
+  "characters": [
+    {"id": "caocao",        "name": "曹操",   "faction": "魏", "file": "caocao.png",        "source": "b1_01_caocao_1"},
+    {"id": "huangzhong",    "name": "黃忠",   "faction": "蜀", "file": "huangzhong.png",    "source": "b1_08_huangzhong_1", "todo": "表上武器是大刀，這張只有弓"},
+    {"id": "zhugeliang",    "name": "諸葛亮", "faction": "蜀", "file": "zhugeliang.png",    "source": "b1_10_zhugeliang_1", "todo": "左下角有少量背景殘留"},
+    {"id": "zhouyu",        "name": "周瑜",   "faction": "吳", "file": "zhouyu.png",        "source": "b1_11_zhouyu_3"},
+    {"id": "dianwei",       "name": "典韋",   "faction": "魏", "file": "dianwei.png",       "source": "b1_12_dianwei_3"},
+    {"id": "xiahoudun",     "name": "夏侯惇", "faction": "魏", "file": "xiahoudun.png",     "source": "b1_14_xiahoudun_1"},
+    {"id": "sunshangxiang", "name": "孫尚香", "faction": "吳", "file": "sunshangxiang.png", "source": "b1_18_sunshangxiang_3"},
+    {"id": "zhurong",       "name": "祝融",   "faction": "群", "file": "zhurong.png",       "source": "b1_19_zhurong_3",  "todo": "背景未去乾淨、構圖裁切"},
+    {"id": "xiaoqiao",      "name": "小喬",   "faction": "吳", "file": "xiaoqiao.png",      "source": "b1_20_xiaoqiao_2", "todo": "背景未去乾淨"},
+    {"id": "lubu",          "name": "呂布",   "faction": "群", "file": "lubu.png",          "source": "lubu_5_p2"},
+    {"id": "sunquan",       "name": "孫權",   "faction": "吳", "file": "sunquan.png",       "source": "sunquan_3"},
+    {"id": "zhangliao",     "name": "張遼",   "faction": "魏", "file": "zhangliao.png",     "source": "zhangliao_4", "todo": "武器暫用，之後可能重做"}
+  ],
+  "pending": {
+    "redo": ["劉備", "關羽", "張飛", "許褚"],
+    "from_earlier_batch_not_yet_transferred": ["趙雲", "馬超", "甘寧", "貂蟬", "張角"]
+  }
+}
