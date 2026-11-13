@@ -533,3 +533,9 @@ button.chip.on{background:linear-gradient(#c8372c,#8b1c16);color:#fff1d2;border-
 #b-wrap.env-fire::after{display:block;background-image:radial-gradient(circle,rgba(255,190,80,.95) 0 1.3px,transparent 2.2px),radial-gradient(circle,rgba(255,110,40,.85) 0 1.8px,transparent 2.8px),linear-gradient(0deg,rgba(255,80,20,.3),transparent 45%);background-size:53px 53px,89px 89px,100% 100%;animation:envember 5s linear infinite}
 @keyframes envember{from{background-position:0 0,20px 0,0 0}to{background-position:-18px -106px,34px -178px,0 0}}
 @media (prefers-reduced-motion:reduce){#b-wrap::after,#b-wrap::before{animation:none!important}}
+
+/* ── 不規則戰場 ── */
+#b-wrap.shaped{border-color:transparent;box-shadow:none}
+#b-wrap.shaped::before,#b-wrap.shaped::after{-webkit-mask-image:var(--mask);mask-image:var(--mask);-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.cell.void{box-shadow:none;background:none;pointer-events:none}
+.cell .eg{position:absolute;inset:-1px;border:0 solid var(--lacquer);pointer-events:none;z-index:2;filter:drop-shadow(0 0 1px var(--gold))}

@@ -28,6 +28,8 @@
     var G = this;
     G.stage = stage; G.hooks = hooks || {};
     G.block = {}; (stage.block || []).forEach(function (p) { G.block[p[0] * W + p[1]] = 1; });
+    G.voidc = {};     // 不屬於戰場的格子（形狀外）
+    (stage.shape || []).forEach(function (row, r) { for (var c = 0; c < W; c++) { var ch = row.charAt(c); if (ch === ".") { G.block[r * W + c] = 1; G.voidc[r * W + c] = 1; } else if (ch === "^") G.block[r * W + c] = 1; } });
     G.mode = stage.mode;
     // 據點：siege＝我方軍營(下)/敵城堡(上)；defend＝我方城堡(下)/敵軍營(上)；annihilate 沒有據點
     G.base = G.mode === "annihilate" ? null : { P: BOT, E: TOP };

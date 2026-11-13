@@ -43,7 +43,11 @@
     $("#blog").innerHTML = "";
     SG.UI.go("battle");
     $("#b-wrap").classList.toggle("flip", SG.STAGES.indexOf(st) % 2 === 1);
-    var bw = $("#b-wrap"); bw.className = bw.className.replace(/\benv-\S+/g, "").trim(); bw.classList.add("env-" + (st.env || "day"));
+    var bw = $("#b-wrap"); bw.classList.toggle("shaped", !!st.shape);
+    if (st.shape) {
+      var rects = ""; st.shape.forEach(function (row, r) { for (var c = 0; c < row.length; c++) if (row.charAt(c) !== ".") rects += "<rect x='" + c + "' y='" + r + "' width='1.03' height='1.03'/>"; });
+      bw.style.setProperty("--mask", 'url("data:image/svg+xml;utf8,' + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 10' preserveAspectRatio='none'>" + rects + "</svg>") + '")');
+    } bw.className = bw.className.replace(/\benv-\S+/g, "").trim(); bw.classList.add("env-" + SG.WEATHERS[Math.floor(Math.random() * SG.WEATHERS.length)]);
     G.start();
     if (tut) SG.UI.modal('<h2>作戰說明</h2><p>把敵人全部打倒就贏。點我方武將，<b>藍格</b>可以走，<b>紅框</b>可以打。全隊每回合共 10 點體力，走一格扣 1 點。</p>' +
       '<p>五種兵種用法不同。棋盤下方有教學清單，每種兵種出手一次就會打勾。</p>' + SG.UI.typeGuide() + '<div class="row end"><button class="pri" onclick="SG.UI.close()">開始</button></div>');
@@ -143,12 +147,18 @@
     var mv = cur && my ? G.moveCells(cur) : [];
     var tg = canAct ? (cur.typ === "法" && melee ? G.meleeTargets(cur, "P") : G.targets(cur, "P")) : [];
     var hl = cur && mode === "heal" ? G.alive("P").filter(function (a) { return dist(a, cur) <= 3; }) : [];
-    var b = document.createElement("div"); b.className = "board";
+    var b = document.createElement("div"); b.className = "board"; var shaped = !!stage.shape;
     for (var r = 0; r < H; r++) for (var c = 0; c < W; c++) {
       var d = document.createElement("div"), k = r * W + c;
       var isBase = G.base && ((r === G.base.P.r && c === G.base.P.c) || (r === G.base.E.r && c === G.base.E.c));
+      if (G.voidc[k]) { d.className = "cell void"; b.appendChild(d); continue; }
       d.className = "cell" + (G.block[k] ? " blk" : "") + (isBase ? " base " + G.kind[r === G.base.P.r ? "P" : "E"] : "");
       if (isBase || G.block[k]) d.innerHTML = '<div class="bi"></div>';
+      if (shaped) {      // 戰場外緣描邊
+        var out = function (rr, cc) { return rr < 0 || rr >= H || cc < 0 || cc >= W || G.voidc[rr * W + cc]; };
+        var bw4 = [out(r - 1, c), out(r, c + 1), out(r + 1, c), out(r, c - 1)];
+        if (bw4[0] || bw4[1] || bw4[2] || bw4[3]) d.innerHTML += '<i class="eg" style="border-width:' + bw4.map(function (x) { return x ? "3px" : "0"; }).join(" ") + '"></i>';
+      }
       var u = G.at(r, c); if (u && (u.side === "P" || G.visible(u, "P"))) d.innerHTML += unitHtml(u);
       var inL = function (arr) { return arr.some(function (x) { return x.r === r && x.c === c; }); };
       if (inL(hl)) d.classList.add("hl");
