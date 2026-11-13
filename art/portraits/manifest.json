@@ -1,5 +1,5 @@
 {
- "note": "三國LEGEND 150 位武將＋18 位黃巾小兵半身立繪（832x1216 PNG，白底未去背），全部完成。武將：第一批 NN_id，第二批起 數值表編號_id；小兵：y編號_id，grunt: true。",
+ "note": "三國LEGEND 150 位武將＋18 位黃巾小兵＋16 位男武將半身立繪（832x1216 PNG，白底未去背）。武將：第一批 NN_id，第二批起 數值表編號_id；小兵：y編號_id（grunt: true）；男將：m編號_id（male: true, batch: 5）。",
  "characters": [
   {
    "no": 1,
@@ -1322,6 +1322,150 @@
    "status": "done",
    "grunt": true,
    "typ": "法"
+  },
+  {
+   "no": "m01",
+   "id": "caocao_m",
+   "name": "曹操",
+   "file": "m01_caocao_m.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m02",
+   "id": "zhangliao_m",
+   "name": "張遼",
+   "file": "m02_zhangliao_m.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m06",
+   "id": "zhugeliang_m",
+   "name": "諸葛亮",
+   "file": "m06_zhugeliang_m.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m07",
+   "id": "zhouyu_m",
+   "name": "周瑜",
+   "file": "m07_zhouyu_m.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m08",
+   "id": "sunce_m",
+   "name": "孫策",
+   "file": "m08_sunce_m.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m09",
+   "id": "ganning_m",
+   "name": "甘寧",
+   "file": "m09_ganning_m.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m10",
+   "id": "yuanshao_m",
+   "name": "袁紹",
+   "file": "m10_yuanshao_m.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m11",
+   "id": "guohuai",
+   "name": "郭淮",
+   "file": "m11_guohuai.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m13",
+   "id": "guanping",
+   "name": "關平",
+   "file": "m13_guanping.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m16",
+   "id": "zhugeke",
+   "name": "諸葛恪",
+   "file": "m16_zhugeke.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m17",
+   "id": "dongxi",
+   "name": "董襲",
+   "file": "m17_dongxi.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m18",
+   "id": "heqi",
+   "name": "賀齊",
+   "file": "m18_heqi.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m19",
+   "id": "gaolan",
+   "name": "高覽",
+   "file": "m19_gaolan.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m05",
+   "id": "zhaoyun_m",
+   "name": "趙雲",
+   "file": "m05_zhaoyun_m.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m15",
+   "id": "guansuo",
+   "name": "關索",
+   "file": "m15_guansuo.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
+  },
+  {
+   "no": "m20",
+   "id": "huangfusong",
+   "name": "皇甫嵩",
+   "file": "m20_huangfusong.png",
+   "status": "done",
+   "male": true,
+   "batch": 5
   }
  ]
 }
