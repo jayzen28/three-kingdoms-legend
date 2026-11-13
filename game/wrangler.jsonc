@@ -1,0 +1,6 @@
+{
+  // 三國LEGEND 單機版：純靜態檔案，放在 Cloudflare Workers 靜態資源
+  "name": "sanguo-legend",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "./public" }
+}
