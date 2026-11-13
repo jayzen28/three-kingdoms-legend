@@ -1,5 +1,5 @@
 {
- "note": "三國LEGEND 150 位武將半身立繪（832x1216 PNG，白底未去背），全部完成。第一批 40 位檔名 NN_id（交付序號）；第二批起為 數值表編號_id。",
+ "note": "三國LEGEND 150 位武將＋18 位黃巾小兵半身立繪（832x1216 PNG，白底未去背），全部完成。武將：第一批 NN_id，第二批起 數值表編號_id；小兵：y編號_id，grunt: true。",
  "characters": [
   {
    "no": 1,
@@ -1160,6 +1160,168 @@
    "file": "148_liheng.png",
    "status": "done",
    "batch": 4
+  },
+  {
+   "no": "y01",
+   "id": "nongfu",
+   "name": "黃巾農夫",
+   "file": "y01_nongfu.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "槍"
+  },
+  {
+   "no": "y02",
+   "id": "zhuanghan",
+   "name": "黃巾壯漢",
+   "file": "y02_zhuanghan.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "槍"
+  },
+  {
+   "no": "y03",
+   "id": "cungu",
+   "name": "黃巾村姑",
+   "file": "y03_cungu.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "槍"
+  },
+  {
+   "no": "y04",
+   "id": "xinbing",
+   "name": "黃巾新兵",
+   "file": "y04_xinbing.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "槍"
+  },
+  {
+   "no": "y05",
+   "id": "nvduizhang",
+   "name": "黃巾女隊長",
+   "file": "y05_nvduizhang.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "槍"
+  },
+  {
+   "no": "y06",
+   "id": "mazei",
+   "name": "黃巾馬賊",
+   "file": "y06_mazei.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "騎"
+  },
+  {
+   "no": "y07",
+   "id": "nvqishou",
+   "name": "黃巾女騎手",
+   "file": "y07_nvqishou.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "騎"
+  },
+  {
+   "no": "y08",
+   "id": "pangqibing",
+   "name": "黃巾胖騎兵",
+   "file": "y08_pangqibing.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "騎"
+  },
+  {
+   "no": "y09",
+   "id": "laolie",
+   "name": "黃巾老獵戶",
+   "file": "y09_laolie.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "弓"
+  },
+  {
+   "no": "y10",
+   "id": "nvlieshou",
+   "name": "黃巾女獵手",
+   "file": "y10_nvlieshou.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "弓"
+  },
+  {
+   "no": "y11",
+   "id": "changgong",
+   "name": "黃巾長弓手",
+   "file": "y11_changgong.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "弓"
+  },
+  {
+   "no": "y12",
+   "id": "yexing",
+   "name": "黃巾夜行者",
+   "file": "y12_yexing.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "刺"
+  },
+  {
+   "no": "y13",
+   "id": "douli",
+   "name": "黃巾斗笠客",
+   "file": "y13_douli.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "刺"
+  },
+  {
+   "no": "y14",
+   "id": "duniangzi",
+   "name": "黃巾毒娘子",
+   "file": "y14_duniangzi.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "刺"
+  },
+  {
+   "no": "y15",
+   "id": "fushui",
+   "name": "黃巾符水道士",
+   "file": "y15_fushui.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "法"
+  },
+  {
+   "no": "y16",
+   "id": "huojisi",
+   "name": "黃巾火祭司",
+   "file": "y16_huojisi.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "法"
+  },
+  {
+   "no": "y17",
+   "id": "bingdaogu",
+   "name": "黃巾冰符道姑",
+   "file": "y17_bingdaogu.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "法"
+  },
+  {
+   "no": "y18",
+   "id": "pangdaoshi",
+   "name": "黃巾胖道士",
+   "file": "y18_pangdaoshi.png",
+   "status": "done",
+   "grunt": true,
+   "typ": "法"
   }
  ]
 }
