@@ -1,5 +1,5 @@
 {
- "note": "三國LEGEND 40 位角色半身立繪（第一版 prompt，832x1216 PNG，白底未去背）。40 位全部完成。",
+ "note": "三國LEGEND 角色半身立繪（第一版 prompt，832x1216 PNG，白底未去背）。第一批 40 位（檔名 NN_id，NN 為交付序號）；第二批起檔名為 數值表編號_id（例 137_zhangliang）。",
  "characters": [
   {
    "no": 1,
@@ -280,6 +280,102 @@
    "name": "張角",
    "file": "40_zhangjiao.png",
    "status": "done"
+  },
+  {
+   "no": 137,
+   "id": "zhangliang",
+   "name": "張梁",
+   "file": "137_zhangliang.png",
+   "status": "done",
+   "batch": 2
+  },
+  {
+   "no": 138,
+   "id": "zhangbao",
+   "name": "張寶",
+   "file": "138_zhangbao.png",
+   "status": "done",
+   "batch": 2
+  },
+  {
+   "no": 145,
+   "id": "peiyuanshao",
+   "name": "裴元紹",
+   "file": "145_peiyuanshao.png",
+   "status": "done",
+   "batch": 2
+  },
+  {
+   "no": 139,
+   "id": "mayuanyi",
+   "name": "馬元義",
+   "file": "139_mayuanyi.png",
+   "status": "done",
+   "batch": 2
+  },
+  {
+   "no": 141,
+   "id": "bocai",
+   "name": "波才",
+   "file": "141_bocai.png",
+   "status": "done",
+   "batch": 2
+  },
+  {
+   "no": 140,
+   "id": "chengzhiyuan",
+   "name": "程志遠",
+   "file": "140_chengzhiyuan.png",
+   "status": "done",
+   "batch": 2
+  },
+  {
+   "no": 5,
+   "id": "xuhuang",
+   "name": "徐晃",
+   "file": "005_xuhuang.png",
+   "status": "done",
+   "batch": 2
+  },
+  {
+   "no": 6,
+   "id": "zhanghe",
+   "name": "張郃",
+   "file": "006_zhanghe.png",
+   "status": "done",
+   "batch": 2
+  },
+  {
+   "no": 7,
+   "id": "dengai",
+   "name": "鄧艾",
+   "file": "007_dengai.png",
+   "status": "done",
+   "batch": 2
+  },
+  {
+   "no": 72,
+   "id": "sunjian",
+   "name": "孫堅",
+   "file": "072_sunjian.png",
+   "status": "done",
+   "batch": 2
+  },
+  {
+   "no": 101,
+   "id": "dongzhuo",
+   "name": "董卓",
+   "file": "101_dongzhuo.png",
+   "status": "done",
+   "batch": 2
+  },
+  {
+   "no": 106,
+   "id": "zuoci",
+   "name": "左慈",
+   "file": "106_zuoci.png",
+   "status": "done",
+   "batch": 2
   }
  ]
 }
