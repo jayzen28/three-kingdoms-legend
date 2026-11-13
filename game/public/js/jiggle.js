@@ -6,7 +6,7 @@
   };
   // ★ 手感參數（Jay 2026-11-13：要明顯、要像軟的在晃，不是肌肉在抖）
   //   K 越小晃得越慢越沉；C 越小餘波越久；UPK 往上回彈時變硬的倍數（下墜大、回彈小，才有重量感）
-  var CFG = { K: 82, C: 3.1, UPK: 1.7, MAX: 0.085, BREATH: 0.006, HOP: 0.004, SWAY: 0.03, HOP_T: 0.7, AUTO: 3.8, G: 2.1, TAP_V: 0.6, GRAB: 0.9 };
+  var CFG = { K: 46, C: 3.0, UPK: 1.3, MAX: 0.085, BREATH: 0.014, BREATH_T: 3.6, LIFT: 0.03, SPREAD: 0.008, SWAY: 0.006, G: 2, TAP_V: 0.6, GRAB: 0.9, AUTO: 1e9, HOP: 0, HOP_T: 0.7 };
   SG.JIGGLE_CFG = CFG;
   var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   // 頂點位移：整張圖以底部為支點做身體起伏（s）；胸部區域上緣固定、越往下動越多，並依上下位移做擠壓／拉長
@@ -62,11 +62,13 @@
         // 身體：呼吸 + 每隔幾秒輕輕一頓。胸部是掛在身體上的重物，身體一動它才跟著晃（慣性）
         if (now > nextHop) { hopAt = now; dir = -dir; nextHop = now + CFG.AUTO * 1000 * (0.8 + Math.random() * 0.5); }
         var u = (now - hopAt) / 1000 / CFG.HOP_T, hop = u > 0 && u < 1 ? Math.pow(Math.sin(Math.PI * u), 2) * CFG.HOP : 0;
-        var body = Math.sin((now - t0) / 1000 * 1.4) * CFG.BREATH + hop;
+        // 呼吸：吸氣較快、吐氣較慢，胸口跟著身體起伏；胸部只靠這個節奏帶動，慢半拍跟上（✅ Jay：要跟呼吸合）
+        var ph = ((now - t0) / 1000 / CFG.BREATH_T) % 1, br = ph < 0.4 ? 0.5 - 0.5 * Math.cos(Math.PI * ph / 0.4) : 0.5 + 0.5 * Math.cos(Math.PI * (ph - 0.4) / 0.6);
+        var body = br * CFG.BREATH + hop, ty0 = -CFG.LIFT * (br - 0.5), sp = CFG.SPREAD * (br - 0.5);
         var chest = -0.55 * body, v = (chest - bodyPrev) / dt, acc = (v - bodyVel) / dt; bodyPrev = chest; bodyVel = v;
         acc = Math.max(-40, Math.min(40, acc));
         // 左右：身體往一邊擺再回來（每次換邊），胸部慢半拍跟著甩
-        var sway = Math.sin((now - t0) / 1000 * 0.9) * CFG.SWAY * 0.25 + (u > 0 && u < 1 ? Math.sin(Math.PI * u) * Math.sin(Math.PI * u) * CFG.SWAY * dir : 0);
+        var sway = Math.sin(2 * Math.PI * (now - t0) / 1000 / (CFG.BREATH_T * 2)) * CFG.SWAY;   // 左右：兩次呼吸一個來回，跟呼吸同拍
         var cx = 0.55 * sway, vx2 = (cx - swPrev) / dt, accx = Math.max(-40, Math.min(40, (vx2 - swVel) / dt)); swPrev = cx; swVel = vx2;
         while (q.length && q[0].at <= now) { var kk = q.shift(); B[1].vx += kk.vx; B[1].vy += kk.vy; }
         for (var st = 0; st < 3; st++) for (var i = 0; i < 2; i++) {
@@ -76,7 +78,7 @@
             b.vx += ((tx - b.x) * 260 - b.vx * 22) * h; b.vy += ((ty - b.y) * 260 - b.vy * 22) * h;
           } else {
             var ky = b.y < 0 ? K * CFG.UPK : K;
-            b.vx += (-K * b.x - CFG.C * b.vx - accx * CFG.G) * h; b.vy += (-ky * b.y - CFG.C * b.vy - acc * CFG.G) * h;
+            b.vx += (-K * (b.x - b.side * sp) - CFG.C * b.vx - accx * CFG.G) * h; b.vy += (-ky * (b.y - ty0) - CFG.C * b.vy - acc * CFG.G) * h;
           }
           b.x = Math.max(-CFG.MAX, Math.min(CFG.MAX, b.x + b.vx * h)); b.y = Math.max(-CFG.MAX, Math.min(CFG.MAX, b.y + b.vy * h));
         }

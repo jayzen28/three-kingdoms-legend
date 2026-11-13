@@ -43,6 +43,7 @@
     $("#blog").innerHTML = "";
     SG.UI.go("battle");
     $("#b-wrap").classList.toggle("flip", SG.STAGES.indexOf(st) % 2 === 1);
+    var bw = $("#b-wrap"); bw.className = bw.className.replace(/\benv-\S+/g, "").trim(); bw.classList.add("env-" + (st.env || "day"));
     G.start();
     if (tut) SG.UI.modal('<h2>作戰說明</h2><p>把敵人全部打倒就贏。點我方武將，<b>藍格</b>可以走，<b>紅框</b>可以打。全隊每回合共 10 點體力，走一格扣 1 點。</p>' +
       '<p>五種兵種用法不同。棋盤下方有教學清單，每種兵種出手一次就會打勾。</p>' + SG.UI.typeGuide() + '<div class="row end"><button class="pri" onclick="SG.UI.close()">開始</button></div>');

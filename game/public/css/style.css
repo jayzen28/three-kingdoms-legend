@@ -511,3 +511,25 @@ button.chip.on{background:linear-gradient(#c8372c,#8b1c16);color:#fff1d2;border-
 .bigart canvas.jg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;filter:drop-shadow(0 0 12px rgba(0,0,0,.6));touch-action:none}
 .rv-spot .pic canvas.jg{position:absolute;left:50%;top:0;height:118%;transform:translateX(-50%)}
 #s-home canvas.fig{touch-action:none;cursor:grab;animation:none}
+
+/* ── 戰場氣氛：時段與天氣 ── */
+#b-wrap::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:4;display:none}
+#b-wrap.env-dusk::before{filter:sepia(.45) saturate(1.5) hue-rotate(-14deg) brightness(.96)}
+#b-wrap.env-dusk::after{display:block;background:linear-gradient(200deg,rgba(255,150,60,.28),transparent 55%,rgba(90,30,60,.22))}
+#b-wrap.env-mist::before{filter:saturate(.6) brightness(1.05)}
+#b-wrap.env-mist::after{display:block;background:radial-gradient(ellipse 60% 26% at 20% 30%,rgba(255,255,255,.55),transparent 70%),radial-gradient(ellipse 70% 24% at 80% 62%,rgba(255,255,255,.5),transparent 70%),radial-gradient(ellipse 60% 20% at 40% 88%,rgba(255,255,255,.45),transparent 70%);background-size:200% 100%;animation:envmist 26s ease-in-out infinite alternate}
+@keyframes envmist{from{background-position:0 0}to{background-position:100% 0}}
+#b-wrap.env-night::before{filter:brightness(.5) saturate(.7) hue-rotate(175deg) contrast(1.15)}
+#b-wrap.env-night::after{display:block;background:radial-gradient(circle at 78% 12%,rgba(210,225,255,.35),transparent 30%),linear-gradient(rgba(10,18,50,.25),rgba(10,18,50,.4))}
+#b-wrap.env-snow::before{filter:saturate(.35) brightness(1.18) hue-rotate(160deg)}
+#b-wrap.env-snow::after{display:block;background-image:radial-gradient(circle,#fff 0 1.6px,transparent 2.4px),radial-gradient(circle,rgba(255,255,255,.85) 0 1.1px,transparent 1.9px),radial-gradient(circle,rgba(255,255,255,.7) 0 2px,transparent 3px);background-size:64px 64px,41px 41px,97px 97px;animation:envsnow 9s linear infinite}
+@keyframes envsnow{from{background-position:0 0,13px 0,31px 0}to{background-position:24px 128px,-10px 164px,60px 194px}}
+#b-wrap.env-rain::before{filter:saturate(.6) brightness(.78) hue-rotate(10deg)}
+#b-wrap.env-rain::after,#b-wrap.env-storm::after{display:block;background-image:repeating-linear-gradient(104deg,transparent 0 11px,rgba(210,225,240,.34) 11px 12px,transparent 12px 26px);background-size:140px 140px;animation:envrain .45s linear infinite}
+@keyframes envrain{from{background-position:0 0}to{background-position:-35px 140px}}
+#b-wrap.env-storm::before{filter:saturate(.45) brightness(.55) contrast(1.2);animation:envflash 7s linear infinite}
+@keyframes envflash{0%,91%,95%,100%{filter:saturate(.45) brightness(.55) contrast(1.2)}92%,94%{filter:saturate(.3) brightness(1.5) contrast(1.1)}}
+#b-wrap.env-fire::before{filter:sepia(.6) saturate(2) hue-rotate(-28deg) brightness(.72) contrast(1.15)}
+#b-wrap.env-fire::after{display:block;background-image:radial-gradient(circle,rgba(255,190,80,.95) 0 1.3px,transparent 2.2px),radial-gradient(circle,rgba(255,110,40,.85) 0 1.8px,transparent 2.8px),linear-gradient(0deg,rgba(255,80,20,.3),transparent 45%);background-size:53px 53px,89px 89px,100% 100%;animation:envember 5s linear infinite}
+@keyframes envember{from{background-position:0 0,20px 0,0 0}to{background-position:-18px -106px,34px -178px,0 0}}
+@media (prefers-reduced-motion:reduce){#b-wrap::after,#b-wrap::before{animation:none!important}}

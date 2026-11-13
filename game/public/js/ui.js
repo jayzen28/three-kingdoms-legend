@@ -48,7 +48,7 @@
     return '<div class="cc ' + rar + (b ? "" : " none") + (card.art ? " art" : "") + ' f-' + FV[card.fac] + '" ' + (opt.attr || "") + '>' +
       (card.art ? '<img class="pic" src="img/' + card.art + '_card.webp" alt="">' : '') +
       '<span class="nm n' + Math.min(4, card.gen.length) + '">' + card.gen + '</span>' +
-      (card.ur && card.ver ? '<span class="ver">' + card.ver + '</span>' : '') +
+      (card.ver && (card.ur || card.male) && card.ver !== "一般" ? '<span class="ver">' + card.ver + '</span>' : '') +
       '<span class="ty">' + card.typ + '</span><span class="rb">' + rar + '</span>' +
       '<span class="stars">' + (b ? "★".repeat(b.star) : "") + '</span></div>';
   };
@@ -62,7 +62,7 @@
   };
   UI.tags = function (card) {
     return '<span class="tag fill f-' + FV[card.fac] + '">' + card.fac + '</span><span class="tag">' + SG.TYPES[card.typ].name + '</span>' +
-      (card.elem ? '<span class="tag">' + card.elem + '</span>' : '') + (card.strong ? '<span class="tag red">' + (card.ur ? 'UR' : '強將') + '</span>' : '');
+      (card.elem ? '<span class="tag">' + card.elem + '</span>' : '') + (card.strong ? '<span class="tag red">' + (card.ur ? 'UR' : '強將') + '</span>' : '') + (card.male ? '<span class="tag">男</span>' : '');
   };
   UI.cardDetail = function (card) {
     var b = SG.best(S, card.id), inv = S.inv[card.id] || {};
@@ -74,7 +74,7 @@
     var art = card.art
       ? '<div class="bigart ' + show.rar + (b ? '' : ' none') + (card.artBg ? '' : ' f-' + FV[card.fac]) + '"' + (card.artBg ? ' style="background-image:url(img/' + card.art + '_full.webp)"' : '') + '>' +
         (card.artBg ? '' : '<img src="img/' + card.art + '_full.webp" alt="' + card.name + '">') +
-        '<span class="nm">' + card.gen + '</span>' + (card.ur && card.ver ? '<span class="ver">' + card.ver + '</span>' : '') +
+        '<span class="nm">' + card.gen + '</span>' + (card.ver && (card.ur || card.male) && card.ver !== "一般" ? '<span class="ver">' + card.ver + '</span>' : '') +
         '<span class="rk">' + show.rar + '<i>' + "★".repeat(show.star) + '</i></span></div>'
       : '';
     UI.modal(art + '<div class="detail' + (art ? ' noart' : '') + '">' + (art ? '' : UI.cardHtml(card, b)) +

@@ -137,6 +137,14 @@ SG.GENERALS_RAW = [
 // UR 特殊版：[原武將, 版本名, 兵種, 屬性]（不在 150 名內，三圍暫用原武將）
 // UR 專屬卡面（整張插畫、含背景，不去背）。沒列的 UR 先沿用一般版立繪
 SG.UR_ART = { "曹操": "caocao_ur" };
+// 男武將：只列已交立繪的 16 位。還沒交圖的 4 位（m03 司馬懿男版、m04 關羽男版、m12 夏侯霸、m14 馬良）先不上
+SG.MALE_VER = [[1, "曹操", "caocao_m"], [2, "張遼", "zhangliao_m"], [5, "趙雲", "zhaoyun_m"], [6, "諸葛亮", "zhugeliang_m"],
+  [7, "周瑜", "zhouyu_m"], [8, "孫策", "sunce_m"], [9, "甘寧", "ganning_m"], [10, "袁紹", "yuanshao_m"]];
+SG.MALE_NEW = [   // [編號, 名, 陣營, 兵種, 屬性, 武, 智, 魅, 加成屬性, 加成值, 立繪]　★ 數值是開發提案
+  [11, "郭淮", "魏", "槍", null, 78, 82, 74, "智", 6, "guohuai"], [13, "關平", "蜀", "騎", null, 84, 70, 78, "魅", 6, "guanping"],
+  [15, "關索", "蜀", "刺", null, 84, 60, 78, "魅", 6, "guansuo"], [16, "諸葛恪", "吳", "法", "火", 48, 90, 66, "智", 6, "zhugeke"],
+  [17, "董襲", "吳", "槍", null, 84, 52, 62, "武", 6, "dongxi"], [18, "賀齊", "吳", "弓", null, 80, 74, 72, "智", 6, "heqi"],
+  [19, "高覽", "群雄", "騎", null, 88, 56, 62, "智", 5, "gaolan"], [20, "皇甫嵩", "群雄", "弓", null, 80, 84, 82, "魅", 5, "huangfusong"]];
 SG.HOME_LEAD = "祝融";   // 主城預設站的武將（✅ Jay 2026-11-13：所有玩家先預設是她，展示晃動效果）
 SG.UR_ONLY = ["呂布", "袁紹", "馬雲祿"];   // 只有 UR、沒有一般版；兵種三圍沿用原本的，立繪先用現有的
 SG.UR_RAW = [
@@ -160,6 +168,24 @@ SG.GEN = {};   // 武將名 → 基本資料（敵將也用這裡的三圍）
     };
     // 只有 UR 的武將：沒有一般版，卡號不變（✅ Jay 2026-11-13）
     if (SG.UR_ONLY.indexOf(g[0]) >= 0) { c.ver = ""; c.cap = ["UR", 6]; c.vers = ["UR"]; c.ur = true; c.urOnly = true; c.strong = true; }
+    SG.CARDS.push(c); SG.CARD_BY_ID[c.id] = c; SG.GEN[c.gen] = c;
+  });
+  // 男武將（✅ Jay 2026-11-13）：男版＝同名女將 武+3 智−1 魅−2，是另一張卡（分開收集合成，同名不能同隊）；新角色是獨立武將
+  SG.MALE_VER.forEach(function (m) {
+    var b = SG.GEN[m[1]], raw = SG.GENERALS_RAW.filter(function (g) { return g[0] === m[1]; })[0], strong = !!raw[4];
+    var cl = function (v) { return Math.max(0, Math.min(100, v)); };
+    var c = {
+      id: "m" + m[0], no: 155 + m[0], gen: m[1], name: m[1] + "（男）", ver: "男", male: true, fac: b.fac, typ: b.typ, elem: b.elem, strong: strong,
+      w: cl(b.w + 3), z: cl(b.z - 1), m: cl(b.m - 2), bk: b.bk, bv: b.bv, note: "",
+      cap: strong ? ["SSR", 6] : ["SR", 6], vers: strong ? ["N", "R", "SR", "SSR"] : ["N", "R", "SR"], art: m[2],
+    };
+    SG.CARDS.push(c); SG.CARD_BY_ID[c.id] = c;
+  });
+  SG.MALE_NEW.forEach(function (g) {
+    var c = {
+      id: "m" + g[0], no: 155 + g[0], gen: g[1], name: g[1], ver: "一般", male: true, fac: g[2], typ: g[3], elem: g[4], strong: false,
+      w: g[5], z: g[6], m: g[7], bk: g[8], bv: g[9], note: "", cap: ["SR", 6], vers: ["N", "R", "SR"], art: g[10],
+    };
     SG.CARDS.push(c); SG.CARD_BY_ID[c.id] = c; SG.GEN[c.gen] = c;
   });
   SG.UR_RAW.forEach(function (u, i) {
@@ -259,5 +285,8 @@ SG.gruntArt = function (name) { var g = SG.GRUNT_BY[name]; return g && SG.GRUNT_
         Y("黃巾兵", "弓", "SR", 2), Y("黃巾兵", "刺", "SR", 2), Y("黃巾術士", "法", "SR", 2, 1, "冰"), Y("黃巾兵", "騎", "SR", 2)],
       block: [[0, 0], [0, 7], [1, 0], [1, 7], [4, 2], [4, 5], [5, 2], [5, 5]] },
   ];
+  // 戰場氣氛：時段與天氣（★ 先用調色和天氣效果做出差別；各關專屬底圖之後再補）
+  var ENV = { "1-1": "day", "1-2": "dusk", "1-3": "mist", "1-4": "night", "1-5": "snow", "1-6": "rain", "1-7": "storm", "1-8": "fire" };
+  SG.STAGES.forEach(function (st) { st.env = ENV[st.id] || "day"; });
   SG.STAGE_FIRST = { copper: 100000, tickets: 10 };
 })();
