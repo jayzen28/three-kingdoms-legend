@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>三國LEGEND</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-foot" viewBox="0 0 10 12"><circle cx="4.4" cy="2.1" r="1.7"/><path d="M2.4 4.3h4l.7 4H6l-.3 3.4H4.6L4.4 8.6 4.2 11.7H3.1L2.8 8.3h-1z"/><path d="M8.3.2v11.5" stroke="currentColor" stroke-width=".7" fill="none"/><path d="M8.3 0l.9 1.8H7.4z"/></symbol>
+  <symbol id="i-horse" viewBox="0 0 12 12"><circle cx="5.2" cy="1.7" r="1.5"/><path d="M4 3.4h2.6l.5 3H3.6z"/><path d="M1 6.2h7.2l1.4-2.4 1.6.5-.4 1.6-1.2.3-.6 2.2v3.4H8V9.3H3.6v2.5H2.6V9L1 8.2z"/></symbol>
+</svg>
+
+<header id="top">
+  <div class="brand"><span class="seal">三國</span><span class="brand-t">LEGEND</span></div>
+  <div class="purse">
+    <span class="res" title="銅錢"><i class="ic-coin"></i><b id="r-copper">0</b></span>
+    <span class="res" title="元寶"><i class="ic-ingot"></i><b id="r-yb">0</b></span>
+    <span class="res" title="茶館抽券"><i class="ic-tkt"></i><b id="r-tk">0</b></span>
+    <button class="snd" type="button" title="配樂開關">樂</button>
+  </div>
+</header>
+
+<main>
+<section id="s-home" class="screen show"></section>
+<section id="s-camp" class="screen"></section>
+<section id="s-recruit" class="screen"></section>
+<section id="s-book" class="screen"></section>
+<section id="s-team" class="screen"></section>
+<section id="s-battle" class="screen">
+  <div id="hud" class="paper">
+    <div><b id="b-round" class="kai">第 1 回合</b><div id="b-side" class="dim"></div></div>
+    <div class="stam"><span class="dim">體力</span> <b id="b-st">10</b><div id="b-pips" class="pips"></div></div>
+  </div>
+  <div id="b-tip"></div>
+  <div id="b-wrap"><canvas id="b-map"></canvas><div id="b-board"></div><div id="b-fx"></div></div>
+  <div id="bpanel" class="paper"></div>
+  <div class="row"><span class="dim grow">全軍行動或待命後，自動換敵軍</span><button class="snd sm" type="button" title="配樂開關">樂</button><button class="sm" id="b-help">規則</button><button class="sm" id="b-quit">撤退</button></div>
+  <div id="blog"></div>
+</section>
+</main>
+
+<nav id="nav"><div class="in">
+  <button data-go="home" class="act">主城</button><button data-go="camp">戰役</button><button data-go="recruit">招募</button><button data-go="book">收集冊</button><button data-go="team">編隊</button>
+</div></nav>
+
+<div id="banner"></div>
+<div class="over" id="modal"><div class="scroll" id="modal-body"></div></div>
+
+<script src="js/data.js"></script>
+<script src="js/store.js"></script>
+<script src="js/gacha.js"></script>
+<script src="js/battle.js"></script>
+<script src="js/scene.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/jiggle.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/battle-ui.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
