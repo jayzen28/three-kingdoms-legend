@@ -1,5 +1,5 @@
 {
- "note": "三國LEGEND 角色半身立繪（第一版 prompt，832x1216 PNG，白底未去背）。第一批 40 位（檔名 NN_id，NN 為交付序號）；第二批起檔名為 數值表編號_id（例 137_zhangliang）。",
+ "note": "三國LEGEND 150 位武將半身立繪（832x1216 PNG，白底未去背），全部完成。第一批 40 位檔名 NN_id（交付序號）；第二批起為 數值表編號_id。",
  "characters": [
   {
    "no": 1,
@@ -765,17 +765,401 @@
    "no": 108,
    "id": "huaxiong",
    "name": "華雄",
-   "file": null,
-   "status": "pending",
+   "file": "108_huaxiong.png",
+   "status": "done",
    "batch": 3
   },
   {
    "no": 115,
    "id": "zhanglu",
    "name": "張魯",
-   "file": null,
-   "status": "pending",
+   "file": "115_zhanglu.png",
+   "status": "done",
    "batch": 3
+  },
+  {
+   "no": 46,
+   "id": "fazheng",
+   "name": "法正",
+   "file": "046_fazheng.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 47,
+   "id": "liushan",
+   "name": "劉禪",
+   "file": "047_liushan.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 48,
+   "id": "guanxing",
+   "name": "關興",
+   "file": "048_guanxing.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 49,
+   "id": "zhangbao2",
+   "name": "張苞",
+   "file": "049_zhangbao2.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 50,
+   "id": "baosanniang",
+   "name": "鮑三娘",
+   "file": "050_baosanniang.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 51,
+   "id": "maxiuying",
+   "name": "馬秀英",
+   "file": "051_maxiuying.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 53,
+   "id": "xingcai",
+   "name": "星彩",
+   "file": "053_xingcai.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 55,
+   "id": "madai",
+   "name": "馬岱",
+   "file": "055_madai.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 56,
+   "id": "wangping",
+   "name": "王平",
+   "file": "056_wangping.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 57,
+   "id": "liaohua",
+   "name": "廖化",
+   "file": "057_liaohua.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 58,
+   "id": "yanyan",
+   "name": "嚴顏",
+   "file": "058_yanyan.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 59,
+   "id": "liyan",
+   "name": "李嚴",
+   "file": "059_liyan.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 60,
+   "id": "jiangwan",
+   "name": "蔣琬",
+   "file": "060_jiangwan.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 61,
+   "id": "feiyi",
+   "name": "費禕",
+   "file": "061_feiyi.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 62,
+   "id": "jianyong",
+   "name": "簡雍",
+   "file": "062_jianyong.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 65,
+   "id": "masu",
+   "name": "馬謖",
+   "file": "065_masu.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 67,
+   "id": "mayunlu",
+   "name": "馬雲祿",
+   "file": "067_mayunlu.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 77,
+   "id": "huanggai",
+   "name": "黃蓋",
+   "file": "077_huanggai.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 80,
+   "id": "zhugejin",
+   "name": "諸葛瑾",
+   "file": "080_zhugejin.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 81,
+   "id": "dingfeng",
+   "name": "丁奉",
+   "file": "081_dingfeng.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 82,
+   "id": "zhoutai",
+   "name": "周泰",
+   "file": "082_zhoutai.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 83,
+   "id": "chengpu",
+   "name": "程普",
+   "file": "083_chengpu.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 84,
+   "id": "lusu",
+   "name": "魯肅",
+   "file": "084_lusu.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 85,
+   "id": "handang",
+   "name": "韓當",
+   "file": "085_handang.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 86,
+   "id": "lingtong",
+   "name": "凌統",
+   "file": "086_lingtong.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 87,
+   "id": "xusheng",
+   "name": "徐盛",
+   "file": "087_xusheng.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 88,
+   "id": "zhuran",
+   "name": "朱然",
+   "file": "088_zhuran.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 89,
+   "id": "zhuhuan",
+   "name": "朱桓",
+   "file": "089_zhuhuan.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 90,
+   "id": "panzhang",
+   "name": "潘璋",
+   "file": "090_panzhang.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 92,
+   "id": "chenwu",
+   "name": "陳武",
+   "file": "092_chenwu.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 93,
+   "id": "zhangzhao",
+   "name": "張昭",
+   "file": "093_zhangzhao.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 94,
+   "id": "guyong",
+   "name": "顧雍",
+   "file": "094_guyong.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 97,
+   "id": "lukang",
+   "name": "陸抗",
+   "file": "097_lukang.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 149,
+   "id": "wangkong",
+   "name": "王孔",
+   "file": "149_wangkong.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 150,
+   "id": "zhoucang",
+   "name": "周倉",
+   "file": "150_zhoucang.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 63,
+   "id": "mizhu",
+   "name": "糜竺",
+   "file": "063_mizhu.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 64,
+   "id": "sunqian",
+   "name": "孫乾",
+   "file": "064_sunqian.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 91,
+   "id": "jiangqin",
+   "name": "蔣欽",
+   "file": "091_jiangqin.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 95,
+   "id": "bulianshi",
+   "name": "步練師",
+   "file": "095_bulianshi.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 96,
+   "id": "sunluban",
+   "name": "孫魯班",
+   "file": "096_sunluban.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 98,
+   "id": "kanze",
+   "name": "闞澤",
+   "file": "098_kanze.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 99,
+   "id": "lvdai",
+   "name": "呂岱",
+   "file": "099_lvdai.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 142,
+   "id": "gongdu",
+   "name": "龔都",
+   "file": "142_gongdu.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 143,
+   "id": "huangshao",
+   "name": "黃邵",
+   "file": "143_huangshao.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 144,
+   "id": "yanzheng",
+   "name": "嚴政",
+   "file": "144_yanzheng.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 146,
+   "id": "tangzhou",
+   "name": "唐周",
+   "file": "146_tangzhou.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 147,
+   "id": "zhuangsun",
+   "name": "莊孫",
+   "file": "147_zhuangsun.png",
+   "status": "done",
+   "batch": 4
+  },
+  {
+   "no": 148,
+   "id": "liheng",
+   "name": "李恆",
+   "file": "148_liheng.png",
+   "status": "done",
+   "batch": 4
   }
  ]
 }
