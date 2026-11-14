@@ -4,13 +4,13 @@
   var RIG = {
     sunquan_ur: {
       w: 832, h: 1216,
-      chest: [[0.365, 0.565, 0.150, 0.118], [0.605, 0.565, 0.150, 0.118]],   // 左、右：[中心x, 中心y, 半徑x, 半徑y]
+      chest: [[0.367, 0.567, 0.120, 0.080], [0.595, 0.567, 0.126, 0.082]],   // 左、右：[中心x, 中心y, 半徑x, 半徑y]
       acc: [[0.395, 0.282], [0.617, 0.262]],                                 // 耳環掛點：左、右
       hairTop: 0.24,
     },
   };
   var VS = "attribute vec2 a;varying vec2 v;uniform int m;uniform float br,hs,t;uniform vec4 e0,e1;uniform vec2 o0,o1,p0,p1;uniform vec2 ang;uniform float asp;" +
-    "vec2 ch(){vec2 dl=(a-e0.xy)/e0.zw,dr=(a-e1.xy)/e1.zw;float sd=smoothstep(e0.x+e0.z*.35,e1.x-e1.z*.35,a.x);vec2 o=mix(o0,o1,sd);float top=smoothstep(-1.2,.15,mix(dl.y,dr.y,sd));float sf=(1.-smoothstep(1.,1.55,-dl.x))*(1.-smoothstep(1.,1.55,dr.x));return o*top*sf;}" +
+    "vec2 ch(){vec2 dl=(a-e0.xy)/e0.zw,dr=(a-e1.xy)/e1.zw;float sd=smoothstep(e0.x+e0.z*.35,e1.x-e1.z*.35,a.x);vec2 o=mix(o0,o1,sd);float top=smoothstep(-1.8,.2,mix(dl.y,dr.y,sd));float sf=(1.-smoothstep(1.,1.55,-dl.x))*(1.-smoothstep(1.,1.55,dr.x));return o*top*sf;}" +
     "vec2 rot(vec2 p,vec2 c,float g){vec2 d=(p-c)*vec2(1.,asp);float s=sin(g),k=cos(g);d=vec2(d.x*k-d.y*s,d.x*s+d.y*k);return c+d/vec2(1.,asp);}" +
     "void main(){v=a;vec2 p=a;" +
     "if(m==1){p+=ch();}" +
