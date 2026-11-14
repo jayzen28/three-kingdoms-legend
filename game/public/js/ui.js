@@ -35,7 +35,7 @@
 
   // ===== 共用零件 =====
   UI.head = function (name, fac, art) {
-    return '<span class="hd' + (art ? ' pic' : '') + ' f-' + (FV[fac] || "yt") + '">' + (art ? '<img src="img/' + art + '_head.webp" alt="">' : name[0]) + '</span>';
+    return '<span class="hd' + (art ? ' pic' : '') + ' f-' + (FV[fac] || "yt") + (art ? ' v' + SG.bgv(art) : '') + '">' + (art ? '<img src="img/' + art + '_head.webp" alt="">' : name[0]) + '</span>';
   };
   // 每頁頂端的山水橫幅
   UI.strip = function (id, title, sub) {
@@ -45,7 +45,7 @@
   UI.cardHtml = function (card, b, opt) {
     opt = opt || {};
     var rar = b ? b.rar : (card.ur ? "UR" : card.vers[0]);
-    return '<div class="cc ' + rar + (b ? "" : " none") + (card.art ? " art" : "") + ' f-' + FV[card.fac] + '" ' + (opt.attr || "") + '>' +
+    return '<div class="cc ' + rar + (b ? "" : " none") + (card.art ? " art v" + SG.bgv(card.art) : "") + ' f-' + FV[card.fac] + '" ' + (opt.attr || "") + '>' +
       (card.art ? '<img class="pic" src="img/' + card.art + '_card.webp" alt="">' : '') +
       '<span class="nm n' + Math.min(4, card.gen.length) + '">' + card.gen + '</span>' +
       (card.ver && (card.ur || card.male) && card.ver !== "一般" ? '<span class="ver">' + card.ver + '</span>' : '') +
@@ -72,7 +72,7 @@
     var bonus = { "武": "武力", "智": "智力", "魅": "魅力" }[card.bk] + " +" + card.bv;
     var inTeam = S.team.indexOf(card.id) >= 0, can = SG.canMerge(S, card.id);
     var art = card.art
-      ? '<div class="bigart ' + show.rar + (b ? '' : ' none') + (card.artBg ? '' : ' f-' + FV[card.fac]) + '"' + (card.artBg ? ' style="background-image:url(img/' + card.art + '_full.webp)"' : '') + '>' +
+      ? '<div class="bigart ' + show.rar + (b ? '' : ' none') + (card.artBg ? '' : ' f-' + FV[card.fac] + ' v' + SG.bgv(card.art)) + '"' + (card.artBg ? ' style="background-image:url(img/' + card.art + '_full.webp)"' : '') + '>' +
         (card.artBg ? '' : '<img src="img/' + card.art + '_full.webp" alt="' + card.name + '">') +
         '<span class="nm">' + card.gen + '</span>' + (card.ver && (card.ur || card.male) && card.ver !== "一般" ? '<span class="ver">' + card.ver + '</span>' : '') +
         '<span class="rk">' + show.rar + '<i>' + "★".repeat(show.star) + '</i></span></div>'
@@ -121,7 +121,7 @@
       return new Promise(function (res) {
         var sp = document.createElement("div"); sp.className = "rv-spot " + cls;
         sp.innerHTML = '<div class="rays"></div><div class="lab">' + x.rar + '</div>' +
-          (x.card.art ? '<div class="pic' + (x.card.artBg ? '' : ' f-' + FV[x.card.fac]) + '"><img src="img/' + x.card.art + '_full.webp" alt=""></div>' : '<div class="pic txt">' + x.card.gen + '</div>') +
+          (x.card.art ? '<div class="pic' + (x.card.artBg ? '' : ' f-' + FV[x.card.fac] + ' v' + SG.bgv(x.card.art)) + '"><img src="img/' + x.card.art + '_full.webp" alt=""></div>' : '<div class="pic txt">' + x.card.gen + '</div>') +
           '<div class="who">' + x.card.name + '</div><div class="tip">點一下繼續</div>';
         el.appendChild(sp);
         var t = setTimeout(end, ms); function end() { clearTimeout(t); sp.remove(); res(); }
@@ -265,7 +265,7 @@
     var h = '<div class="stage">', stat = '';
     if (lead) {
       var b = SG.best(S, lead.id) || { rar: lead.vers[0], star: lead.ur ? 6 : 1 }, u = SG.unitStats(lead, b.rar, b.star);
-      h += (lead.artBg ? '<div class="bg" style="background-image:url(img/' + lead.art + '_full.webp)"></div>' : '<div class="bg f-' + FV[lead.fac] + '"></div><div class="mist a"></div>') +
+      h += (lead.artBg ? '<div class="bg" style="background-image:url(img/' + lead.art + '_full.webp)"></div>' : '<div class="bg f-' + FV[lead.fac] + ' v' + SG.bgv(lead.art) + '"></div><div class="mist a"></div>') +
         (lead.artBg ? '' : lead.art ? '<img class="fig" src="img/' + lead.art + '_full.webp" alt="' + lead.name + '">' : '<div class="brush">' + lead.gen + '</div>') +
         '<canvas id="hero-petal" class="petal"></canvas><div class="shade"></div>' +
         '<div class="plaque"><span class="nm">' + lead.gen + '</span><span class="rk r-' + b.rar + '">' + b.rar + '</span><span class="st">' + "★".repeat(b.star) + '</span></div>' +

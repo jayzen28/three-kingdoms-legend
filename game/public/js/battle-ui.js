@@ -42,8 +42,9 @@
     $("#b-tip").textContent = st.id + "　" + st.name + "：" + st.tip;
     $("#blog").innerHTML = "";
     SG.UI.go("battle");
-    $("#b-wrap").classList.toggle("flip", SG.STAGES.indexOf(st) % 2 === 1);
+
     var bw = $("#b-wrap"); bw.classList.toggle("shaped", !!st.shape);
+    bw.className = bw.className.replace(/\bfd\d+/g, "").trim(); bw.classList.add("fd" + (SG.STAGES.indexOf(st) + 1));
     if (st.shape) {
       var rects = ""; st.shape.forEach(function (row, r) { for (var c = 0; c < row.length; c++) if (row.charAt(c) !== ".") rects += "<rect x='" + c + "' y='" + r + "' width='1.03' height='1.03'/>"; });
       bw.style.setProperty("--mask", 'url("data:image/svg+xml;utf8,' + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 10' preserveAspectRatio='none'>" + rects + "</svg>") + '")');
@@ -108,7 +109,7 @@
     var done = u.side === "P" && G.turnSide === "P" && G.unitDone(u);
     return '<div class="u ' + u.side + (u.uid === sel ? " sel" : "") + (done ? " done" : "") + (u.stealth ? " hid" : "") + '" data-uid="' + u.uid + '">' +
       '<div class="men">' + Array(men + 1).join(g) + '</div>' +
-      '<span class="head' + (u.art ? ' f-' + SG.FAC_KEY[SG.GEN[u.name] ? SG.GEN[u.name].fac : "黃巾"] : '') + '">' + (u.art ? '<img src="img/' + u.art + '_head.webp" alt="">' : u.name[0]) + '</span><span class="ty">' + u.typ + '</span>' +
+      '<span class="head' + (u.art ? ' f-' + SG.FAC_KEY[SG.GEN[u.name] ? SG.GEN[u.name].fac : "黃巾"] + ' v' + SG.bgv(u.art) : '') + '">' + (u.art ? '<img src="img/' + u.art + '_head.webp" alt="">' : u.name[0]) + '</span><span class="ty">' + u.typ + '</span>' +
       (fx ? '<span class="fx">' + fx + '</span>' : '') +
       '<i class="fa" style="transform:rotate(' + (u.fr === -1 ? 0 : u.fc === 1 ? 90 : u.fr === 1 ? 180 : 270) + 'deg)"></i>' +
       '<div class="hp"><i style="width:' + Math.max(0, u.hp / u.maxhp * 100) + '%"></i></div></div>';

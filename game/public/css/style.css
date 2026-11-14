@@ -539,3 +539,7 @@ button.chip.on{background:linear-gradient(#c8372c,#8b1c16);color:#fff1d2;border-
 #b-wrap.shaped::before,#b-wrap.shaped::after{-webkit-mask-image:var(--mask);mask-image:var(--mask);-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .cell.void{box-shadow:none;background:none;pointer-events:none}
 .cell .eg{position:absolute;inset:-1px;border:0 solid var(--lacquer);pointer-events:none;z-index:2;filter:drop-shadow(0 0 1px var(--gold))}
+
+/* ── 陣營背景 8 張（v0 是原本那張）。目前魏、蜀有 8 張；吳、群雄、黃巾的 7 張新圖還沒生，先都用原本那張 ── */
+.f-wei.v1{background-image:url(../img/bg_wei_1.webp)!important}.f-wei.v2{background-image:url(../img/bg_wei_2.webp)!important}.f-wei.v3{background-image:url(../img/bg_wei_3.webp)!important}.f-wei.v4{background-image:url(../img/bg_wei_4.webp)!important}.f-wei.v5{background-image:url(../img/bg_wei_5.webp)!important}.f-wei.v6{background-image:url(../img/bg_wei_6.webp)!important}.f-wei.v7{background-image:url(../img/bg_wei_7.webp)!important}
+.f-shu.v1{background-image:url(../img/bg_shu_1.webp)!important}.f-shu.v2{background-image:url(../img/bg_shu_2.webp)!important}.f-shu.v3{background-image:url(../img/bg_shu_3.webp)!important}.f-shu.v4{background-image:url(../img/bg_shu_4.webp)!important}.f-shu.v5{background-image:url(../img/bg_shu_5.webp)!important}.f-shu.v6{background-image:url(../img/bg_shu_6.webp)!important}.f-shu.v7{background-image:url(../img/bg_shu_7.webp)!important}
