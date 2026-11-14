@@ -1,0 +1,26 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>孫權 UR 分層立繪試作</title>
+<style>
+html,body{margin:0;height:100%;background:#07060a;color:#f0e8d8;font-family:"Noto Serif TC",serif;overflow:hidden}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+#stage{flex:1;min-height:0;position:relative;background:url(../img/bg_wu_5.webp) center/cover}
+#stage::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,transparent 40%,rgba(7,6,10,.7));pointer-events:none}
+#stage canvas{position:absolute!important;left:50%;top:0;transform:translateX(-50%);margin:0!important;z-index:1;-webkit-mask-image:linear-gradient(#000 90%,transparent);mask-image:linear-gradient(#000 90%,transparent)}
+#bar{padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:#120f14;border-top:1px solid #d4a853;font-size:13px;line-height:1.5}
+#bar b{color:#d4a853}#bar .row{display:flex;gap:8px;align-items:center;margin-top:6px}
+button{background:#e05858;color:#fff;border:1px solid #d4a853;border-radius:6px;padding:6px 12px;font:inherit}
+input[type=range]{flex:1}
+</style></head><body><div id="wrap"><div id="stage"></div>
+<div id="bar"><b>孫權 UR｜分層立繪試作</b>　胸部、前髮、耳環、眼睛各一層，分開動。<br>可以按住胸部拖、點身體、左右滑。
+<div class="row">幅度<input id="amp" type="range" min="0.3" max="2" step="0.1" value="1"><span id="av">1.0</span><button id="poke">晃一下</button></div></div></div>
+<script src="../js/layered.js"></script>
+<script>
+(function(){var base=document.createElement("base");})();
+</script>
+<script>
+// 圖片路徑以 tool/ 為基準
+(function(){var I=window.Image;window.Image=function(){var i=new I();var d=Object.getOwnPropertyDescriptor(HTMLImageElement.prototype,"src");Object.defineProperty(i,"src",{set:function(v){d.set.call(i,v.indexOf("img/")===0?"../"+v:v)},get:function(){return d.get.call(i)}});return i};})();
+var L=SG.Layered.mount(document.getElementById("stage"),"sunquan_ur");
+document.getElementById("poke").onclick=function(){L&&L.poke()};
+document.getElementById("amp").oninput=function(){L.params.amp=+this.value;document.getElementById("av").textContent=(+this.value).toFixed(1)};
+</script></body></html>
