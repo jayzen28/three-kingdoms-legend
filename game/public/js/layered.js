@@ -66,15 +66,22 @@
     function path(c) { c.beginPath(); polys.forEach(function (p) { p.forEach(function (q, i) { c[i ? "lineTo" : "moveTo"](q[0] * R.w, q[1] * R.h); }); c.closePath(); }); }
     function compose() {
       function cvs() { var c = document.createElement("canvas"); c.width = R.w; c.height = R.h; return c; }
-      var b = cvs(), bc = b.getContext("2d"), c = cvs(), cc = c.getContext("2d"); bc.drawImage(imgs.body, 0, 0);   // 底圖：完成圖，胸部範圍內換成平胸版
-      if (ART) {
-        var u = cvs(), uc = u.getContext("2d"); uc.drawImage(imgs.under, 0, 0); uc.globalCompositeOperation = "destination-in"; uc.drawImage(imgs.chest, 0, 0);
-        bc.globalCompositeOperation = "destination-out"; bc.drawImage(imgs.chest, 0, 0); bc.globalCompositeOperation = "source-over"; bc.drawImage(u, 0, 0);
-        cc.drawImage(imgs.chest, 0, 0);                                                                              // 胸部層：美術給的那張
-      } else {
-        bc.save(); path(bc); bc.clip(); bc.clearRect(0, 0, R.w, R.h); bc.drawImage(imgs.under, 0, 0); bc.restore();
-        cc.save(); path(cc); cc.clip(); cc.drawImage(imgs.body, 0, 0); cc.restore();                                 // 胸部層：完成圖只留輪廓內
+      // 遮罩 m：胸部層的範圍（美術切的那張的透明度，或 Jay 圈的輪廓）
+      var m = cvs(), mc = m.getContext("2d");
+      if (ART) mc.drawImage(imgs.chest, 0, 0); else { mc.fillStyle = "#000"; path(mc); mc.fill(); }
+      // 淡化（✅ Jay 2026-11-14）：底圖換成平胸版的邊界不要一刀切，往外暈開約 FE px，胸部被推開時就不會露出一條硬邊
+      function blur(src, r, times) {
+        var f = Math.max(2, Math.round(r / 2)), sm = document.createElement("canvas"); sm.width = Math.ceil(R.w / f); sm.height = Math.ceil(R.h / f);
+        var sc = sm.getContext("2d"); sc.imageSmoothingEnabled = true; sc.drawImage(src, 0, 0, sm.width, sm.height);
+        var o = cvs(), oc = o.getContext("2d"); oc.imageSmoothingEnabled = true; for (var i = 0; i < (times || 1); i++) oc.drawImage(sm, 0, 0, R.w, R.h); return o;
       }
+      var FE = opt.feather == null ? 6 : opt.feather, soft = FE > 0 ? blur(m, FE, 4) : m;   // 疊 4 次：遮罩內維持全蓋，只有外圍漸淡
+      var u = cvs(), uc = u.getContext("2d"); uc.drawImage(imgs.under, 0, 0); uc.globalCompositeOperation = "destination-in"; uc.drawImage(soft, 0, 0);
+      var b = cvs(), bc = b.getContext("2d"); bc.drawImage(imgs.body, 0, 0);
+      bc.globalCompositeOperation = "destination-out"; bc.drawImage(m, 0, 0); bc.globalCompositeOperation = "source-over"; bc.drawImage(u, 0, 0);
+      // 胸部層：邊緣收一點柔邊
+      var c = cvs(), cc = c.getContext("2d"); cc.drawImage(imgs.body, 0, 0); if (ART) { cc.clearRect(0, 0, R.w, R.h); cc.drawImage(imgs.chest, 0, 0); }
+      else { cc.globalCompositeOperation = "destination-in"; cc.drawImage(m, 0, 0); }
       tex = { base: mkTex(b), chest: mkTex(c), acc: mkTex(imgs.acc), blink: mkTex(imgs.blink) }; if (imgs.hair) tex.hair = mkTex(imgs.hair);
     }
     names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + id + "_" + n + ".webp"; });
