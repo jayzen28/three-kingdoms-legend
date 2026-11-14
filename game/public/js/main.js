@@ -4,6 +4,7 @@
   SG._state = S;
   SG.migrate(S);
   var tut = SG.giveTutorial(S);
+  SG.giftOnce(S);
   SG.Store.save(S);
   SG.UI.init(S);
   SG.UI.res();

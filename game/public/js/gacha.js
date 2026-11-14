@@ -158,6 +158,11 @@
     });
     S.copper += back; return back;
   };
+  // ★ 測試期：每個存檔送一張孫權·碧眼 UR，讓大家看得到分層立繪（開發加的，Jay 可拿掉）
+  SG.giftOnce = function (S) {
+    if (S.giftSQ) return false; var c = SG.CARDS.filter(function (x) { return x.art === "sunquan_ur"; })[0]; if (!c) return false;
+    addCard(S, c, "UR"); S.giftSQ = 1; return true;
+  };
   // 教學卡：五種兵種各一張 N 卡，直接編成隊伍
   SG.giveTutorial = function (S) {
     if (S.tut || S.starter) return false;

@@ -35,6 +35,7 @@
   }
   function attach(img, id) {
     if (still || img._jg) return; img._jg = true;
+    if (SG.Layered && SG.Layered.RIG[id]) { var go2 = function () { if (img.isConnected) SG.Layered.mount(null, id, { replace: img }); }; if (img.complete) go2(); else img.addEventListener("load", go2, { once: true }); return; }   // 有分層立繪的角色走分層引擎
     var own = SG.JIGGLE[id], au = SG.JIGGLE_AUTO[id], cfg = own || (au ? (typeof au[0] === "number" ? [au, NONE[1]] : au) : NONE), CFG = own ? CFG_OWN : CFG_ALL;   // 沒有專屬範圍的武將用通用的含蓄呼吸
     var go = function () {
       if (!img.isConnected) return;

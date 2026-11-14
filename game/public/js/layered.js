@@ -46,7 +46,8 @@
     var E = polys.map(bbox).sort(function (a, b) { return a[0] - b[0]; }); if (E.length < 2) E.push(E[0]);
     if (ART) E = R.art;
     var cv = document.createElement("canvas"); cv.className = "fig layered"; cv.width = R.w; cv.height = R.h;
-    cv.style.cssText = "height:100%;width:auto;display:block;margin:0 auto;touch-action:none"; box.appendChild(cv);
+    if (opt.replace) { var im0 = opt.replace; cv.className = im0.className + " jg layered"; cv.style.cssText = im0.style.cssText; cv.setAttribute("role", "img"); cv.setAttribute("aria-label", im0.alt || ""); im0.replaceWith(cv); }   // 遊戲裡：直接取代原本的 <img>
+    else { cv.style.cssText = "height:100%;width:auto;display:block;margin:0 auto;touch-action:none"; box.appendChild(cv); }
     var gl = cv.getContext("webgl", { premultipliedAlpha: true, alpha: true }); if (!gl) return null;
     function sh(t, src) { var x = gl.createShader(t); gl.shaderSource(x, src); gl.compileShader(x); return x; }
     var pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr); gl.useProgram(pr);
@@ -86,7 +87,7 @@
     }
     names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + id + "_" + n + ".webp"; });
 
-    var P = { K: 42, C: 3.4, BREATH: 0.0035, BT: 3.8, LIFT: 0.010, MAX: 0.032, amp: opt.amp == null ? 1 : opt.amp };
+    var P = { K: 42, C: 3.4, BREATH: 0.0035, BT: 3.8, LIFT: 0.010, MAX: 0.032, amp: opt.amp == null ? 0.7 : opt.amp };   // ✅ Jay 2026-11-14：幅度 0.7
     var c = [{ x: 0, y: 0, vx: 0, vy: 0 }, { x: 0, y: 0, vx: 0, vy: 0 }], ear = [{ a: 0, v: 0 }, { a: 0, v: 0 }], hair = { x: 0, v: 0 };
     var grab = -1, gx = 0, gy = 0, lastX = 0, lastT = 0, blink = 0, nextBlink = 2 + Math.random() * 3, t0 = performance.now(), prev = t0, run = true;
     function uv(e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; }
