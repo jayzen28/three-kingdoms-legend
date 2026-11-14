@@ -257,9 +257,10 @@
   UI.mergeCount = function () { return SG.CARDS.filter(function (c) { return SG.canMerge(S, c.id); }).length; };
 
   // ===== 主城 =====
-  function figStyle(art) {     // 臉對到中間（最多偏移到 30%～70%）；臉佔畫面太大的特寫立繪縮小，最多縮到 0.72
-    var f = SG.FACE[art] || [0.5, 0.44], fx = Math.max(0.3, Math.min(0.7, f[0])), fs = Math.max(0.68, Math.min(1.08, 0.44 / f[1]));
-    return "--fx:" + fx + ";--fs:" + fs.toFixed(2);
+  function figStyle(art) {     // 主城取景：臉對到中間（偏移限 30%～70%）；一定要露到胸口下緣，胸口位置低或臉很大的特寫立繪就整張縮小
+    var f = SG.FACE[art] || [0.5, 0.44], c = SG.CHEST[art], fx = Math.max(0.3, Math.min(0.7, c ? (f[0] + c[0]) / 2 : f[0]));
+    var fr = c ? Math.max(0.72, Math.min(1, c[1] + c[3] + 0.06)) : Math.min(1, 0.72 / Math.max(0.68, Math.min(1.08, 0.44 / f[1])));
+    return "--fx:" + fx.toFixed(2) + ";--fr:" + fr.toFixed(2);
   }
   UI.r_home = function () {
     var tc = S.team.map(function (id) { return SG.CARD_BY_ID[id]; });

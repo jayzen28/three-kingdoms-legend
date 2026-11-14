@@ -545,6 +545,6 @@ button.chip.on{background:linear-gradient(#c8372c,#8b1c16);color:#fff1d2;border-
 .f-shu.v1{background-image:url(../img/bg_shu_1.webp)!important}.f-shu.v2{background-image:url(../img/bg_shu_2.webp)!important}.f-shu.v3{background-image:url(../img/bg_shu_3.webp)!important}.f-shu.v4{background-image:url(../img/bg_shu_4.webp)!important}.f-shu.v5{background-image:url(../img/bg_shu_5.webp)!important}.f-shu.v6{background-image:url(../img/bg_shu_6.webp)!important}.f-shu.v7{background-image:url(../img/bg_shu_7.webp)!important}
 
 /* 主城人物：以「看得到臉到胸腰」為準縮放，不再因為畫面寬就放大到只剩臉；左右兩側淡出，不露出立繪邊緣 */
-#s-home .stage .fig,#s-home .stage canvas.fig{left:50%;top:0;right:auto;bottom:auto;width:auto;height:calc((100% - 290px) / .72 * var(--fs,1));max-width:none;object-fit:fill;transform:translateX(calc(var(--fx,.5) * -100%));animation:none;
-  -webkit-mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(#000 74%,transparent 94%);-webkit-mask-composite:source-in;
-  mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(#000 74%,transparent 94%);mask-composite:intersect}
+#s-home .stage .fig,#s-home .stage canvas.fig{left:50%;top:0;right:auto;bottom:auto;width:auto;height:calc((100% - 290px) / var(--fr,.72));max-width:none;object-fit:fill;transform:translateX(calc(var(--fx,.5) * -100%));animation:none;
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(#000 88%,transparent 100%);-webkit-mask-composite:source-in;
+  mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(#000 88%,transparent 100%);mask-composite:intersect}
