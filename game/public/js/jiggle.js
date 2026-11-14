@@ -52,9 +52,9 @@
     gl.useProgram(pr); [["p", 0], ["w", 8], ["sq", 16]].forEach(function (t) { var loc = gl.getAttribLocation(pr, t[0]); if (loc < 0) return; gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 24, t[1]); });
     return { pr: pr, n: idx.length };
   }
-  function attach(img, id) {
+  function attach(img, id, o) {
     if (still || img._jg) return; img._jg = true;
-    if (SG.Layered && SG.Layered.RIG[id]) { var go2 = function () { if (img.isConnected) SG.Layered.mount(null, id, { replace: img }); }; if (img.complete) go2(); else img.addEventListener("load", go2, { once: true }); return; }   // 有分層立繪的角色走分層引擎
+    if (!(o && o.noLayer) && SG.Layered && SG.Layered.RIG[id] && SG.Layered.RIG[id].game !== false) { var go2 = function () { if (img.isConnected) SG.Layered.mount(null, id, { replace: img }); }; if (img.complete) go2(); else img.addEventListener("load", go2, { once: true }); return; }   // 有分層立繪的角色走分層引擎
     var own = SG.JIGGLE[id], au = SG.JIGGLE_AUTO[id], cfg = own || (au ? (au.L || au.R ? [au.L && au.L.length > 2 ? au.L : null, au.R && au.R.length > 2 ? au.R : null] : typeof au[0] === "number" ? [au, null] : au) : [null, null]), CFG = own ? CFG_OWN : CFG_ALL;   // 沒有專屬範圍的武將用通用的含蓄呼吸
     var go = function () {
       if (!img.isConnected) return;

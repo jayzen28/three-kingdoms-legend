@@ -13,6 +13,11 @@
         R: [[0.595,0.437],[0.493,0.464],[0.47,0.508],[0.46,0.573],[0.499,0.623],[0.601,0.653],[0.672,0.637],[0.717,0.611],[0.741,0.549],[0.693,0.466]],
       },
     },
+    // 第二批（2026-11-14）：只有胸部層＋平胸版＋閉眼，沒有頭髮和飾品層。檔名前綴 <id>_L_。
+    // game:false = 還在跟「圈範圍變形」比較，遊戲裡先不換（等 Jay 決定）
+    zhangliao: { w: 832, h: 1216, pre: "zhangliao_L_", game: false, art: [[0.4369, 0.447, 0.1653, 0.0975], [0.75, 0.447, 0.1478, 0.0975]] },
+    zhanghe: { w: 832, h: 1216, pre: "zhanghe_L_", game: false, art: [[0.3672, 0.4992, 0.1629, 0.1332], [0.6935, 0.4992, 0.1635, 0.1332]] },
+    dianwei: { w: 832, h: 1216, pre: "dianwei_L_", game: false, art: [[0.2945, 0.5991, 0.095, 0.1081], [0.5162, 0.5991, 0.1268, 0.1081]] },
   };
   // 封閉的平滑曲線（Catmull-Rom），回傳細分後的點
   function smooth(pts, n) {
@@ -47,9 +52,9 @@
   function mount(box, id, opt) {
     var R = RIG[id]; if (!R) return null; opt = opt || {};
     var base = opt.base || "img/", OL = opt.outline || R.outline, ART = !opt.outline && !!R.art && opt.mode !== "outline";   // 預設用美術圖層；給了 outline 或 mode:"outline" 才用圈的
-    var polys = [OL.L, OL.R].filter(function (p) { return p && p.length >= 3; }).map(function (p) { return smooth(p, 10); });
-    if (!polys.length) polys = [smooth(R.outline.L, 10), smooth(R.outline.R, 10)];
-    var E = polys.map(bbox).sort(function (a, b) { return a[0] - b[0]; }); if (E.length < 2) E.push(E[0]);
+    var polys = OL ? [OL.L, OL.R].filter(function (p) { return p && p.length >= 3; }).map(function (p) { return smooth(p, 10); }) : [];
+    if (!polys.length && R.outline) polys = [smooth(R.outline.L, 10), smooth(R.outline.R, 10)];
+    var E = polys.map(bbox).sort(function (a, b) { return a[0] - b[0]; }); if (E.length === 1) E.push(E[0]); if (!E.length) E = R.art;
     if (ART) E = R.art;
     var cv = document.createElement("canvas"); cv.className = "fig layered"; cv.width = R.w; cv.height = R.h;
     if (opt.replace) { var im0 = opt.replace; cv.className = im0.className + " jg layered"; cv.style.cssText = im0.style.cssText; cv.setAttribute("role", "img"); cv.setAttribute("aria-label", im0.alt || ""); im0.replaceWith(cv); }   // 遊戲裡：直接取代原本的 <img>
@@ -69,7 +74,7 @@
       var t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); return t;
     }
-    var tex = null, imgs = {}, names = ["body", "under", "acc", "blink"].concat(ART ? ["chest"] : []).concat(R.hair ? ["hair"] : []), left = names.length;
+    var tex = null, imgs = {}, names = ["body", "under", "blink"].concat(ART ? ["chest"] : []).concat(R.acc ? ["acc"] : []).concat(R.hair ? ["hair"] : []), left = names.length;
     function path(c) { c.beginPath(); polys.forEach(function (p) { p.forEach(function (q, i) { c[i ? "lineTo" : "moveTo"](q[0] * R.w, q[1] * R.h); }); c.closePath(); }); }
     function compose() {
       function cvs() { var c = document.createElement("canvas"); c.width = R.w; c.height = R.h; return c; }
@@ -89,9 +94,9 @@
       // 胸部層：邊緣收一點柔邊
       var c = cvs(), cc = c.getContext("2d"); cc.drawImage(imgs.body, 0, 0); if (ART) { cc.clearRect(0, 0, R.w, R.h); cc.drawImage(imgs.chest, 0, 0); }
       else { cc.globalCompositeOperation = "destination-in"; cc.drawImage(m, 0, 0); }
-      tex = { base: mkTex(b), chest: mkTex(c), acc: mkTex(imgs.acc), blink: mkTex(imgs.blink) }; if (imgs.hair) tex.hair = mkTex(imgs.hair);
+      tex = { base: mkTex(b), chest: mkTex(c), blink: mkTex(imgs.blink) }; if (imgs.acc) tex.acc = mkTex(imgs.acc); if (imgs.hair) tex.hair = mkTex(imgs.hair);
     }
-    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + id + "_" + n + ".webp"; });
+    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + (R.pre || id + "_") + n + ".webp"; });
 
     var P = { K: 38, C: 3.0, BREATH: 0.0035, BT: 3.8, LIFT: 0.016, MAX: 0.042, RIM: 0.28, amp: opt.amp == null ? 1 : opt.amp };   // MAX 是胸部中心的最大位移；邊緣只動 RIM 倍（約 0.28）
     var c = [{ x: 0, y: 0, vx: 0, vy: 0 }, { x: 0, y: 0, vx: 0, vy: 0 }], ear = [{ a: 0, v: 0 }, { a: 0, v: 0 }], hair = { x: 0, v: 0 };
@@ -126,12 +131,12 @@
       nextBlink -= dt; if (nextBlink < 0) { blink = 0.16; nextBlink = 2.5 + Math.random() * 4; } var bl = 0; if (blink > 0) { blink -= dt; bl = Math.min(1, Math.sin(Math.max(0, blink) / 0.16 * Math.PI) * 1.6); }
       gl.viewport(0, 0, cv.width, cv.height); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(U.br, br); gl.uniform1f(U.asp, R.h / R.w); gl.uniform1f(U.hs, R.hair || 0.24); gl.uniform1f(U.t, t); gl.uniform1f(U.rim, P.RIM);
-      gl.uniform4fv(U.e0, E[0]); gl.uniform4fv(U.e1, E[1]); gl.uniform2fv(U.p0, R.acc[0]); gl.uniform2fv(U.p1, R.acc[1]);
+      gl.uniform4fv(U.e0, E[0]); gl.uniform4fv(U.e1, E[1]); if (R.acc) { gl.uniform2fv(U.p0, R.acc[0]); gl.uniform2fv(U.p1, R.acc[1]); }
       gl.uniform2f(U.o0, c[0].x, c[0].y); gl.uniform2f(U.o1, c[1].x, c[1].y); gl.uniform2f(U.ang, ear[0].a, ear[1].a);
       function draw(n, m, al) { gl.bindTexture(gl.TEXTURE_2D, tex[n]); gl.uniform1i(U.m, m); gl.uniform1f(U.al, al); gl.drawElements(gl.TRIANGLES, ix.length, gl.UNSIGNED_SHORT, 0); }
       draw("base", 0, 1); if (bl > 0.02) draw("blink", 0, bl); draw("chest", 1, 1);
       if (tex.hair) { gl.uniform2f(U.o0, hair.x, 0.003 * Math.sin(t * 0.8)); draw("hair", 2, 1); }
-      draw("acc", 3, 1);
+      if (tex.acc) draw("acc", 3, 1);
     }
     requestAnimationFrame(frame);
     return { canvas: cv, params: P, stop: function () { run = false; }, poke: function () { c[0].vy -= 0.3; c[1].vy -= 0.26; hair.v += 0.07; ear[0].v += 3; ear[1].v -= 3; }, kick: function (h) { hair.x = h; hair.v = 0; } };
