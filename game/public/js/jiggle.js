@@ -7,7 +7,11 @@
   // ★ 手感參數（Jay 2026-11-13：要明顯、要像軟的在晃，不是肌肉在抖）
   //   K 越小晃得越慢越沉；C 越小餘波越久；UPK 往上回彈時變硬的倍數（下墜大、回彈小，才有重量感）
   var CFG = { K: 46, C: 3.0, UPK: 1.3, MAX: 0.045, BREATH: 0.014, BREATH_T: 3.6, LIFT: 0.015, SPREAD: 0.003, SWAY: 0.006, G: 2, TAP_V: 0.36, GRAB: 0.55, AUTO: 1e9, HOP: 0, HOP_T: 0.7 };
-  SG.JIGGLE_CFG = CFG;
+  SG.JIGGLE_CFG = CFG; var CFG_OWN = CFG;
+  // 通用：所有武將都有的含蓄呼吸起伏（✅ Jay 2026-11-14）。不用逐張標範圍：整個上半身一條寬帶輕輕起伏，幅度很小所以不會拉歪
+  var GENERIC = [[0.5, 0.5, 0.62, 0.2], [0.5, 0.5, 0.001, 0.001]];
+  var CFG_ALL = { K: 46, C: 3.2, UPK: 1.2, MAX: 0.015, BREATH: 0.011, BREATH_T: 3.8, LIFT: 0.006, SPREAD: 0, SWAY: 0.003, G: 1, TAP_V: 0.1, GRAB: 0.15, AUTO: 1e9, HOP: 0, HOP_T: 0.7 };
+  SG.JIGGLE_ALL = CFG_ALL;
   var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   // 頂點位移：整張圖以底部為支點做身體起伏（s）；胸部區域上緣固定、越往下動越多，並依上下位移做擠壓／拉長
   var VS = "attribute vec2 p;uniform vec4 b0;uniform vec4 b1;uniform vec2 o0;uniform vec2 o1;uniform float s;uniform float sx;varying vec2 uv;" +
@@ -28,7 +32,8 @@
     return { pr: pr, n: idx.length };
   }
   function attach(img, id) {
-    var cfg = SG.JIGGLE[id]; if (!cfg || still || img._jg) return; img._jg = true;
+    if (still || img._jg) return; img._jg = true;
+    var own = SG.JIGGLE[id], cfg = own || GENERIC, CFG = own ? CFG_OWN : CFG_ALL;   // 沒有專屬範圍的武將用通用的含蓄呼吸
     var go = function () {
       if (!img.isConnected) return;
       var cv = document.createElement("canvas"); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
@@ -98,7 +103,7 @@
     if (!root.querySelectorAll) return;
     var list = root.matches && root.matches("img") ? [root] : root.querySelectorAll("img");
     Array.prototype.forEach.call(list, function (im) {
-      var mt = /img\/([a-z0-9_]+)_full\.webp/.exec(im.getAttribute("src") || ""); if (mt && SG.JIGGLE[mt[1]]) attach(im, mt[1]);
+      var mt = /img\/([a-z0-9_]+)_full\.webp/.exec(im.getAttribute("src") || ""); if (mt) attach(im, mt[1]);
     });
   }
   SG.Jiggle = { attach: attach, scan: scan };
