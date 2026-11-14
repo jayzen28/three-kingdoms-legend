@@ -62,7 +62,7 @@
   };
   UI.tags = function (card) {
     return '<span class="tag fill f-' + FV[card.fac] + '">' + card.fac + '</span><span class="tag">' + SG.TYPES[card.typ].name + '</span>' +
-      (card.elem ? '<span class="tag">' + card.elem + '</span>' : '') + (card.strong ? '<span class="tag red">' + (card.ur ? 'UR' : '強將') + '</span>' : '') + (card.male ? '<span class="tag">男</span>' : '');
+      (card.elem ? '<span class="tag">' + card.elem + '</span>' : '') + (card.strong ? '<span class="tag red">' + (card.ur ? 'UR' : '強將') + '</span>' : '');
   };
   UI.cardDetail = function (card) {
     var b = SG.best(S, card.id), inv = S.inv[card.id] || {};
@@ -257,6 +257,10 @@
   UI.mergeCount = function () { return SG.CARDS.filter(function (c) { return SG.canMerge(S, c.id); }).length; };
 
   // ===== 主城 =====
+  function figStyle(art) {     // 臉對到中間（最多偏移到 30%～70%）；臉佔畫面太大的特寫立繪縮小，最多縮到 0.72
+    var f = SG.FACE[art] || [0.5, 0.44], fx = Math.max(0.3, Math.min(0.7, f[0])), fs = Math.max(0.68, Math.min(1.08, 0.44 / f[1]));
+    return "--fx:" + fx + ";--fs:" + fs.toFixed(2);
+  }
   UI.r_home = function () {
     var tc = S.team.map(function (id) { return SG.CARD_BY_ID[id]; });
     var lead = SG.GEN[SG.HOME_LEAD] || tc.find(function (c) { return c.art; }) || tc[0] || null;   // ★ 目前主城固定站預設武將
@@ -266,7 +270,7 @@
     if (lead) {
       var b = SG.best(S, lead.id) || { rar: lead.vers[0], star: lead.ur ? 6 : 1 }, u = SG.unitStats(lead, b.rar, b.star);
       h += (lead.artBg ? '<div class="bg" style="background-image:url(img/' + lead.art + '_full.webp)"></div>' : '<div class="bg f-' + FV[lead.fac] + ' v' + SG.bgv(lead.art) + '"></div><div class="mist a"></div>') +
-        (lead.artBg ? '' : lead.art ? '<img class="fig" src="img/' + lead.art + '_full.webp" alt="' + lead.name + '">' : '<div class="brush">' + lead.gen + '</div>') +
+        (lead.artBg ? '' : lead.art ? '<img class="fig" style="' + figStyle(lead.art) + '" src="img/' + lead.art + '_full.webp" alt="' + lead.name + '">' : '<div class="brush">' + lead.gen + '</div>') +
         '<canvas id="hero-petal" class="petal"></canvas><div class="shade"></div>' +
         '<div class="plaque"><span class="nm">' + lead.gen + '</span><span class="rk r-' + b.rar + '">' + b.rar + '</span><span class="st">' + "★".repeat(b.star) + '</span></div>' +
         '<div class="seals"><span class="fs f-' + FV[lead.fac] + '">' + lead.fac[0] + '</span>' + (lead.ur && lead.ver ? '<span class="note">' + lead.ver + '</span>' : '') + '</div>' +
