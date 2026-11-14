@@ -166,6 +166,16 @@ SG.TOUCH_LINES = {
   body: ["隨時可以出陣。", "今天要打哪一關？", "別鬧了，軍務要緊。", "有我在，放心。"],
   male: ["主公有何吩咐？", "末將在。", "隨時可以出陣。", "請下令。"],
 };
+// 語音聲線（✅ Jay 2026-11-14：第一期 3 女聲 + 1 男聲共用，台灣國語）。檔名 audio/voice/<聲線>_<部位>_<編號>.mp3
+// ★ 分配規則是 Claude 提的：三圍最高是武→f1 御姐、魅→f2 元氣、智→f3 冷艷；男將一律 m1。個別要改寫進 VOICE_OVERRIDE（武將名→聲線）
+SG.VOICE_OVERRIDE = {};
+SG.voiceType = function (c) {
+  if (!c) return "f1";
+  if (c.male) return "m1";
+  if (SG.VOICE_OVERRIDE[c.gen]) return SG.VOICE_OVERRIDE[c.gen];
+  var w = c.w || 0, z = c.z || 0, m = c.m || 0;
+  return (z > w && z >= m) ? "f3" : (m > w && m > z) ? "f2" : "f1";
+};
 SG.HOME_LEAD = null;   // 主城顯示玩家自己的主將（✅ Jay 2026-11-14：不再固定祝融）
 SG.UR_ONLY = ["呂布", "袁紹", "馬雲祿"];   // 只有 UR、沒有一般版；兵種三圍沿用原本的，立繪先用現有的
 SG.UR_RAW = [

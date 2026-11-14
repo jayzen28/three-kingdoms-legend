@@ -286,7 +286,7 @@
       b.style.left = Math.max(90, Math.min(stage.clientWidth - 90, e.clientX - sr.left)) + "px";
       b.style.top = Math.max(64, e.clientY - sr.top - 70) + "px";
       stage.appendChild(b); setTimeout(function () { b.classList.add("out"); setTimeout(function () { b.remove(); }, 400); }, 1900);
-      if (SG.Audio && SG.Audio.voice) SG.Audio.voice(card.art, z, k + 1);
+      if (SG.Audio && SG.Audio.voice) SG.Audio.voice(SG.voiceType(card), z, k + 1);
     });
   }
   UI.r_home = function () {
