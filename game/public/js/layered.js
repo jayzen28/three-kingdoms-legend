@@ -27,8 +27,14 @@
     } return out;
   }
   function bbox(p) { var a = 1, b = 1, c = 0, d = 0; p.forEach(function (q) { a = Math.min(a, q[0]); b = Math.min(b, q[1]); c = Math.max(c, q[0]); d = Math.max(d, q[1]); }); return [(a + c) / 2, (b + d) / 2, Math.max(0.02, (c - a) / 2), Math.max(0.02, (d - b) / 2)]; }
-  var VS = "attribute vec2 a;varying vec2 v;uniform int m;uniform float br,hs,t;uniform vec4 e0,e1;uniform vec2 o0,o1,p0,p1;uniform vec2 ang;uniform float asp;" +
-    "vec2 ch(){vec2 dl=(a-e0.xy)/e0.zw,dr=(a-e1.xy)/e1.zw;float sd=smoothstep(e0.x+e0.z*.35,e1.x-e1.z*.35,a.x);vec2 o=mix(o0,o1,sd);float top=smoothstep(-1.05,-.15,mix(dl.y,dr.y,sd));float sf=(1.-smoothstep(1.,1.5,-dl.x))*(1.-smoothstep(1.,1.5,dr.x));return o*top*sf;}" +
+  var VS = "attribute vec2 a;varying vec2 v;uniform int m;uniform float br,hs,t,rim;uniform vec4 e0,e1;uniform vec2 o0,o1,p0,p1;uniform vec2 ang;uniform float asp;" +
+    "vec2 ch(){vec2 dl=(a-e0.xy)/e0.zw,dr=(a-e1.xy)/e1.zw;float sd=smoothstep(e0.x+e0.z*.35,e1.x-e1.z*.35,a.x);vec2 o=mix(o0,o1,sd);vec2 d=mix(dl,dr,sd);" +
+    "float top=smoothstep(-1.05,-.15,d.y);float sf=(1.-smoothstep(1.,1.5,-dl.x))*(1.-smoothstep(1.,1.5,dr.x));" +
+    // 中間動得多、邊緣動得少（✅ Jay 2026-11-14）：core 在胸部中心是 1、到輪廓降到 0；邊緣只跟 rim 那一點點
+    "float core=1.-smoothstep(.15,1.,length(vec2(mix(dl.x,dr.x,step(.5,sd)),d.y)*vec2(1.,.95)));float w=rim+(1.-rim)*core;" +
+    // 擠壓：往上推時中間往兩側鼓、往下時收窄
+    "vec2 bul=vec2(mix(dl.x*e0.z,dr.x*e1.z,step(.5,sd))*clamp(-o.y*5.,-.12,.2)*core,0.);" +
+    "return (o*w+bul)*top*sf;}" +
     "vec2 rot(vec2 p,vec2 c,float g){vec2 d=(p-c)*vec2(1.,asp);float s=sin(g),k=cos(g);d=vec2(d.x*k-d.y*s,d.x*s+d.y*k);return c+d/vec2(1.,asp);}" +
     "void main(){v=a;vec2 p=a;" +
     "if(m==1){p+=ch();}" +
@@ -57,7 +63,7 @@
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vs), gl.STATIC_DRAW);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ix), gl.STATIC_DRAW);
     var la = gl.getAttribLocation(pr, "a"); gl.enableVertexAttribArray(la); gl.vertexAttribPointer(la, 2, gl.FLOAT, false, 0, 0);
-    var U = {}; ["m", "br", "hs", "t", "e0", "e1", "o0", "o1", "p0", "p1", "ang", "asp", "al"].forEach(function (k) { U[k] = gl.getUniformLocation(pr, k); });
+    var U = {}; ["m", "br", "hs", "t", "rim", "e0", "e1", "o0", "o1", "p0", "p1", "ang", "asp", "al"].forEach(function (k) { U[k] = gl.getUniformLocation(pr, k); });
     gl.enable(gl.BLEND); gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
     function mkTex(src) {
       var t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
@@ -87,7 +93,7 @@
     }
     names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + id + "_" + n + ".webp"; });
 
-    var P = { K: 42, C: 3.4, BREATH: 0.0035, BT: 3.8, LIFT: 0.010, MAX: 0.032, amp: opt.amp == null ? 0.7 : opt.amp };   // ✅ Jay 2026-11-14：幅度 0.7
+    var P = { K: 38, C: 3.0, BREATH: 0.0035, BT: 3.8, LIFT: 0.016, MAX: 0.042, RIM: 0.28, amp: opt.amp == null ? 1 : opt.amp };   // MAX 是胸部中心的最大位移；邊緣只動 RIM 倍（約 0.28）
     var c = [{ x: 0, y: 0, vx: 0, vy: 0 }, { x: 0, y: 0, vx: 0, vy: 0 }], ear = [{ a: 0, v: 0 }, { a: 0, v: 0 }], hair = { x: 0, v: 0 };
     var grab = -1, gx = 0, gy = 0, lastX = 0, lastT = 0, blink = 0, nextBlink = 2 + Math.random() * 3, t0 = performance.now(), prev = t0, run = true;
     function uv(e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; }
@@ -119,7 +125,7 @@
       hair.v += (-9 * (hair.x - 0.005 * Math.sin(t * 0.7)) - 1.6 * hair.v) * dt; hair.x += hair.v * dt; hair.x = Math.max(-0.03, Math.min(0.03, hair.x));
       nextBlink -= dt; if (nextBlink < 0) { blink = 0.16; nextBlink = 2.5 + Math.random() * 4; } var bl = 0; if (blink > 0) { blink -= dt; bl = Math.min(1, Math.sin(Math.max(0, blink) / 0.16 * Math.PI) * 1.6); }
       gl.viewport(0, 0, cv.width, cv.height); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.uniform1f(U.br, br); gl.uniform1f(U.asp, R.h / R.w); gl.uniform1f(U.hs, R.hair || 0.24); gl.uniform1f(U.t, t);
+      gl.uniform1f(U.br, br); gl.uniform1f(U.asp, R.h / R.w); gl.uniform1f(U.hs, R.hair || 0.24); gl.uniform1f(U.t, t); gl.uniform1f(U.rim, P.RIM);
       gl.uniform4fv(U.e0, E[0]); gl.uniform4fv(U.e1, E[1]); gl.uniform2fv(U.p0, R.acc[0]); gl.uniform2fv(U.p1, R.acc[1]);
       gl.uniform2f(U.o0, c[0].x, c[0].y); gl.uniform2f(U.o1, c[1].x, c[1].y); gl.uniform2f(U.ang, ear[0].a, ear[1].a);
       function draw(n, m, al) { gl.bindTexture(gl.TEXTURE_2D, tex[n]); gl.uniform1i(U.m, m); gl.uniform1f(U.al, al); gl.drawElements(gl.TRIANGLES, ix.length, gl.UNSIGNED_SHORT, 0); }

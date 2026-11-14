@@ -156,6 +156,7 @@ SG.CHEST = {"sunquan_ur":[0.48,0.548,0.26,0.111],"zhaoyun":[0.52,0.7,0.3,0.11],"
 // 胸口資料有兩種格式：一個橢圓 [cx,cy,rx,ry]，或左右兩個 [[..],[..]]（標範圍工具匯出的）。chestBox 一律回傳包住全部的一個框
 SG.chestBox = function (art) {
   var c = SG.CHEST[art]; if (!c) return null; if (typeof c[0] === "number") return c;
+  if (c.L || c.R) { var a = 1, b = 1, e = 0, f = 0; (c.L || []).concat(c.R || []).forEach(function (q) { a = Math.min(a, q[0]); b = Math.min(b, q[1]); e = Math.max(e, q[0]); f = Math.max(f, q[1]); }); return e > a ? [(a + e) / 2, (b + f) / 2, (e - a) / 2, (f - b) / 2] : null; }   // 自己圈的形狀
   var x0 = Math.min(c[0][0] - c[0][2], c[1][0] - c[1][2]), x1 = Math.max(c[0][0] + c[0][2], c[1][0] + c[1][2]);
   var y0 = Math.min(c[0][1] - c[0][3], c[1][1] - c[1][3]), y1 = Math.max(c[0][1] + c[0][3], c[1][1] + c[1][3]);
   return [(x0 + x1) / 2, (y0 + y1) / 2, (x1 - x0) / 2, (y1 - y0) / 2];

@@ -1,127 +1,122 @@
-<!DOCTYPE html>
-<html lang="zh-Hant"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>胸口範圍標記工具｜三國LEGEND</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans TC",sans-serif;background:#1c1512;color:#f0e8d8;-webkit-user-select:none;user-select:none}
-header{padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#2a1d14;position:sticky;top:0;z-index:5}
-header b{font-size:17px}header .cnt{color:#d4a853;font-variant-numeric:tabular-nums}
-select,button,input{font:inherit;padding:8px 12px;border-radius:6px;border:1px solid #6b5a45;background:#3a2a1f;color:#f0e8d8}
-button{cursor:pointer}button.pri{background:#b3261e;border-color:#b3261e;color:#fff}button.ok{background:#2f7a52;border-color:#2f7a52;color:#fff}
-main{display:flex;gap:16px;padding:14px;flex-wrap:wrap;justify-content:center}
-.pane{position:relative;line-height:0;touch-action:none}
-.pane img,.pane canvas{height:min(72vh,720px);width:auto;display:block;background:#555;border-radius:6px}
-.pane svg{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
-.cap{line-height:1.5;font-size:13px;color:#cdbb92;text-align:center;margin-top:6px}
-.el{fill:rgba(255,60,60,.22);stroke:#ff4a4a;stroke-width:.004;cursor:move}.el.r{fill:rgba(60,140,255,.22);stroke:#4aa3ff}
-.hd{fill:#fff;stroke:#000;stroke-width:.003;cursor:nwse-resize}
-.bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;padding:0 14px 10px}
-textarea{width:100%;height:120px;font:12px monospace;background:#120d0a;color:#cdbb92;border:1px solid #6b5a45;border-radius:6px;padding:8px;user-select:text;-webkit-user-select:text}
-.tip{padding:0 14px 14px;font-size:14px;line-height:1.7;color:#cdbb92;max-width:820px;margin:0 auto}
-.done{color:#6fd39b}
-</style></head><body>
-<header>
-  <b>胸口範圍標記</b>
-  <select id="sel"></select>
-  <label><input type="checkbox" id="todo"> 只看還沒確認的</label>
-  <span class="cnt" id="cnt"></span>
-</header>
-<div class="bar">
-  <button id="prev">← 上一位</button>
-  <button class="ok" id="ok">✓ 確認這位，下一位</button>
-  <button id="next">下一位 →</button>
-  <button id="none">這位不做（沒露胸或被擋住）</button>
-  <button id="reset">還原這位</button>
-  <button class="pri" id="exp">匯出</button>
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#07060a;color:#f0e8d8;font-family:"Noto Serif TC",system-ui,serif;overflow:hidden;-webkit-user-select:none;user-select:none}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+#top,#bot{background:#120f14;padding:8px 10px;font-size:13px;line-height:1.5}
+#top{border-bottom:1px solid #d4a853}#bot{border-top:1px solid #d4a853;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}.row:first-child{margin-top:0}
+button,select{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6px;padding:7px 9px;font:inherit;font-size:13px}
+select{flex:1;min-width:0}
+button.on{background:#d4a853;color:#120f14;border-color:#d4a853}button.go{background:#e05858;border-color:#d4a853;color:#fff}button.ok{background:#2f7a52;border-color:#2f7a52;color:#fff}
+#mid{flex:1;min-height:0;position:relative}
+#view{position:absolute;inset:0;overflow:auto;background:#1a1218}
+#pad{position:relative;margin:0 auto;touch-action:none}
+#pad img{display:block;width:100%;pointer-events:none;background:repeating-conic-gradient(#3a3040 0 25%,#2a2230 0 50%) 0 0/24px 24px}
+#pad svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}#pad svg circle{pointer-events:auto}
+#pv{position:absolute;inset:0;display:none;background:#2a2230;text-align:center}
+#pv img,#pv canvas{height:100%;width:auto;max-width:none;position:absolute;left:50%;top:0;transform:translateX(-50%);touch-action:none}
+#hint{color:#c9b98f;font-size:12px}#cnt{color:#d4a853;font-variant-numeric:tabular-nums;white-space:nowrap}
+#out{width:100%;height:44px;background:#07060a;color:#9fd0a0;border:1px solid #6b5a3a;border-radius:6px;font:11px monospace;display:none;margin-top:6px;user-select:text;-webkit-user-select:text}
+</style></head><body><div id="wrap">
+<div id="top">
+  <div class="row"><button id="prev">←</button><select id="sel"></select><button id="next">→</button><span id="cnt"></span></div>
+  <div class="row"><button id="mE" class="on">描邊</button><button id="mP">預覽</button><span style="flex:1"></span><button class="z on" data-z="1">1x</button><button class="z" data-z="2">2x</button><button class="z" data-z="3">3x</button></div>
+  <div class="row" id="edrow"><button class="s on" data-s="L">左胸</button><button class="s" data-s="R">右胸</button><button id="del">刪點</button><button id="undo">復原</button><button id="clr">清除這邊</button></div>
 </div>
-<main>
-  <div><div class="pane" id="edit"><img id="img" alt=""><svg id="svg" viewBox="0 0 1 1" preserveAspectRatio="none"></svg></div><div class="cap">拖橢圓移動；拖白點改大小。紅＝畫面左邊那顆，藍＝右邊那顆</div></div>
-  <div><div class="pane" id="prev-pane"></div><div class="cap">預覽（效果有加強，方便看範圍對不對）。點一下或拖動試試</div></div>
-</main>
-<div class="tip">
-  <p>標法：兩個橢圓各包住一邊，<b>上緣貼在胸口上方、下緣包到底</b>，不要框到手臂、武器、項鍊。兩個橢圓可以重疊。只看得到一邊的，把另一個縮小疊在同一邊就好。</p>
-  <p>進度存在這個瀏覽器裡，關掉再開還在。全部標完（或標一部分也可以）按「匯出」，把下面那串文字整段複製貼給 Claude。</p>
-  <textarea id="out" readonly placeholder="按「匯出」後這裡會出現結果"></textarea>
-  <button id="copy">複製</button> <span id="copied"></span>
-</div>
+<div id="mid"><div id="view"><div id="pad"><img id="im" alt=""><svg id="sv"></svg></div></div><div id="pv"></div></div>
+<div id="bot">
+  <div id="hint"></div>
+  <div class="row"><button id="ok" class="ok">✓ 確認，下一位</button><button id="none">這位不做</button><button id="reset">還原這位</button><label style="font-size:12px"><input type="checkbox" id="todo"> 只看沒確認的</label></div>
+  <div class="row"><button id="copy" class="go">匯出並複製給 Claude</button><span id="msg" style="color:#9fd0a0"></span></div>
+  <textarea id="out" readonly></textarea>
+</div></div>
 <script>window.SG = {};</script>
 <script src="../js/data.js"></script>
 <script src="../js/jiggle.js"></script>
 <script>
-(function () {
-  var KEY = "sg_chest_marks_v1", marks = {};
-  try { marks = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) {}
-  var seen = {}, list = [];
-  SG.CARDS.forEach(function (c) { if (c.art && !c.male && !c.artBg && !seen[c.art]) { seen[c.art] = 1; list.push({ art: c.art, name: c.gen, fac: c.fac }); } });
-  var $ = function (s) { return document.querySelector(s); }, cur = 0, E = null;
-  function init(art) {
-    var m = marks[art]; if (m && m.v) return JSON.parse(JSON.stringify(m.v));
-    var own = SG.JIGGLE[art]; if (own) return JSON.parse(JSON.stringify(own));
-    var c = SG.CHEST[art]; if (c && typeof c[0] !== "number") return JSON.parse(JSON.stringify(c));
-    if (!c) c = [0.5, 0.6, 0.3, 0.1];
-    return [[c[0] - c[2] * 0.45, c[1], c[2] * 0.6, c[3]], [c[0] + c[2] * 0.45, c[1], c[2] * 0.6, c[3]]];
-  }
-  function save() { try { localStorage.setItem(KEY, JSON.stringify(marks)); } catch (e) {} }
-  function fill() {
-    var todo = $("#todo").checked, sel = $("#sel"); sel.innerHTML = "";
-    list.forEach(function (x, i) { var m = marks[x.art]; if (todo && m && m.done && i !== cur) return; var o = document.createElement("option"); o.value = i; o.textContent = (m && m.done ? "✓ " : "　") + x.fac + "｜" + x.name; sel.appendChild(o); });
-    sel.value = cur; var n = list.filter(function (x) { return marks[x.art] && marks[x.art].done; }).length;
-    $("#cnt").textContent = "已確認 " + n + " / " + list.length;
-  }
-  function draw() {
-    var s = "";
-    E.forEach(function (e, i) {
-      s += '<ellipse class="el' + (i ? ' r' : '') + '" data-i="' + i + '" data-k="m" cx="' + e[0] + '" cy="' + e[1] + '" rx="' + e[2] + '" ry="' + e[3] + '"/>' +
-        '<ellipse class="hd" data-i="' + i + '" data-k="x" cx="' + (e[0] + e[2]) + '" cy="' + e[1] + '" rx=".018" ry=".0125"/>' +
-        '<ellipse class="hd" data-i="' + i + '" data-k="y" cx="' + e[0] + '" cy="' + (e[1] + e[3]) + '" rx=".018" ry=".0125"/>';
-    });
-    $("#svg").innerHTML = s;
-  }
-  var pt = null;
-  function preview() {
-    clearTimeout(pt); pt = setTimeout(function () {
-      var x = list[cur], p = $("#prev-pane"); p.innerHTML = "";
-      if (marks[x.art] && marks[x.art].none) { p.innerHTML = '<div class="cap" style="width:240px;padding:40px 0">這位設定為不做</div>'; return; }
-      SG.JIGGLE[x.art] = JSON.parse(JSON.stringify(E));
-      var im = new Image(); im.src = "../img/" + x.art + "_full.webp"; im.alt = x.name; p.appendChild(im);
-    }, 250);
-  }
-  function show(i) {
-    cur = (i + list.length) % list.length; var x = list[cur];
-    $("#img").src = "../img/" + x.art + "_full.webp"; E = init(x.art); draw(); fill(); preview();
-  }
-  function step(d) {
-    var todo = $("#todo").checked, i = cur;
-    for (var k = 0; k < list.length; k++) { i = (i + d + list.length) % list.length; var m = marks[list[i].art]; if (!todo || !(m && m.done)) break; }
-    show(i);
-  }
-  var drag = null, svg = $("#svg");
-  function pos(e) { var r = svg.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; }
-  svg.addEventListener("pointerdown", function (e) {
-    var t = e.target; if (!t.dataset || t.dataset.i === undefined) return;
-    var p = pos(e), i = +t.dataset.i; drag = { i: i, k: t.dataset.k, p: p, o: E[i].slice() }; svg.setPointerCapture(e.pointerId); e.preventDefault();
-  });
-  svg.addEventListener("pointermove", function (e) {
-    if (!drag) return; var p = pos(e), o = drag.o, t = E[drag.i], r3 = function (v) { return Math.round(v * 1000) / 1000; };
-    if (drag.k === "m") { t[0] = r3(Math.max(0, Math.min(1, o[0] + p[0] - drag.p[0]))); t[1] = r3(Math.max(0, Math.min(1, o[1] + p[1] - drag.p[1]))); }
-    else if (drag.k === "x") t[2] = r3(Math.max(0.02, Math.abs(p[0] - t[0])));
-    else t[3] = r3(Math.max(0.015, Math.abs(p[1] - t[1])));
-    draw();
-  });
-  var end = function () { if (!drag) return; drag = null; var x = list[cur]; marks[x.art] = { v: E, done: !!(marks[x.art] && marks[x.art].done) }; save(); preview(); };
-  svg.addEventListener("pointerup", end); svg.addEventListener("pointercancel", end);
-  $("#sel").onchange = function () { show(+this.value); };
-  $("#todo").onchange = fill;
-  $("#prev").onclick = function () { step(-1); }; $("#next").onclick = function () { step(1); };
-  $("#ok").onclick = function () { var x = list[cur]; marks[x.art] = { v: E, done: true }; save(); step(1); };
-  $("#none").onclick = function () { var x = list[cur]; marks[x.art] = { none: true, done: true }; save(); step(1); };
-  $("#reset").onclick = function () { var x = list[cur]; delete marks[x.art]; delete SG.JIGGLE[x.art]; save(); show(cur); };
-  $("#exp").onclick = function () {
-    var out = {}; Object.keys(marks).forEach(function (k) { var m = marks[k]; if (m.done) out[k] = m.none ? null : m.v; });
-    $("#out").value = "CHEST_MARKS " + JSON.stringify(out); $("#out").scrollIntoView({ behavior: "smooth" });
-  };
-  $("#copy").onclick = function () { var t = $("#out"); t.select(); try { navigator.clipboard.writeText(t.value); $("#copied").textContent = "已複製"; } catch (e) { document.execCommand("copy"); $("#copied").textContent = "已複製"; } };
-  show(0);
+(function(){
+var KEY="sg_chest_marks_v2",OLD="sg_chest_marks_v1",$=function(q){return document.querySelector(q)},marks={};
+try{marks=JSON.parse(localStorage.getItem(KEY)||"null")}catch(e){marks=null}
+function ell(e,n){var p=[];n=n||10;for(var i=0;i<n;i++){var a=-Math.PI/2+i*2*Math.PI/n;p.push([+(e[0]+e[2]*Math.cos(a)).toFixed(3),+(e[1]+e[3]*Math.sin(a)).toFixed(3)])}return p}
+function fromShape(c){ // 舊的橢圓 → 可以拖點的形狀
+  if(!c)return {L:ell([0.38,0.5,0.1,0.07]),R:ell([0.62,0.5,0.1,0.07])};
+  if(c.L||c.R)return JSON.parse(JSON.stringify({L:c.L||[],R:c.R||[]}));
+  if(typeof c[0]==="number")return {L:ell([c[0]-c[2]/2,c[1],c[2]/2,c[3]]),R:ell([c[0]+c[2]/2,c[1],c[2]/2,c[3]])};
+  var a=c[0],b=c[1];if(a[0]>b[0]){var t=a;a=b;b=t}return {L:ell(a),R:ell(b)};
+}
+if(!marks){marks={};try{var o=JSON.parse(localStorage.getItem(OLD)||"{}");Object.keys(o).forEach(function(k){var m=o[k];marks[k]=m.none?{none:true,done:!!m.done}:{v:fromShape(m.v),done:!!m.done}})}catch(e){}}
+var seen={},list=[];
+SG.CARDS.forEach(function(c){if(c.art&&!c.male&&!c.artBg&&!seen[c.art]&&c.art!=="sunquan_ur"){seen[c.art]=1;list.push({art:c.art,name:c.gen,fac:c.fac})}});
+var cur=0,D=null,side="L",zoom=1,delMode=false,hist=[],pad=$("#pad"),sv=$("#sv"),view=$("#view"),im=$("#im"),AS=1.46,mode="E";
+im._jg=true;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(marks))}catch(e){}}
+function keep(){var x=list[cur];marks[x.art]={v:D,done:!!(marks[x.art]&&marks[x.art].done)};save()}
+function push(){hist.push(JSON.stringify(D));if(hist.length>60)hist.shift()}
+function fill(){
+  var sel=$("#sel"),todo=$("#todo").checked;sel.innerHTML="";
+  list.forEach(function(x,i){var m=marks[x.art];if(todo&&m&&m.done&&i!==cur)return;var o=document.createElement("option");o.value=i;o.textContent=(m&&m.done?"✓ ":"")+x.fac+"・"+x.name;sel.appendChild(o)});
+  sel.value=cur;$("#cnt").textContent=list.filter(function(x){return marks[x.art]&&marks[x.art].done}).length+"/"+list.length;
+}
+function fit(){var w=Math.min(view.clientWidth,view.clientHeight/AS)*zoom;pad.style.width=w+"px";draw()}
+function smooth(p){return SG.Jiggle.smooth(p,10)}
+function draw(){
+  var W=pad.clientWidth,H=W*AS,h="";if(!D)return;
+  ["L","R"].forEach(function(k){var p=D[k],act=k===side,col=k==="L"?"#5ad1ff":"#ffd24a";
+    if(p.length>=3){var s=smooth(p);h+='<path d="M'+s.map(function(q){return (q[0]*W).toFixed(1)+" "+(q[1]*H).toFixed(1)}).join("L")+'Z" fill="'+col+'" fill-opacity="'+(act?.16:.06)+'" stroke="'+col+'" stroke-width="'+(act?2:1)+'" stroke-opacity="'+(act?1:.5)+'"/>'}
+    if(act)p.forEach(function(q,i){h+='<circle data-i="'+i+'" cx="'+(q[0]*W)+'" cy="'+(q[1]*H)+'" r="8" fill="'+(delMode?"#e05858":col)+'" fill-opacity=".85" stroke="#000" stroke-width="1.5"/><circle data-i="'+i+'" cx="'+(q[0]*W)+'" cy="'+(q[1]*H)+'" r="19" fill="transparent"/>'});
+  });sv.innerHTML=h;
+}
+function pos(e){var r=pad.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]}
+function insertAt(p,q){if(p.length<3){p.push(q);return}
+  var best=0,bd=1e9;for(var i=0;i<p.length;i++){var a=p[i],b=p[(i+1)%p.length],dx=b[0]-a[0],dy=(b[1]-a[1])*AS,qx=q[0]-a[0],qy=(q[1]-a[1])*AS,t=Math.max(0,Math.min(1,(qx*dx+qy*dy)/(dx*dx+dy*dy||1))),d=Math.hypot(qx-t*dx,qy-t*dy);if(d<bd){bd=d;best=i}}
+  p.splice(best+1,0,q)}
+var drag=-1,moved=false,sx=0,sy=0,scr=null;
+pad.addEventListener("pointerdown",function(e){
+  var i=e.target.dataset&&e.target.dataset.i;sx=e.clientX;sy=e.clientY;moved=false;
+  if(i!=null){i=+i;if(delMode){push();D[side].splice(i,1);keep();draw();return}push();drag=i;try{pad.setPointerCapture(e.pointerId)}catch(x){}}
+  else{drag=-1;scr={l:view.scrollLeft,t:view.scrollTop};try{pad.setPointerCapture(e.pointerId)}catch(x){}}
+});
+pad.addEventListener("pointermove",function(e){
+  if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>8)moved=true;
+  if(drag>=0){var q=pos(e);D[side][drag]=[+Math.max(0,Math.min(1,q[0])).toFixed(3),+Math.max(0,Math.min(1,q[1])).toFixed(3)];draw()}
+  else if(scr&&moved){view.scrollLeft=scr.l-(e.clientX-sx);view.scrollTop=scr.t-(e.clientY-sy)}
+});
+pad.addEventListener("pointerup",function(e){
+  if(drag>=0){drag=-1;keep();return}
+  if(scr&&!moved&&!delMode){push();var q=pos(e);insertAt(D[side],[+q[0].toFixed(3),+q[1].toFixed(3)]);keep();draw()} scr=null;
+});
+function hint(){$("#hint").textContent=mode==="P"?"預覽（效果有加強，方便看範圍）。按住拖或點一下試試；不對就回「描邊」。":"沿著胸部外緣圈。點空白處＝加一個點（加在最近的那段線上）；拖點＝移動；開「刪點」後點一下＝刪掉。藍＝畫面左邊那顆，黃＝右邊。"}
+function preview(on){
+  mode=on?"P":"E";$("#mE").classList.toggle("on",!on);$("#mP").classList.toggle("on",on);$("#pv").style.display=on?"block":"none";$("#edrow").style.display=on?"none":"flex";hint();
+  var pv=$("#pv");pv.innerHTML="";if(!on)return;
+  var x=list[cur];SG.JIGGLE[x.art]=[D.L.length>2?D.L:null,D.R.length>2?D.R:null];
+  var i2=new Image();i2.alt=x.name;i2.onload=function(){SG.Jiggle.attach(i2,x.art)};pv.appendChild(i2);i2._jg=false;i2.src="../img/"+x.art+"_full.webp";
+}
+function show(i){
+  cur=(i+list.length)%list.length;var x=list[cur],m=marks[x.art];hist=[];
+  D=m&&m.v?JSON.parse(JSON.stringify(m.v)):fromShape(SG.CHEST[x.art]);
+  im.onload=function(){AS=im.naturalHeight/im.naturalWidth;fit()};im.src="../img/"+x.art+"_full.webp";
+  fill();preview(false);draw();
+}
+function step(d){var todo=$("#todo").checked,n=cur;for(var k=0;k<list.length;k++){n=(n+d+list.length)%list.length;var m=marks[list[n].art];if(!todo||!(m&&m.done))break}show(n)}
+document.querySelectorAll("button.s").forEach(function(b){b.onclick=function(){side=b.dataset.s;document.querySelectorAll("button.s").forEach(function(x){x.classList.toggle("on",x===b)});draw()}});
+document.querySelectorAll("button.z").forEach(function(b){b.onclick=function(){var cx=(view.scrollLeft+view.clientWidth/2)/pad.clientWidth,cy=(view.scrollTop+view.clientHeight/2)/pad.clientHeight;zoom=+b.dataset.z;document.querySelectorAll("button.z").forEach(function(x){x.classList.toggle("on",x===b)});fit();view.scrollLeft=cx*pad.clientWidth-view.clientWidth/2;view.scrollTop=cy*pad.clientHeight-view.clientHeight/2}});
+$("#del").onclick=function(){delMode=!delMode;this.classList.toggle("on",delMode);draw()};
+$("#undo").onclick=function(){if(hist.length){D=JSON.parse(hist.pop());keep();draw()}};
+$("#clr").onclick=function(){push();D[side]=[];keep();draw()};
+$("#mE").onclick=function(){preview(false)};$("#mP").onclick=function(){preview(true)};
+$("#sel").onchange=function(){show(+this.value)};$("#todo").onchange=fill;
+$("#prev").onclick=function(){step(-1)};$("#next").onclick=function(){step(1)};
+$("#ok").onclick=function(){var x=list[cur];marks[x.art]={v:D,done:true};save();step(1)};
+$("#none").onclick=function(){var x=list[cur];marks[x.art]={none:true,done:true};save();step(1)};
+$("#reset").onclick=function(){var x=list[cur];delete marks[x.art];delete SG.JIGGLE[x.art];save();show(cur)};
+$("#copy").onclick=function(){
+  var out={};Object.keys(marks).forEach(function(k){var m=marks[k];if(m.done)out[k]=m.none?null:m.v});
+  var t="CHEST_MARKS "+JSON.stringify(out),o=$("#out");o.style.display="block";o.value=t;var n=Object.keys(out).length;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$("#msg").textContent="已複製 "+n+" 位，貼給 Claude"},function(){o.select();try{document.execCommand("copy");$("#msg").textContent="已複製 "+n+" 位"}catch(e){$("#msg").textContent="請長按下面文字複製"}});
+};
+window.addEventListener("resize",fit);show(0);
+window.__t={D:function(){return D},marks:function(){return marks},show:show,preview:preview};
 })();
-</script>
-</body></html>
+</script></body></html>
