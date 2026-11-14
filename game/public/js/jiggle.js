@@ -35,7 +35,7 @@
   }
   function attach(img, id) {
     if (still || img._jg) return; img._jg = true;
-    var own = SG.JIGGLE[id], au = SG.JIGGLE_AUTO[id], cfg = own || (au ? [au, NONE[1]] : NONE), CFG = own ? CFG_OWN : CFG_ALL;   // 沒有專屬範圍的武將用通用的含蓄呼吸
+    var own = SG.JIGGLE[id], au = SG.JIGGLE_AUTO[id], cfg = own || (au ? (typeof au[0] === "number" ? [au, NONE[1]] : au) : NONE), CFG = own ? CFG_OWN : CFG_ALL;   // 沒有專屬範圍的武將用通用的含蓄呼吸
     var go = function () {
       if (!img.isConnected) return;
       var cv = document.createElement("canvas"); cv.width = img.naturalWidth; cv.height = img.naturalHeight;

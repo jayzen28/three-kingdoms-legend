@@ -34,6 +34,11 @@
       if (!on || SFX.indexOf(k) < 0) return;
       try { var e = sfxEl(k); e.pause(); e.currentTime = 0; e.volume = VOL[k] || 0.9; e.playbackRate = rate || 1; var p = e.play(); if (p && p.catch) p.catch(function () {}); } catch (x) {}
     },
+    // 角色語音：檔案不存在就安靜略過（目前還沒有語音檔）
+    voice: function (art, zone, n) {
+      if (!on) return;
+      try { var e = new Audio("audio/voice/" + art + "_" + zone + "_" + n + ".mp3"); e.volume = 1; var p = e.play(); if (p && p.catch) p.catch(function () {}); } catch (x) {}
+    },
     stopSfx: function (k) { var p = pool[k]; if (p) p.list.forEach(function (e) { try { e.pause(); } catch (x) {} }); },
     scene: function (name) { want = SCENE[name] || "theme"; apply(); },
     toggle: function () { on = !on; try { localStorage.setItem("sgl_snd", on ? "1" : "0"); } catch (e) {} armed = true; paint(); apply(); },

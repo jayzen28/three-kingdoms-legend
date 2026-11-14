@@ -548,3 +548,12 @@ button.chip.on{background:linear-gradient(#c8372c,#8b1c16);color:#fff1d2;border-
 #s-home .stage .fig,#s-home .stage canvas.fig{left:50%;top:0;right:auto;bottom:auto;width:auto;height:calc((100% - 290px) / var(--fr,.72));max-width:none;object-fit:fill;transform:translateX(calc(var(--fx,.5) * -100%));animation:none;
   -webkit-mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(#000 88%,transparent 100%);-webkit-mask-composite:source-in;
   mask-image:linear-gradient(to right,transparent,#000 8%,#000 92%,transparent),linear-gradient(#000 88%,transparent 100%);mask-composite:intersect}
+
+/* 觸碰反應的對話泡泡 */
+#s-home .say{position:absolute;z-index:6;transform:translate(-50%,0);max-width:70%;padding:8px 14px;background:#fffaf0;color:#2a1d14;font-family:var(--kai);font-size:17px;letter-spacing:.04em;border:2px solid #2a1d14;border-radius:14px;
+  box-shadow:0 3px 0 rgba(0,0,0,.35);pointer-events:none;white-space:nowrap;animation:sayin .22s cubic-bezier(.2,1.6,.4,1)}
+#s-home .say::after{content:"";position:absolute;left:50%;bottom:-9px;width:14px;height:14px;background:#fffaf0;border-right:2px solid #2a1d14;border-bottom:2px solid #2a1d14;transform:translateX(-50%) rotate(45deg)}
+#s-home .say.z-chest{background:#ffe9ea;border-color:#8b1c16;color:#8b1c16}#s-home .say.z-chest::after{background:#ffe9ea;border-color:#8b1c16}
+#s-home .say.out{opacity:0;transition:opacity .4s}
+@keyframes sayin{from{transform:translate(-50%,8px) scale(.7);opacity:0}}
+#s-home .stage img.fig{cursor:pointer}

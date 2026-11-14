@@ -258,9 +258,36 @@
 
   // ===== 主城 =====
   function figStyle(art) {     // 主城取景：臉對到中間（偏移限 30%～70%）；一定要露到胸口下緣，胸口位置低或臉很大的特寫立繪就整張縮小
-    var f = SG.FACE[art] || [0.5, 0.44], c = SG.CHEST[art], fx = Math.max(0.3, Math.min(0.7, c ? (f[0] + c[0]) / 2 : f[0]));
+    var f = SG.FACE[art] || [0.5, 0.44], c = SG.chestBox(art), fx = Math.max(0.3, Math.min(0.7, c ? (f[0] + c[0]) / 2 : f[0]));
     var fr = c ? Math.max(0.72, Math.min(1, c[1] + c[3] + 0.06)) : Math.min(1, 0.72 / Math.max(0.68, Math.min(1.08, 0.44 / f[1])));
     return "--fx:" + fx.toFixed(2) + ";--fr:" + fr.toFixed(2);
+  }
+  // 觸碰反應（✅ Jay 2026-11-14：一般向）。點主城人物的頭、胸、其他部位，出一句台詞；有語音檔就一起播（audio/voice/<立繪id>_<部位>_<編號>.mp3）
+  var touchAt = 0, touchLast = {};
+  function touchZone(card, u0, v0) {
+    if (card.male) return "male";
+    var f = SG.FACE[card.art], c = SG.chestBox(card.art);
+    if (c && Math.abs(u0 - c[0]) < c[2] && Math.abs(v0 - c[1]) < c[3] * 1.15) return "chest";
+    if (f ? (Math.abs(u0 - f[0]) < f[1] * 0.75 && v0 < (c ? c[1] - c[3] : 0.45)) : v0 < 0.3) return "head";
+    return "body";
+  }
+  function bindTouch(stage, card) {
+    var sx = 0, sy = 0;
+    stage.addEventListener("pointerdown", function (e) { sx = e.clientX; sy = e.clientY; });
+    stage.addEventListener("pointerup", function (e) {
+      var fig = stage.querySelector(".fig"); if (!fig || !e.target.classList || !e.target.classList.contains("fig")) return;
+      var moved = Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) > 14, now = Date.now();
+      if (now - touchAt < (moved ? 2600 : 1100)) return;
+      var r = fig.getBoundingClientRect(), z = touchZone(card, (e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+      var lines = SG.TOUCH_LINES[z], k = Math.floor(Math.random() * lines.length); if (k === touchLast[z]) k = (k + 1) % lines.length;
+      touchLast[z] = k; touchAt = now;
+      var old = stage.querySelector(".say"); if (old) old.remove();
+      var sr = stage.getBoundingClientRect(), b = document.createElement("div"); b.className = "say z-" + z; b.textContent = lines[k];
+      b.style.left = Math.max(90, Math.min(stage.clientWidth - 90, e.clientX - sr.left)) + "px";
+      b.style.top = Math.max(64, e.clientY - sr.top - 70) + "px";
+      stage.appendChild(b); setTimeout(function () { b.classList.add("out"); setTimeout(function () { b.remove(); }, 400); }, 1900);
+      if (SG.Audio && SG.Audio.voice) SG.Audio.voice(card.art, z, k + 1);
+    });
   }
   UI.r_home = function () {
     var tc = S.team.map(function (id) { return SG.CARD_BY_ID[id]; });
@@ -290,6 +317,7 @@
       '<div class="nxt">' + (next ? '下一戰　' + next.id + '　' + next.name : '第一章已全數通關') + '</div></div>' +
       '</div>';
     $("#s-home").innerHTML = h;
+    var stg = $("#s-home .stage"); if (stg && lead && lead.art && !lead.artBg) bindTouch(stg, lead);
     if ($("#hero-bg")) SG.Scene.home($("#hero-bg"), 7);
     if ($("#hero-petal")) SG.Scene.petals($("#hero-petal"));
     $("#h-go").onclick = function () { UI.go("camp"); };
