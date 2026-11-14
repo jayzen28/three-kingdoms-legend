@@ -1,0 +1,90 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>胸部描邊工具｜孫權 UR</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#07060a;color:#f0e8d8;font-family:"Noto Serif TC",serif;overflow:hidden;-webkit-user-select:none;user-select:none}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+#top,#bot{background:#120f14;padding:8px 10px;font-size:13px;line-height:1.5}
+#top{border-bottom:1px solid #d4a853}#bot{border-top:1px solid #d4a853;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}.row:first-child{margin-top:0}
+button{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6px;padding:7px 10px;font:inherit;font-size:13px}
+button.on{background:#d4a853;color:#120f14;border-color:#d4a853}button.go{background:#e05858;border-color:#d4a853;color:#fff}
+#mid{flex:1;min-height:0;position:relative}
+#view{position:absolute;inset:0;overflow:auto;background:#1a1218;-webkit-overflow-scrolling:touch}
+#pad{position:relative;margin:0 auto;touch-action:none}
+#pad img{display:block;width:100%;pointer-events:none;background:repeating-conic-gradient(#2a2230 0 25%,#1e1822 0 50%) 0 0/24px 24px}
+#pad svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}#pad svg circle{pointer-events:auto}
+#pv{position:absolute;inset:0;display:none;background:url(../img/bg_wu_5.webp) center/cover}
+#pv canvas{position:absolute!important;left:50%;top:0;transform:translateX(-50%);margin:0!important}
+#hint{color:#c9b98f;font-size:12px}#out{width:100%;height:44px;background:#07060a;color:#9fd0a0;border:1px solid #6b5a3a;border-radius:6px;font:11px monospace;display:none;margin-top:6px}
+input[type=range]{flex:1;min-width:80px}
+</style></head><body><div id="wrap">
+<div id="top">
+  <div class="row"><b style="color:#d4a853">胸部描邊</b><button id="mE" class="on">描邊</button><button id="mP">預覽</button><span style="flex:1"></span><button class="z on" data-z="1">1x</button><button class="z" data-z="2">2x</button><button class="z" data-z="3">3x</button></div>
+  <div class="row" id="edrow"><button class="s on" data-s="L">左胸（畫面左）</button><button class="s" data-s="R">右胸</button><button id="del">刪點</button><button id="undo">復原</button><button id="clr">清除這邊</button></div>
+</div>
+<div id="mid"><div id="view"><div id="pad"><img id="im" src="../img/sunquan_ur_body.webp" alt=""><svg id="sv"></svg></div></div><div id="pv"></div></div>
+<div id="bot">
+  <div id="hint">沿著胸部外緣點一圈（陰影要包到哪裡你決定）。點空白處＝加一個點；拖點＝移動；開「刪點」後點一下＝刪掉。放大後用兩指或拖空白處捲動。</div>
+  <div class="row" id="pvrow" style="display:none">幅度<input id="amp" type="range" min="0.3" max="1.5" step="0.1" value="1"><button id="poke">晃一下</button></div>
+  <div class="row"><button id="copy" class="go">複製結果給 Claude</button><button id="reset">回到預設</button><span id="msg" style="color:#9fd0a0"></span></div>
+  <textarea id="out" readonly></textarea>
+</div></div>
+<script src="../js/layered.js"></script>
+<script>
+(function(){
+var ID="sunquan_ur",KEY="sg_outline_"+ID,R=SG.Layered.RIG[ID],$=function(q){return document.querySelector(q)};
+var D=null;try{D=JSON.parse(localStorage.getItem(KEY))}catch(e){} if(!D||!D.L||!D.R)D=JSON.parse(JSON.stringify(R.outline));
+var side="L",zoom=1,delMode=false,hist=[],L=null,pad=$("#pad"),sv=$("#sv"),view=$("#view");
+function save(){try{localStorage.setItem(KEY,JSON.stringify(D))}catch(e){}}
+function push(){hist.push(JSON.stringify(D));if(hist.length>60)hist.shift()}
+function fit(){var w=Math.min(view.clientWidth,view.clientHeight*R.w/R.h)*zoom;pad.style.width=w+"px";draw()}
+function draw(){
+  var W=pad.clientWidth,H=W*R.h/R.w,h="";
+  ["L","R"].forEach(function(k){var p=D[k],act=k===side,col=k==="L"?"#5ad1ff":"#ffd24a";
+    if(p.length>=3){var s=SG.Layered.smooth(p,10);h+='<path d="M'+s.map(function(q){return (q[0]*W).toFixed(1)+" "+(q[1]*H).toFixed(1)}).join("L")+'Z" fill="'+col+'" fill-opacity="'+(act?.16:.06)+'" stroke="'+col+'" stroke-width="'+(act?2:1)+'" stroke-opacity="'+(act?1:.5)+'"/>'}
+    if(act)p.forEach(function(q,i){h+='<circle data-i="'+i+'" cx="'+(q[0]*W)+'" cy="'+(q[1]*H)+'" r="9" fill="'+(delMode?"#e05858":col)+'" fill-opacity=".85" stroke="#000" stroke-width="1.5"/><circle data-i="'+i+'" cx="'+(q[0]*W)+'" cy="'+(q[1]*H)+'" r="20" fill="transparent"/>'});
+  });sv.innerHTML=h;
+}
+function pos(e){var r=pad.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]}
+function insertAt(p,q){ // 插到最近的那一段中間，順序不會亂
+  if(p.length<3){p.push(q);return}
+  var best=0,bd=1e9;for(var i=0;i<p.length;i++){var a=p[i],b=p[(i+1)%p.length],dx=b[0]-a[0],dy=(b[1]-a[1])*R.h/R.w,qx=q[0]-a[0],qy=(q[1]-a[1])*R.h/R.w,t=Math.max(0,Math.min(1,(qx*dx+qy*dy)/(dx*dx+dy*dy||1))),d=Math.hypot(qx-t*dx,qy-t*dy);if(d<bd){bd=d;best=i}}
+  p.splice(best+1,0,q);
+}
+var drag=-1,moved=false,sx=0,sy=0,scr=null;
+pad.addEventListener("pointerdown",function(e){
+  var i=e.target.dataset&&e.target.dataset.i;sx=e.clientX;sy=e.clientY;moved=false;
+  if(i!=null){i=+i;if(delMode){push();D[side].splice(i,1);save();draw();return}push();drag=i;try{pad.setPointerCapture(e.pointerId)}catch(x){}}
+  else{drag=-1;scr={l:view.scrollLeft,t:view.scrollTop};try{pad.setPointerCapture(e.pointerId)}catch(x){}}
+});
+pad.addEventListener("pointermove",function(e){
+  if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>8)moved=true;
+  if(drag>=0){var q=pos(e);D[side][drag]=[Math.max(0,Math.min(1,q[0])),Math.max(0,Math.min(1,q[1]))];draw()}
+  else if(scr&&moved){view.scrollLeft=scr.l-(e.clientX-sx);view.scrollTop=scr.t-(e.clientY-sy)}
+});
+pad.addEventListener("pointerup",function(e){
+  if(drag>=0){drag=-1;save();return}
+  if(scr&&!moved&&!delMode){push();var q=pos(e);insertAt(D[side],[+q[0].toFixed(4),+q[1].toFixed(4)]);save();draw()} scr=null;
+});
+document.querySelectorAll("button.s").forEach(function(b){b.onclick=function(){side=b.dataset.s;document.querySelectorAll("button.s").forEach(function(x){x.classList.toggle("on",x===b)});draw()}});
+document.querySelectorAll("button.z").forEach(function(b){b.onclick=function(){var cx=(view.scrollLeft+view.clientWidth/2)/pad.clientWidth,cy=(view.scrollTop+view.clientHeight/2)/pad.clientHeight;zoom=+b.dataset.z;document.querySelectorAll("button.z").forEach(function(x){x.classList.toggle("on",x===b)});fit();view.scrollLeft=cx*pad.clientWidth-view.clientWidth/2;view.scrollTop=cy*pad.clientHeight-view.clientHeight/2}});
+$("#del").onclick=function(){delMode=!delMode;this.classList.toggle("on",delMode);draw()};
+$("#undo").onclick=function(){if(hist.length){D=JSON.parse(hist.pop());save();draw()}};
+$("#clr").onclick=function(){push();D[side]=[];save();draw()};
+$("#reset").onclick=function(){push();D=JSON.parse(JSON.stringify(R.outline));save();draw();if(L)preview(true)};
+function preview(on){
+  $("#mE").classList.toggle("on",!on);$("#mP").classList.toggle("on",on);$("#pv").style.display=on?"block":"none";$("#edrow").style.display=on?"none":"flex";$("#pvrow").style.display=on?"flex":"none";
+  $("#hint").textContent=on?"按住胸部拖、點身體、左右滑。不對就回「描邊」修。":"沿著胸部外緣點一圈（陰影要包到哪裡你決定）。點空白處＝加一個點；拖點＝移動；開「刪點」後點一下＝刪掉。放大後拖空白處捲動。";
+  if(L){L.stop();L.canvas.remove();L=null}
+  if(on){if(D.L.length<3||D.R.length<3){$("#msg").textContent="左右兩邊都要至少 3 個點";}L=SG.Layered.mount($("#pv"),ID,{base:"../img/",outline:D,amp:+$("#amp").value})}
+}
+$("#mE").onclick=function(){preview(false)};$("#mP").onclick=function(){preview(true)};
+$("#amp").oninput=function(){if(L)L.params.amp=+this.value};$("#poke").onclick=function(){L&&L.poke()};
+$("#copy").onclick=function(){
+  var r=function(p){return p.map(function(q){return [+q[0].toFixed(3),+q[1].toFixed(3)]})},t="OUTLINE "+ID+" "+JSON.stringify({L:r(D.L),R:r(D.R)}),o=$("#out");o.style.display="block";o.value=t;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$("#msg").textContent="已複製，貼給 Claude"},function(){o.select();try{document.execCommand("copy");$("#msg").textContent="已複製，貼給 Claude"}catch(e){$("#msg").textContent="請長按下面文字複製"}});
+};
+$("#im").onload=fit;window.addEventListener("resize",fit);fit();
+window.__ol={get:function(){return D},preview:preview,L:function(){return L}};
+})();
+</script></body></html>
