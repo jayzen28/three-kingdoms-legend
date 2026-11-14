@@ -2,17 +2,17 @@
    新增武將：在 SG.JIGGLE 加一筆 art id → 兩個橢圓 [中心x, 中心y, 半徑x, 半徑y]（都是佔 _full 圖寬高的比例） */
 (function (SG) {
   SG.JIGGLE = {
-    zhurong: [[0.683, 0.478, 0.185, 0.125], [0.845, 0.411, 0.165, 0.115]],
+    zhurong: [[0.683, 0.500, 0.170, 0.105], [0.845, 0.432, 0.150, 0.098]],   // 範圍往下收，避開項鍊和領口
   };
   // ★ 手感參數（Jay 2026-11-13：要明顯、要像軟的在晃，不是肌肉在抖）
   //   K 越小晃得越慢越沉；C 越小餘波越久；UPK 往上回彈時變硬的倍數（下墜大、回彈小，才有重量感）
-  var CFG = { K: 46, C: 3.0, UPK: 1.3, MAX: 0.085, BREATH: 0.014, BREATH_T: 3.6, LIFT: 0.03, SPREAD: 0.008, SWAY: 0.006, G: 2, TAP_V: 0.6, GRAB: 0.9, AUTO: 1e9, HOP: 0, HOP_T: 0.7 };
+  var CFG = { K: 46, C: 3.0, UPK: 1.3, MAX: 0.045, BREATH: 0.014, BREATH_T: 3.6, LIFT: 0.015, SPREAD: 0.003, SWAY: 0.006, G: 2, TAP_V: 0.36, GRAB: 0.55, AUTO: 1e9, HOP: 0, HOP_T: 0.7 };
   SG.JIGGLE_CFG = CFG;
   var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   // 頂點位移：整張圖以底部為支點做身體起伏（s）；胸部區域上緣固定、越往下動越多，並依上下位移做擠壓／拉長
   var VS = "attribute vec2 p;uniform vec4 b0;uniform vec4 b1;uniform vec2 o0;uniform vec2 o1;uniform float s;uniform float sx;varying vec2 uv;" +
     "vec2 f(vec2 q,vec4 b,vec2 o){vec2 d=(q-b.xy)/b.zw;float k=max(0.,1.-dot(d,d));float w=k*sqrt(k);" +
-    "float a=smoothstep(-1.,.25,d.y);return w*a*(o+vec2(d.x*b.z*(-o.y)*4.5,0.));}" +
+    "float a=smoothstep(-.7,.55,d.y);return w*a*(o+vec2(d.x*b.z*(-o.y)*1.,0.));}" +
     "void main(){uv=p;vec2 q=p+f(p,b0,o0)+f(p,b1,o1);q.x+=sx*(1.-q.y);q.y=1.-(1.-q.y)*(1.+s);gl_Position=vec4(q.x*2.-1.,1.-q.y*2.,0.,1.);}";
   var FS = "precision mediump float;uniform sampler2D t;varying vec2 uv;void main(){gl_FragColor=texture2D(t,uv);}";
   function build(gl) {
@@ -83,8 +83,8 @@
           b.x = Math.max(-CFG.MAX, Math.min(CFG.MAX, b.x + b.vx * h)); b.y = Math.max(-CFG.MAX, Math.min(CFG.MAX, b.y + b.vy * h));
         }
         // 往下墜時兩邊微微外擴
-        gl.uniform2f(u0, B[0].x + B[0].side * Math.max(0, B[0].y) * 0.22, B[0].y);
-        gl.uniform2f(u1, B[1].x + B[1].side * Math.max(0, B[1].y) * 0.22, B[1].y);
+        gl.uniform2f(u0, B[0].x + B[0].side * Math.max(0, B[0].y) * 0.08, B[0].y);
+        gl.uniform2f(u1, B[1].x + B[1].side * Math.max(0, B[1].y) * 0.08, B[1].y);
         gl.uniform1f(us, body); gl.uniform1f(usx, sway);
         gl.viewport(0, 0, cv.width, cv.height); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
         gl.drawElements(gl.TRIANGLES, m.n, gl.UNSIGNED_SHORT, 0);
