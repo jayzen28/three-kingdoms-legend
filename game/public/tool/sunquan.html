@@ -13,13 +13,16 @@ button{background:#e05858;color:#fff;border:1px solid #d4a853;border-radius:6px;
 input[type=range]{flex:1}
 </style></head><body><div id="wrap"><div id="stage"></div>
 <div id="bar"><b>孫權 UR｜分層立繪試作</b>　胸部、耳環、眼睛各一層，分開動。<br>可以按住胸部拖、點身體、左右滑。
-<div class="row"><a href="outline.html" style="color:#d4a853">→ 去描邊工具圈胸部範圍</a></div>
+<div class="row">胸部圖層<button class="v" data-v="art">美術交的</button><button class="v" data-v="ol">我圈的</button><a href="outline.html" style="color:#d4a853;margin-left:8px">去描邊 →</a></div>
 <div class="row">幅度<input id="amp" type="range" min="0.3" max="1.5" step="0.1" value="1"><span id="av">1.0</span><button id="poke">晃一下</button></div></div></div>
 <script src="../js/layered.js"></script>
 <script>
-var stage=document.getElementById("stage"),amp=document.getElementById("amp"),ol=null;
-try{ol=JSON.parse(localStorage.getItem("sg_outline_sunquan_ur"))}catch(e){}   // 你在描邊工具圈過的話，這裡直接用你圈的
-var L=SG.Layered.mount(stage,"sunquan_ur",{base:"../img/",outline:(ol&&ol.L&&ol.R&&ol.L.length>2&&ol.R.length>2)?ol:null,amp:+amp.value});
+var stage=document.getElementById("stage"),amp=document.getElementById("amp"),ol=null,L=null;
+try{ol=JSON.parse(localStorage.getItem("sg_outline_sunquan_ur"))}catch(e){}
+var mine=ol&&ol.L&&ol.R&&ol.L.length>2&&ol.R.length>2;
+function load(m){if(L){L.stop();L.canvas.remove()}L=SG.Layered.mount(stage,"sunquan_ur",m==="art"?{base:"../img/",amp:+amp.value}:{base:"../img/",mode:"outline",outline:mine?ol:null,amp:+amp.value});
+  document.querySelectorAll("button.v").forEach(function(b){b.classList.toggle("on",b.dataset.v===m)})}
+document.querySelectorAll("button.v").forEach(function(b){b.onclick=function(){load(b.dataset.v)}});load("art");
 document.getElementById("poke").onclick=function(){L&&L.poke()};
 amp.oninput=function(){L.params.amp=+this.value;document.getElementById("av").textContent=(+this.value).toFixed(1)};
 </script></body></html>

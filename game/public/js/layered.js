@@ -5,6 +5,7 @@
   var RIG = {
     sunquan_ur: {
       w: 832, h: 1216, acc: [[0.395, 0.282], [0.617, 0.262]],
+      art: [[0.3486, 0.5428, 0.1322, 0.1053], [0.6094, 0.5428, 0.1286, 0.1053]],   // 美術交的胸部圖層（img/…_chest.webp）左右兩半的範圍
       // ★ 預設輪廓是開發估的，等 Jay 圈好後換掉
       outline: {
         L: [[0.361,0.461],[0.258,0.493],[0.214,0.543],[0.228,0.600],[0.288,0.641],[0.367,0.658],[0.445,0.650],[0.487,0.633],[0.487,0.526],[0.469,0.473]],
@@ -37,10 +38,11 @@
 
   function mount(box, id, opt) {
     var R = RIG[id]; if (!R) return null; opt = opt || {};
-    var base = opt.base || "img/", OL = opt.outline || R.outline;
+    var base = opt.base || "img/", OL = opt.outline || R.outline, ART = !opt.outline && !!R.art && opt.mode !== "outline";   // 預設用美術圖層；給了 outline 或 mode:"outline" 才用圈的
     var polys = [OL.L, OL.R].filter(function (p) { return p && p.length >= 3; }).map(function (p) { return smooth(p, 10); });
     if (!polys.length) polys = [smooth(R.outline.L, 10), smooth(R.outline.R, 10)];
     var E = polys.map(bbox).sort(function (a, b) { return a[0] - b[0]; }); if (E.length < 2) E.push(E[0]);
+    if (ART) E = R.art;
     var cv = document.createElement("canvas"); cv.className = "fig layered"; cv.width = R.w; cv.height = R.h;
     cv.style.cssText = "height:100%;width:auto;display:block;margin:0 auto;touch-action:none"; box.appendChild(cv);
     var gl = cv.getContext("webgl", { premultipliedAlpha: true, alpha: true }); if (!gl) return null;
@@ -58,16 +60,22 @@
       var t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t); gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); return t;
     }
-    var tex = null, imgs = {}, left = 4;
+    var tex = null, imgs = {}, names = ["body", "under", "acc", "blink"].concat(ART ? ["chest"] : []), left = names.length;
     function path(c) { c.beginPath(); polys.forEach(function (p) { p.forEach(function (q, i) { c[i ? "lineTo" : "moveTo"](q[0] * R.w, q[1] * R.h); }); c.closePath(); }); }
     function compose() {
       function cvs() { var c = document.createElement("canvas"); c.width = R.w; c.height = R.h; return c; }
-      var b = cvs(), bc = b.getContext("2d"); bc.drawImage(imgs.body, 0, 0);                       // 底圖：完成圖，輪廓內換成平胸版
-      bc.save(); path(bc); bc.clip(); bc.clearRect(0, 0, R.w, R.h); bc.drawImage(imgs.under, 0, 0); bc.restore();
-      var c = cvs(), cc = c.getContext("2d"); cc.save(); path(cc); cc.clip(); cc.drawImage(imgs.body, 0, 0); cc.restore();   // 胸部層：完成圖只留輪廓內
+      var b = cvs(), bc = b.getContext("2d"), c = cvs(), cc = c.getContext("2d"); bc.drawImage(imgs.body, 0, 0);   // 底圖：完成圖，胸部範圍內換成平胸版
+      if (ART) {
+        var u = cvs(), uc = u.getContext("2d"); uc.drawImage(imgs.under, 0, 0); uc.globalCompositeOperation = "destination-in"; uc.drawImage(imgs.chest, 0, 0);
+        bc.globalCompositeOperation = "destination-out"; bc.drawImage(imgs.chest, 0, 0); bc.globalCompositeOperation = "source-over"; bc.drawImage(u, 0, 0);
+        cc.drawImage(imgs.chest, 0, 0);                                                                              // 胸部層：美術給的那張
+      } else {
+        bc.save(); path(bc); bc.clip(); bc.clearRect(0, 0, R.w, R.h); bc.drawImage(imgs.under, 0, 0); bc.restore();
+        cc.save(); path(cc); cc.clip(); cc.drawImage(imgs.body, 0, 0); cc.restore();                                 // 胸部層：完成圖只留輪廓內
+      }
       tex = { base: mkTex(b), chest: mkTex(c), acc: mkTex(imgs.acc), blink: mkTex(imgs.blink) };
     }
-    ["body", "under", "acc", "blink"].forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + id + "_" + n + ".webp"; });
+    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + id + "_" + n + ".webp"; });
 
     var P = { K: 42, C: 3.4, BREATH: 0.0035, BT: 3.8, LIFT: 0.010, MAX: 0.032, amp: opt.amp == null ? 1 : opt.amp };
     var c = [{ x: 0, y: 0, vx: 0, vy: 0 }, { x: 0, y: 0, vx: 0, vy: 0 }], ear = [{ a: 0, v: 0 }, { a: 0, v: 0 }];
