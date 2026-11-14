@@ -1,4 +1,4 @@
-// 分層立繪原型（孫權 UR）。每個部位一張圖、各自動：身體呼吸、胸部彈簧、前髮擺動、耳環擺動、眨眼。
+// 分層立繪原型（孫權 UR）。每個部位一張圖、各自動：身體呼吸、胸部彈簧、耳環擺動、眨眼（前髮層美術拆得不夠乾淨，先不動）。
 // 用法：SG.Layered.mount(容器, "sunquan_ur")。之後 SSR／UR 照同一套圖層規格就能套用。
 (function (SG) {
   var RIG = {
@@ -10,16 +10,15 @@
     },
   };
   var VS = "attribute vec2 a;varying vec2 v;uniform int m;uniform float br,hs,t;uniform vec4 e0,e1;uniform vec2 o0,o1,p0,p1;uniform vec2 ang;uniform float asp;" +
-    "vec2 ch(vec2 p,vec4 e,vec2 o){vec2 d=(a-e.xy)/e.zw;float w=(1.-smoothstep(.55,1.2,length(d)))*smoothstep(-1.15,.1,d.y);return o*w;}" +
+    "vec2 ch(){vec2 dl=(a-e0.xy)/e0.zw,dr=(a-e1.xy)/e1.zw;float sd=smoothstep(e0.x+e0.z*.35,e1.x-e1.z*.35,a.x);vec2 o=mix(o0,o1,sd);float top=smoothstep(-1.2,.15,mix(dl.y,dr.y,sd));float sf=(1.-smoothstep(1.,1.55,-dl.x))*(1.-smoothstep(1.,1.55,dr.x));return o*top*sf;}" +
     "vec2 rot(vec2 p,vec2 c,float g){vec2 d=(p-c)*vec2(1.,asp);float s=sin(g),k=cos(g);d=vec2(d.x*k-d.y*s,d.x*s+d.y*k);return c+d/vec2(1.,asp);}" +
     "void main(){v=a;vec2 p=a;" +
-    "if(m==1){p+=ch(p,e0,o0)+ch(p,e1,o1);}" +
-    "if(m==2){float k=clamp((a.y-hs)/.5,0.,1.);p.x+=(o0.x+sign(a.x-.5)*o0.y)*k*k+.0035*sin(t*1.3+a.y*9.)*k;}" +
-    "if(m==3){p=a.x<.5?rot(p,p0,ang.x):rot(p,p1,ang.y);}" +
+    "if(m==1){p+=ch();}" +
+        "if(m==3){p=a.x<.5?rot(p,p0,ang.x):rot(p,p1,ang.y);}" +
     "p.y-=br*smoothstep(.95,.5,a.y);p.x+=(p.x-.5)*br*.6*smoothstep(.8,.5,a.y)*smoothstep(.2,.5,a.y);" +
     "gl_Position=vec4(p.x*2.-1.,1.-p.y*2.,0.,1.);}";
   var FS = "precision mediump float;varying vec2 v;uniform sampler2D s;uniform float al;void main(){vec4 c=texture2D(s,v);gl_FragColor=vec4(c.rgb*c.a,c.a)*al;}";
-  var NAMES = ["base", "chest", "hair", "acc", "blink"];
+  var NAMES = ["base", "chest", "acc", "blink"];
 
   function mount(box, id, opt) {
     var R = RIG[id]; if (!R) return null; opt = opt || {};
@@ -47,7 +46,7 @@
     });
 
     // 動態狀態
-    var P = { K: 42, C: 3.4, BREATH: 0.0035, BT: 3.8, LIFT: 0.010, MAX: 0.05, amp: opt.amp == null ? 1 : opt.amp };
+    var P = { K: 42, C: 3.4, BREATH: 0.0035, BT: 3.8, LIFT: 0.010, MAX: 0.032, amp: opt.amp == null ? 1 : opt.amp };
     var c = [{ x: 0, y: 0, vx: 0, vy: 0 }, { x: 0, y: 0, vx: 0, vy: 0 }], hair = { x: 0, v: 0 }, ear = [{ a: 0, v: 0 }, { a: 0, v: 0 }];
     var grab = -1, gx = 0, gy = 0, lastX = 0, lastT = 0, blink = 0, nextBlink = 2 + Math.random() * 3, t0 = performance.now(), prev = t0, run = true;
     function uv(e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; }
@@ -60,7 +59,7 @@
     });
     cv.addEventListener("pointermove", function (e) {
       var p = uv(e), now = performance.now(), vx = (p[0] - lastX) / Math.max(8, now - lastT) * 1000; lastX = p[0]; lastT = now;
-      if (grab >= 0) { var s = c[grab], lim = P.MAX * P.amp; s.x = Math.max(-lim, Math.min(lim, (p[0] - gx) * 0.6)); s.y = Math.max(-lim, Math.min(lim, (p[1] - gy) * 0.6)); s.vx = s.vy = 0; var o = c[1 - grab]; o.vx += (s.x - o.x) * 0.6; }
+      if (grab >= 0) { var s = c[grab], lim = P.MAX * P.amp; s.x = Math.max(-lim, Math.min(lim, (p[0] - gx) * 0.6)); s.y = Math.max(-lim * 0.8, Math.min(lim, (p[1] - gy) * 0.6)); s.vx = s.vy = 0; var o = c[1 - grab]; o.vx += (s.x - o.x) * 0.6; }
       else if (e.buttons || e.pointerType === "touch") { hair.v += vx * 0.004; ear[0].v += vx * 0.25; ear[1].v += vx * 0.25; c[0].vx += vx * 0.01 * P.amp; c[1].vx += vx * 0.01 * P.amp; }
     });
     function up() { grab = -1; } cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
@@ -86,8 +85,7 @@
       gl.uniform2f(U.o0, c[0].x, c[0].y); gl.uniform2f(U.o1, c[1].x, c[1].y);
       draw("base", 0, 1); if (bl > 0.02) draw("blink", 0, bl);
       draw("chest", 1, 1);
-      gl.uniform2f(U.o0, hair.x, 0.004 * Math.sin(t * 0.8)); draw("hair", 2, 1);
-      gl.uniform2f(U.ang, ear[0].a, ear[1].a); draw("acc", 3, 1);
+            gl.uniform2f(U.ang, ear[0].a, ear[1].a); draw("acc", 3, 1);
     }
     requestAnimationFrame(frame);
     return { canvas: cv, params: P, stop: function () { run = false; }, poke: function () { c[0].vy -= 0.3; c[1].vy -= 0.26; hair.v += 0.08; ear[0].v += 3; ear[1].v -= 3; }, state: function () { return { c: c, hair: hair, ear: ear }; } };
