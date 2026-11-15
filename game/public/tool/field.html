@@ -79,7 +79,7 @@ var SLOT=[[0,6],[-15,-8],[15,-8],[-15,18],[15,18],[0,-21],[0,26],[-24,5],[24,5]]
 function nMen(u){return Math.max(1,Math.min(9,Math.ceil(u.troops/1000)))}
 // ── 畫面元素 ─────────────────────────────────────────
 var PROP={"^":["obj_mountain_1","obj_mountain_2"],"f":["obj_forest_1","obj_forest_2"],"#":["obj_fence"]};
-function prop(x,y,ch){var g=document.createElement("div");g.className="g";g.dataset.z="0";g.style.left=(x+.5)*C+"px";g.style.top=(y+.5)*C+"px";var v=PROP[ch],n=v[(x*7+y*13)%v.length],h=ch==="#"?30:ch==="^"?66:56,w=66;
+function prop(x,y,ch){var g=document.createElement("div");g.className="g";g.dataset.z="0";g.style.left=(x+.5)*C+"px";g.style.top=(y+.5)*C+"px";var v=PROP[ch],n=v[(x*7+y*13)%v.length],h=ch==="#"?46:ch==="^"?70:60,w=70;
   g.innerHTML='<div class="up" style="transform:'+UP+';width:'+w+'px;height:'+h+'px;margin:-'+(h-8)+'px 0 0 -'+w/2+'px;pointer-events:none"><img src="../img/bf/'+n+'.webp" alt="" style="position:absolute;left:50%;bottom:0;max-width:100%;max-height:100%;transform:translateX(-50%)"></div>';board.appendChild(g)}
 var cells={};for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){var d=document.createElement("div");d.className="cell";d.dataset.t=T(x,y);if(PROP[T(x,y)])prop(x,y,T(x,y));if(T(x,y)==="="&&!(T(x-1,y)==="~"||T(x+1,y)==="~"||T(x-1,y)==="="||T(x+1,y)==="=")){d.dataset.h="1";d.className="cell h"}   // 橋的方向：河是直的就轉 90 度
   d.style.backgroundPosition=(-x*C)+"px "+(-y*C)+"px";d.style.cssText="left:"+x*C+"px;top:"+y*C+"px;width:"+C+"px;height:"+C+"px";d.dataset.k="c";d.dataset.x=x;d.dataset.y=y;board.appendChild(d);cells[x+","+y]=d}
