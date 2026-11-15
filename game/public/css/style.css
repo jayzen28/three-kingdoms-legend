@@ -683,6 +683,6 @@ p,h2,.dim,.sub,.lead,.t,#modal-body p,#banner{text-wrap:balance}
 @keyframes rxshine{0%,55%{background-position:150% 0}100%{background-position:-60% 0}}
 @keyframes rxpulse{50%{box-shadow:0 0 0 .03em rgba(0,0,0,.8),inset 0 0 .3em var(--rxg),0 0 .8em var(--rxg),0 .08em .18em rgba(0,0,0,.6)}}
 @media (prefers-reduced-motion:reduce){.rx,.rx::after{animation:none}}
-.cc .rb.rx{font-size:13cqw;right:2cqw;top:2.5cqw}
+.cc .rb.rx{font-size:10cqw;right:.5cqw;top:1cqw;padding:.1em .34em .14em .34em}   /* 縮小並貼緊右上角，少擋一點頭（Jay 2026-11-15） */
 .bigart .rk.rxw{background:none;box-shadow:none;padding:0;display:flex;align-items:center;gap:6px}.bigart .rk.rxw .rx{font-size:26px}
 .rv-spot .lab.rxw{background:none;-webkit-background-clip:border-box;background-clip:border-box;filter:none;letter-spacing:0}
