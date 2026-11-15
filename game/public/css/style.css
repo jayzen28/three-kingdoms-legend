@@ -220,7 +220,7 @@ button.plain{background:var(--paper);color:var(--ink);box-shadow:none;border-col
 #b-tip{font-size:12.5px;color:var(--ink-2)}
 #b-wrap{position:relative;border:6px solid var(--lacquer);box-shadow:inset 0 0 0 1px var(--gold),0 0 0 1px var(--gold),0 4px 10px rgba(34,32,30,.35)}
 #b-map{display:none}
-#b-wrap::before{content:"";position:absolute;inset:0;background:url(../img/field.webp) center/100% 100% no-repeat}
+#b-wrap::before{content:"";position:absolute;inset:0;background:none}
 #b-wrap.flip::before{transform:scaleX(-1)}
 #b-fx{position:absolute;inset:0;pointer-events:none;z-index:9;overflow:hidden}
 .board{position:relative;display:grid;grid-template-columns:repeat(8,1fr)}
@@ -562,7 +562,6 @@ button.chip.on{background:linear-gradient(#c8372c,#8b1c16);color:#fff1d2;border-
 .f-wu.v1{background-image:url(../img/bg_wu_1.webp)!important}.f-wu.v2{background-image:url(../img/bg_wu_2.webp)!important}.f-wu.v3{background-image:url(../img/bg_wu_3.webp)!important}.f-wu.v4{background-image:url(../img/bg_wu_4.webp)!important}.f-wu.v5{background-image:url(../img/bg_wu_5.webp)!important}.f-wu.v6{background-image:url(../img/bg_wu_6.webp)!important}.f-wu.v7{background-image:url(../img/bg_wu_7.webp)!important}
 .f-qun.v1{background-image:url(../img/bg_qun_1.webp)!important}.f-qun.v2{background-image:url(../img/bg_qun_2.webp)!important}.f-qun.v3{background-image:url(../img/bg_qun_3.webp)!important}.f-qun.v4{background-image:url(../img/bg_qun_4.webp)!important}.f-qun.v5{background-image:url(../img/bg_qun_5.webp)!important}.f-qun.v6{background-image:url(../img/bg_qun_6.webp)!important}.f-qun.v7{background-image:url(../img/bg_qun_7.webp)!important}
 .f-yt.v1{background-image:url(../img/bg_yt_1.webp)!important}.f-yt.v2{background-image:url(../img/bg_yt_2.webp)!important}.f-yt.v3{background-image:url(../img/bg_yt_3.webp)!important}.f-yt.v4{background-image:url(../img/bg_yt_4.webp)!important}.f-yt.v5{background-image:url(../img/bg_yt_5.webp)!important}.f-yt.v6{background-image:url(../img/bg_yt_6.webp)!important}.f-yt.v7{background-image:url(../img/bg_yt_7.webp)!important}
-#b-wrap.fd1::before{background-image:url(../img/field_1.webp)}#b-wrap.fd2::before{background-image:url(../img/field_2.webp)}#b-wrap.fd3::before{background-image:url(../img/field_3.webp)}#b-wrap.fd4::before{background-image:url(../img/field_4.webp)}#b-wrap.fd5::before{background-image:url(../img/field_5.webp)}#b-wrap.fd6::before{background-image:url(../img/field_6.webp)}#b-wrap.fd7::before{background-image:url(../img/field_7.webp)}#b-wrap.fd8::before{background-image:url(../img/field_8.webp)}
 
 /* ===== 斜視戰場（✅ Jay 2026-11-15：正式版改用斜視戰場） ===== */
 #b-wrap.b3d{height:50vh;min-height:320px;max-height:640px;overflow:hidden;background:#1b2433}
