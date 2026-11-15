@@ -4,7 +4,7 @@
 *{box-sizing:border-box}html,body{margin:0;height:100%;background:#0b0a0d;color:#f0e8d8;font-family:"Noto Serif TC",system-ui,serif;overflow:hidden;-webkit-user-select:none;user-select:none}
 #wrap{position:fixed;inset:0;display:flex;flex-direction:column}
 #top,#bot{background:#120f14;padding:7px 10px;font-size:13px;line-height:1.45;z-index:5}#top{border-bottom:1px solid #d4a853;display:flex;gap:8px;align-items:center}#bot{border-top:1px solid #d4a853;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
-button{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6px;padding:7px 10px;font:inherit;font-size:13px}button.go{background:#e05858;border-color:#d4a853;color:#fff}button:disabled{opacity:.4}
+button{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6px;padding:7px 9px;font:inherit;font-size:13px;white-space:nowrap;flex:none}button.go{background:#e05858;border-color:#d4a853;color:#fff}button:disabled{opacity:.4}
 #view{flex:1;min-height:0;position:relative;overflow:hidden;perspective:2200px;perspective-origin:50% 40%;background:linear-gradient(#1b2433,#2b2a22 55%,#15130f);touch-action:none}
 #pan{position:absolute;left:50%;top:50%;transform-style:preserve-3d}
 #board{position:absolute;transform-style:preserve-3d;transform-origin:50% 50%;background:#6f6a4e center/100% 100%;box-shadow:0 0 0 6px #2a2118,0 30px 60px rgba(0,0,0,.6)}
@@ -12,7 +12,7 @@ button{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6
 .cell.mv{background:rgba(70,150,255,.34);border-color:rgba(120,190,255,.9)}.cell.at{background:rgba(255,70,60,.38);border-color:#ff8a7a}.cell.sel{background:rgba(255,220,90,.4);border-color:#ffe07a}
 .g{position:absolute;transform-style:preserve-3d;transition:left .28s linear,top .28s linear}            /* 貼在地面上的定位點 */
 .up{position:absolute;left:0;top:0;transform-origin:50% 100%;transform-style:preserve-3d}                 /* 立起來的東西 */
-.sol{width:22px;height:30px;margin-left:-11px;margin-top:-30px}
+.sol{width:22px;height:30px;margin-left:-11px;margin-top:-28px}
 .sol i{display:block;width:100%;height:100%;animation:bob 1.1s ease-in-out infinite;transform-origin:50% 100%}
 .sol.jab i{animation:jab .22s ease-in-out 3}.sol.dead i{animation:die .5s ease-in forwards}
 .unit.hit .sol i{animation:shake .3s linear 2}
@@ -20,48 +20,50 @@ button{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6
 @keyframes jab{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-7px) rotate(-10deg)}}
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
 @keyframes die{to{transform:rotate(85deg) translateY(4px);opacity:0}}
-.flag{width:40px;height:62px;margin-left:-20px;margin-top:-62px;pointer-events:none}
+.flag{width:40px;height:62px;margin-left:-20px;margin-top:-74px;pointer-events:none}
 .flag .pole{position:absolute;left:19px;top:0;width:2px;height:62px;background:#3a2a18}
 .flag .face{position:absolute;left:2px;top:0;width:36px;height:36px;border-radius:50%;border:2px solid var(--c);background:#222 center/cover;box-shadow:0 2px 6px rgba(0,0,0,.6)}
 .flag .hp{position:absolute;left:-6px;top:38px;width:52px;text-align:center;font:700 11px/1 monospace;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000}
 .flag .bar{position:absolute;left:0;top:50px;width:40px;height:4px;background:#0008;border-radius:2px;overflow:hidden}.flag .bar b{display:block;height:100%;background:var(--c)}
-.unit.done .face{filter:grayscale(.9) brightness(.7)}.unit.done .sol{opacity:.65}
+.unit.done .up{filter:grayscale(1) brightness(.62)}
 .pop{position:absolute;margin-top:-80px;transform-origin:50% 100%;font:900 20px/1 "Noto Serif TC",serif;color:#fff;text-shadow:0 0 4px #000,0 0 4px #000;white-space:nowrap;pointer-events:none;animation:rise .9s ease-out forwards;margin-left:-40px;width:80px;text-align:center}
 .pop.dmg{color:#ff6a5a;font-family:monospace}.pop.cry{color:#ffe07a;font-size:24px}
 @keyframes rise{from{opacity:1;margin-top:-70px}to{opacity:0;margin-top:-120px}}
 .bld{pointer-events:none}.bld svg{display:block}
-.bld .tag{position:absolute;left:50%;top:-22px;transform:translateX(-50%);white-space:nowrap;font:700 11px/1.2 monospace;background:#000a;padding:2px 6px;border-radius:4px;border:1px solid var(--c)}
+.bld .tag{position:absolute;left:50%;top:-26px;transform:translateX(-50%);white-space:nowrap;font:700 11px/1.2 monospace;background:#000a;padding:2px 6px;border-radius:4px;border:1px solid var(--c)}
 .bld .tag u{display:block;height:4px;margin-top:2px;background:#333;border-radius:2px;overflow:hidden;text-decoration:none}.bld .tag u b{display:block;height:100%;background:var(--c)}
 .bld.hit svg{animation:shake .3s linear 2}
-.hot{position:absolute;border:2px dashed transparent;border-radius:6px}.hot.at{border-color:#ff8a7a;background:rgba(255,70,60,.3)}.hot.mv{border-color:#7ac0ff;background:rgba(70,150,255,.3)}
+.hot{position:absolute;border:2px dashed transparent;border-radius:6px}.hot.base{border:3px solid var(--c);background:color-mix(in srgb,var(--c) 30%,transparent);border-radius:4px}.hot.at{border-color:#ff8a7a;background:rgba(255,70,60,.3)}.hot.mv{border-color:#7ac0ff;background:rgba(70,150,255,.3)}
 #info{min-height:38px}#info b{color:#d4a853}
 .row{display:flex;gap:6px;align-items:center;margin-top:6px}
 #end{margin-left:auto}
+#rost{position:absolute;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;z-index:8;padding:10px}#rbox{background:#17131a;border:1px solid #d4a853;border-radius:8px;padding:10px;width:100%;max-width:560px;max-height:100%;overflow:auto;font-size:12px}
+.rr{position:relative;display:grid;grid-template-columns:30px 1fr;grid-template-rows:auto auto auto;column-gap:6px;padding:4px 0;border-top:1px solid #ffffff14}.rr em{grid-row:1/4;width:30px;height:30px;border-radius:50%;background:#333 center/cover;font-style:normal;text-align:center;line-height:30px;color:#d4a853}.rr b{grid-column:2;color:#f0e8d8}.rr span{grid-column:2;color:#b9ab8a}.rr u{grid-column:2;height:4px;background:#333;border-radius:2px;overflow:hidden;margin-top:2px}.rr u i{display:block;height:100%}.rr.out{opacity:.4}.rr:not(:has(em)){grid-template-columns:1fr;border:1px solid;border-radius:4px;padding:4px 6px;margin-bottom:4px}.rr:not(:has(em)) b,.rr:not(:has(em)) span,.rr:not(:has(em)) u{grid-column:1}
 #over{position:absolute;inset:0;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;z-index:9;text-align:center;font-size:26px;color:#d4a853;flex-direction:column;gap:14px}
 </style></head><body><div id="wrap">
-<div id="top"><b style="color:#d4a853">戰場試作</b><span id="turn"></span><span style="flex:1"></span><button id="zo">－</button><button id="zi">＋</button><button id="snd">聲音：開</button></div>
-<div id="view"><div id="pan"><div id="board"></div></div><div id="over"><div id="otxt"></div><button class="go" onclick="location.reload()">再打一次</button></div></div>
+<div id="top"><span id="turn" style="line-height:1.3"></span><span style="flex:1"></span><button id="ros">部隊</button><button id="zo">－</button><button id="zi">＋</button><button id="snd">音：開</button></div>
+<div id="view"><div id="pan"><div id="board"></div></div><div id="rost"><div id="rbox"><div style="display:flex;align-items:center;margin-bottom:8px"><b style="color:#d4a853;font-size:16px">雙方部隊</b><span style="flex:1"></span><button onclick="document.getElementById('rost').style.display='none'">關閉</button></div><div id="rbody"></div></div></div><div id="over"><div id="otxt"></div><button class="go" onclick="location.reload()">再打一次</button></div></div>
 <div id="bot"><div id="info"></div><div class="row"><button id="wait" disabled>待命</button><button id="post" disabled>進駐糧倉</button><button id="end" class="go">結束回合</button></div></div>
 </div>
 <script>
 (function(){
-var COLS=10,ROWS=14,C=64,TILT=48,$=function(q){return document.querySelector(q)},board=$("#board"),pan=$("#pan"),view=$("#view");
-var UP="translate(0,0) rotateX(-"+TILT+"deg)";
-board.style.width=COLS*C+"px";board.style.height=ROWS*C+"px";board.style.left=-COLS*C/2+"px";board.style.top=-ROWS*C/2+"px";board.style.backgroundImage="url(../img/field_6.webp)";
-var zoom=1,px=0,py=-120;function place(){pan.style.transform="translate("+px+"px,"+py+"px) scale("+zoom+") rotateX("+TILT+"deg)"}place();
+var COLS=12,ROWS=12,C=56,TILT=56,ROT=45,$=function(q){return document.querySelector(q)},board=$("#board"),pan=$("#pan"),view=$("#view");
+var UP="rotateZ(-"+ROT+"deg) rotateX(-"+TILT+"deg)";
+board.style.width=COLS*C+"px";board.style.height=ROWS*C+"px";board.style.left=-COLS*C/2+"px";board.style.top=-ROWS*C/2+"px";board.style.backgroundImage="url(../img/field_7.webp)";
+var zoom=1,px=0,py=-120;function place(){pan.style.transform="translate("+px+"px,"+py+"px) scale("+zoom+") rotateX("+TILT+"deg) rotateZ("+ROT+"deg)"}place();
 // ── 資料 ─────────────────────────────────────────────
 var COL={p:"#4ec87a",e:"#e0b030"},ADV={"槍":"騎","騎":"弓","弓":"槍"};
-function U(side,name,art,typ,troops,atk,x,y,o){var mv={"槍":3,"騎":4,"弓":3,"法":2,"刺":3}[typ],r={"弓":[2,3],"法":[1,3]}[typ]||[1,1];return Object.assign({side:side,name:name,art:art,typ:typ,troops:troops,max:troops,atk:atk,mv:mv,rng:r,x:x,y:y,done:false,post:null},o||{})}
+function U(side,name,art,typ,troops,atk,x,y,o){var mv={"槍":2,"騎":3,"弓":2,"法":2,"刺":2}[typ],r={"弓":[2,3],"法":[1,3]}[typ]||[1,1];return Object.assign({side:side,name:name,art:art,typ:typ,troops:troops,max:troops,atk:atk,mv:mv,rng:r,x:x,y:y,done:false,post:null},o||{})}
 var units=[
- U("p","關羽","guanyu","騎",6000,1500,3,10),U("p","張飛","zhangfei","槍",7000,1300,5,10),U("p","趙雲","zhaoyun","騎",6000,1450,7,10),
- U("p","黃忠","huangzhong","弓",5000,1250,2,11),U("p","諸葛亮","zhugeliang","法",5000,1350,6,11),U("p","劉備","liubei","槍",6000,1100,4,11),
+ U("p","關羽","guanyu","騎",6000,1500,9,7),U("p","張飛","zhangfei","槍",7000,1300,8,8),U("p","趙雲","zhaoyun","騎",6000,1450,7,9),
+ U("p","黃忠","huangzhong","弓",5000,1250,10,8),U("p","諸葛亮","zhugeliang","法",5000,1350,8,10),U("p","劉備","liubei","槍",6000,1100,9,9),
  U("e","張角","zhangjiao","法",7000,1400,-1,-1,{post:"castle"}),
- U("e","張寶","zhangbao","法",5000,1200,3,3,{role:"def"}),U("e","張梁","zhangliang","槍",6000,1250,6,3,{role:"def"}),
- U("e","黃巾槍兵","","槍",4000,950,2,4,{role:"def"}),U("e","黃巾弓兵","","弓",3000,900,7,4,{role:"def"}),
- U("e","黃巾騎兵","","騎",4000,1000,1,5,{role:"raid"}),U("e","黃巾騎兵","","騎",4000,1000,8,5,{role:"raid"})];
+ U("e","張寶","zhangbao","法",5000,1200,3,2,{role:"def"}),U("e","張梁","zhangliang","槍",6000,1250,2,3,{role:"def"}),
+ U("e","黃巾槍兵","","槍",4000,950,4,3,{role:"def"}),U("e","黃巾弓兵","","弓",3000,900,3,4,{role:"def"}),
+ U("e","黃巾騎兵","","騎",4000,1000,6,1,{role:"raid"}),U("e","黃巾騎兵","","騎",4000,1000,1,6,{role:"raid"})];
 units.forEach(function(u,i){u.id=i});
-var B={castle:{side:"e",name:"城門",hp:4000,max:4000,cells:[[4,0],[5,0],[4,1],[5,1]],x:5,y:2},granary:{side:"p",name:"糧倉",hp:3000,max:3000,cells:[[4,12],[5,12],[4,13],[5,13]],x:5,y:12}};
-var turn=1,phase="p",sel=null,moved=false,busy=false,snd=true;
+var B={castle:{side:"e",name:"城門",hp:4000,max:4000,cells:[[1,1]]},granary:{side:"p",name:"糧倉",hp:3000,max:3000,cells:[[10,10]]}};   // ✅ Jay：城和倉各佔一格
+var turn=1,phase="p",sel=null,busy=false,snd=true;
 // ── 小兵圖（先用程式畫的佔位圖，之後換美術）──────────────
 function soldier(typ,side){var c=COL[side],sk="#f1d2b0",w='<svg viewBox="0 0 22 30" width="22" height="30">';
   if(typ==="騎")w+='<ellipse cx="11" cy="23" rx="9" ry="4.5" fill="#5a3d28"/><rect x="4" y="24" width="2" height="6" fill="#3a2718"/><rect x="16" y="24" width="2" height="6" fill="#3a2718"/><circle cx="19" cy="19" r="3" fill="#5a3d28"/>';
@@ -73,41 +75,35 @@ function soldier(typ,side){var c=COL[side],sk="#f1d2b0",w='<svg viewBox="0 0 22 
   if(typ==="法")w+='<rect x="18" y="3" width="1.4" height="24" fill="#5a3d7a"/><circle cx="18.7" cy="3" r="2.6" fill="#9be0ff"/>';
   if(typ==="刺")w+='<rect x="17" y="13" width="1.4" height="7" fill="#cfd4da"/>';
   return w+"</svg>"}
-var SLOT=[[0,6],[-15,10],[15,10],[-8,22],[8,22],[-22,24],[22,24],[0,-6],[-15,-4]];
+var SLOT=[[0,4],[-13,-9],[13,-9],[-13,15],[13,15],[0,-20],[0,22],[-22,3],[22,3]];
 function nMen(u){return Math.max(1,Math.min(9,Math.ceil(u.troops/1000)))}
 // ── 畫面元素 ─────────────────────────────────────────
 var cells={};for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){var d=document.createElement("div");d.className="cell";d.style.cssText="left:"+x*C+"px;top:"+y*C+"px;width:"+C+"px;height:"+C+"px";d.dataset.k="c";d.dataset.x=x;d.dataset.y=y;board.appendChild(d);cells[x+","+y]=d}
-function gpos(u){if(u.post){var b=B[u.post];return [(b.cells[0][0]+1)*C,(b.cells[0][1]+(u.post==="castle"?1.56:2.1))*C]}return [(u.x+.5)*C,(u.y+.62)*C]}
-function lift(u){return u.post==="castle"?" translateY(-128px)":""}   // 守城的人站在城牆上
+function bpos(k){var c=B[k].cells[0];return [(c[0]+.5)*C,(c[1]+.5)*C]}
+function gpos(u){if(u.post)return bpos(u.post);return [(u.x+.5)*C,(u.y+.5)*C]}
+function lift(u){return u.post?" translateY(-46px)":""}   // 進駐的部隊：旗子掛在建築上方
 function mk(u){
   var g=document.createElement("div");g.className="g unit";g.dataset.k="u";g.dataset.id=u.id;g.style.setProperty("--c",COL[u.side]);u.el=g;board.appendChild(g);
-  var f=document.createElement("div");f.className="up flag";f.style.transform=UP;f.style.left="0px";f.style.top="-14px";
+  var f=document.createElement("div");f.className="up flag";f.style.transform=UP;f.style.left="0px";f.style.top="0px";
   f.innerHTML='<div class="pole"></div><div class="face"'+(u.art?' style="background-image:url(../img/'+u.art+'_head.webp)"':"")+'>'+(u.art?"":'<span style="display:block;text-align:center;line-height:32px;font-size:15px;color:'+COL[u.side]+'">'+u.typ+'</span>')+'</div><div class="hp"></div><div class="bar"><b></b></div>';g.appendChild(f);u.flag=f;
   u.men=[];draw(u);
 }
 function draw(u){
-  var p=gpos(u);u.el.style.left=p[0]+"px";u.el.style.top=p[1]+"px";u.el.style.zIndex=Math.round(p[1])+(u.post?2:0);u.flag.style.transform=UP+lift(u);u.flag.style.left=u.post==="castle"?"0px":u.post?"-70px":"0px";u.el.classList.toggle("done",u.done&&u.side===phase);
+  var p=gpos(u);u.el.style.left=p[0]+"px";u.el.style.top=p[1]+"px";u.el.style.zIndex=Math.round(p[0]+p[1])+(u.post?3:1);u.flag.style.transform=UP+lift(u);u.el.classList.toggle("done",!!u.done);
   var n=u.troops>0?nMen(u):0;
-  while(u.men.length<n){var i=u.men.length,s=document.createElement("div");s.className="up sol";s.style.transform=UP+lift(u);s.style.left=(u.post==="castle"?(i-(n-1)/2)*24:u.post?-70+SLOT[i][0]:SLOT[i][0])+"px";s.style.top=(u.post==="castle"?2:SLOT[i][1])+"px";s.innerHTML="<i style='animation-delay:-"+(Math.random()*1.1).toFixed(2)+"s'>"+soldier(u.typ,u.side)+"</i>";u.el.appendChild(s);u.men.push(s)}
+  while(u.men.length<n){var i=u.men.length,s=document.createElement("div");s.className="up sol";var ring=u.post?[[20,20],[-4,26],[26,-4],[30,12],[12,30],[-18,22],[22,-18],[34,30],[0,36]][i]:SLOT[i];s.style.transform=UP;s.style.left=ring[0]+"px";s.style.top=ring[1]+"px";s.innerHTML="<i style='animation-delay:-"+(Math.random()*1.1).toFixed(2)+"s'>"+soldier(u.typ,u.side)+"</i>";u.el.appendChild(s);u.men.push(s)}
   u.flag.querySelector(".hp").textContent=Math.max(0,Math.round(u.troops));u.flag.querySelector(".bar b").style.width=Math.max(0,u.troops/u.max*100)+"%";
   u.el.style.display=u.troops>0?"":"none";
 }
 function fall(u){var n=u.troops>0?nMen(u):0;while(u.men.length>n){var s=u.men.pop();s.classList.add("dead");(function(s){setTimeout(function(){s.remove()},520)})(s)}}
-function castleSVG(){return '<svg viewBox="0 0 190 150" width="190" height="150"><defs><linearGradient id="st" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9a9388"/><stop offset="1" stop-color="#5d574e"/></linearGradient></defs>'+
- '<path d="M55 30 L95 6 L135 30 L128 34 L62 34Z" fill="#3a2a22"/><rect x="66" y="34" width="58" height="26" fill="#7a2f24"/><rect x="62" y="56" width="66" height="6" fill="#3a2a22"/>'+
- '<rect x="4" y="52" width="38" height="98" fill="url(#st)" stroke="#2a2620"/><rect x="148" y="52" width="38" height="98" fill="url(#st)" stroke="#2a2620"/>'+
- '<path d="M4 52 v-10 h8 v6 h7 v-6 h8 v6 h7 v-6 h8 v10Z M148 52 v-10 h8 v6 h7 v-6 h8 v6 h7 v-6 h8 v10Z" fill="#8a8378" stroke="#2a2620"/>'+
- '<rect x="38" y="70" width="114" height="80" fill="url(#st)" stroke="#2a2620"/><path d="M38 70 v-9 h9 v5 h9 v-5 h9 v5 h9 v-5 h9 v5 h9 v-5 h9 v5 h9 v-5 h9 v5 h9 v-5 h9 v5 h6 v4Z" fill="#8a8378" stroke="#2a2620"/>'+
- '<path d="M72 150 V110 Q95 84 118 110 V150Z" fill="#4a3018" stroke="#1e140a" stroke-width="2"/><line x1="95" y1="94" x2="95" y2="150" stroke="#1e140a" stroke-width="2"/><circle cx="89" cy="124" r="2.4" fill="#d4a853"/><circle cx="101" cy="124" r="2.4" fill="#d4a853"/>'+
- '<rect x="20" y="20" width="2" height="24" fill="#3a2a18"/><path d="M22 20 h16 l-4 6 l4 6 h-16Z" fill="#e0b030"/></svg>'}
-function granarySVG(){return '<svg viewBox="0 0 150 110" width="150" height="110"><path d="M6 46 L75 6 L144 46 L134 52 L16 52Z" fill="#b8963c" stroke="#5a4416" stroke-width="2"/><path d="M20 46 L75 14 L130 46" fill="none" stroke="#8a6e24" stroke-width="2"/>'+
- '<rect x="20" y="50" width="110" height="60" fill="#7a5632" stroke="#3a2614" stroke-width="2"/><g stroke="#3a2614" stroke-width="1.5"><line x1="42" y1="50" x2="42" y2="110"/><line x1="64" y1="50" x2="64" y2="110"/><line x1="86" y1="50" x2="86" y2="110"/><line x1="108" y1="50" x2="108" y2="110"/></g>'+
- '<rect x="60" y="72" width="30" height="38" fill="#3a2614"/><ellipse cx="34" cy="102" rx="13" ry="9" fill="#d9c79a" stroke="#6a5a30"/><ellipse cx="118" cy="102" rx="13" ry="9" fill="#d9c79a" stroke="#6a5a30"/><ellipse cx="126" cy="90" rx="11" ry="8" fill="#e3d3a8" stroke="#6a5a30"/>'+
- '<rect x="128" y="14" width="2" height="26" fill="#3a2a18"/><path d="M130 14 h16 l-4 6 l4 6 h-16Z" fill="#4ec87a"/></svg>'}
-function mkB(k){var b=B[k],g=document.createElement("div");g.className="g";g.style.left=(b.cells[0][0]+1)*C+"px";g.style.top=(b.cells[0][1]+(k==="castle"?1.55:1.9))*C+"px";g.style.zIndex=Math.round((b.cells[0][1]+(k==="castle"?1.55:1.9))*C);board.appendChild(g);
-  var w=k==="castle"?266:190,h=k==="castle"?210:140,u=document.createElement("div");u.className="up bld";u.style.cssText="width:"+w+"px;height:"+h+"px;margin-left:-"+w/2+"px;margin-top:-"+h+"px;transform:"+UP;u.style.setProperty("--c",COL[b.side]);
-  u.innerHTML=(k==="castle"?castleSVG():granarySVG()).replace(/width="\d+" height="\d+"/,'width="'+w+'" height="'+h+'"')+'<div class="tag"><span></span><u><b></b></u></div>';g.appendChild(u);b.el=u;
-  var hot=document.createElement("div");hot.className="hot";hot.dataset.k="b";hot.dataset.b=k;hot.style.cssText="left:"+b.cells[0][0]*C+"px;top:"+b.cells[0][1]*C+"px;width:"+2*C+"px;height:"+2*C+"px";board.appendChild(hot);b.hot=hot;drawB(k)}
+function castleSVG(){return '<svg viewBox="0 0 80 70" width="80" height="70"><rect x="6" y="24" width="68" height="46" fill="#8d877c" stroke="#2a2620" stroke-width="2"/><path d="M6 24 v-10 h10 v6 h9 v-6 h10 v6 h10 v-6 h10 v6 h9 v-6 h10 v10Z" fill="#a39c90" stroke="#2a2620" stroke-width="2"/>'+
+ '<path d="M27 70 V46 Q40 30 53 46 V70Z" fill="#4a3018" stroke="#1e140a" stroke-width="2"/><line x1="40" y1="37" x2="40" y2="70" stroke="#1e140a" stroke-width="2"/><rect x="38" y="0" width="2" height="16" fill="#3a2a18"/><path d="M40 0 h14 l-4 5 l4 5 h-14Z" fill="#e0b030"/></svg>'}
+function granarySVG(){return '<svg viewBox="0 0 80 70" width="80" height="70"><path d="M2 32 L40 6 L78 32 L72 37 L8 37Z" fill="#c9a544" stroke="#5a4416" stroke-width="2"/><rect x="10" y="36" width="60" height="34" fill="#7a5632" stroke="#3a2614" stroke-width="2"/>'+
+ '<rect x="32" y="48" width="16" height="22" fill="#3a2614"/><ellipse cx="18" cy="66" rx="8" ry="5" fill="#e3d3a8" stroke="#6a5a30"/><ellipse cx="62" cy="66" rx="8" ry="5" fill="#e3d3a8" stroke="#6a5a30"/><rect x="38" y="0" width="2" height="12" fill="#3a2a18"/><path d="M40 0 h14 l-4 5 l4 5 h-14Z" fill="#4ec87a"/></svg>'}
+function mkB(k){var b=B[k],p=bpos(k),c=b.cells[0],g=document.createElement("div");g.className="g";g.style.left=p[0]+"px";g.style.top=p[1]+"px";g.style.zIndex=Math.round(p[0]+p[1])+2;board.appendChild(g);
+  var u=document.createElement("div");u.className="up bld";u.style.cssText="width:80px;height:70px;margin-left:-40px;margin-top:-66px;transform:"+UP;u.style.setProperty("--c",COL[b.side]);
+  u.innerHTML=(k==="castle"?castleSVG():granarySVG())+'<div class="tag"><span></span><u><b></b></u></div>';g.appendChild(u);b.el=u;
+  var hot=document.createElement("div");hot.className="hot base";hot.dataset.k="b";hot.dataset.b=k;hot.style.cssText="left:"+c[0]*C+"px;top:"+c[1]*C+"px;width:"+C+"px;height:"+C+"px";hot.style.setProperty("--c",COL[b.side]);board.appendChild(hot);b.hot=hot;drawB(k)}
 function drawB(k){var b=B[k];b.el.querySelector(".tag span").textContent=b.name+" "+Math.max(0,Math.round(b.hp));b.el.querySelector(".tag b").style.width=Math.max(0,b.hp/b.max*100)+"%"}
 mkB("castle");mkB("granary");units.forEach(mk);
 // ── 規則 ─────────────────────────────────────────────
@@ -115,7 +111,7 @@ function at(x,y){for(var i=0;i<units.length;i++){var u=units[i];if(u.troops>0&&!
 function inB(x,y){for(var k in B){var c=B[k].cells;for(var i=0;i<c.length;i++)if(c[i][0]===x&&c[i][1]===y)return k}return null}
 function free(x,y){return x>=0&&y>=0&&x<COLS&&y<ROWS&&!inB(x,y)&&!at(x,y)}
 function reach(u){var out={},q=[[u.x,u.y,0]];out[u.x+","+u.y]=0;while(q.length){var c=q.shift();if(c[2]>=u.mv)continue;[[1,0],[-1,0],[0,1],[0,-1]].forEach(function(d){var nx=c[0]+d[0],ny=c[1]+d[1],k=nx+","+ny;if(free(nx,ny)&&!(k in out)){out[k]=c[2]+1;q.push([nx,ny,c[2]+1])}})}return out}
-function posOf(u){if(u.post){var b=B[u.post];return [b.x-0.5,u.post==="castle"?1:12]}return [u.x,u.y]}
+function posOf(u){if(u.post)return B[u.post].cells[0];return [u.x,u.y]}
 function distB(x,y,k){var m=99;B[k].cells.forEach(function(c){m=Math.min(m,Math.abs(c[0]-x)+Math.abs(c[1]-y))});return m}
 function distU(a,b){var p=posOf(a),q=posOf(b);if(b.post)return distB(p[0],p[1],b.post);if(a.post)return distB(q[0],q[1],a.post);return Math.abs(p[0]-q[0])+Math.abs(p[1]-q[1])}
 function canHit(u,d){return d>=u.rng[0]&&d<=u.rng[1]}
@@ -141,21 +137,21 @@ async function attack(a,t){
   if(t.u){var v=t.u,q=gpos(v);await charge(a,q[0],q[1],ranged);var d=dmg(a,v);v.troops-=d;v.el.classList.add("hit");pop(q[0],q[1],"-"+d,"dmg");draw(v);fall(v);await sleep(380);v.el.classList.remove("hit");
     if(v.troops>0&&a.troops>0&&canHit(v,distU(v,a))){var p=gpos(a),d2=Math.round(dmg(v,a)*0.5);v.men.forEach(function(s){s.classList.add("jab")});await sleep(200);a.troops-=d2;a.el.classList.add("hit");pop(p[0],p[1],"-"+d2,"dmg");draw(a);fall(a);await sleep(320);a.el.classList.remove("hit");v.men.forEach(function(s){s.classList.remove("jab")})}
     if(v.troops<=0){pop(q[0],q[1],v.name+" 敗走","cry");draw(v)}}
-  else{var b=B[t.b],bx=(b.cells[0][0]+1)*C,by=(b.cells[0][1]+1.4)*C;await charge(a,bx,by,ranged);var d3=dmgB(a,t.b);b.hp-=d3;b.el.classList.add("hit");pop(bx,by,"-"+d3,"dmg");drawB(t.b);await sleep(420);b.el.classList.remove("hit")}
-  await back(a);a.done=true;draw(a);busy=false;check();
+  else{var b=B[t.b],bp=bpos(t.b),bx=bp[0],by=bp[1];await charge(a,bx,by,ranged);var d3=dmgB(a,t.b);b.hp-=d3;b.el.classList.add("hit");pop(bx,by,"-"+d3,"dmg");drawB(t.b);await sleep(420);b.el.classList.remove("hit")}
+  await back(a);a.done=true;draw(a);busy=false;hud();check();
 }
 // ── 操作 ─────────────────────────────────────────────
-function clearHL(){for(var k in cells)cells[k].className="cell";for(var b in B)B[b].hot.className="hot";units.forEach(function(u){u.flag.style.filter=""})}
+function clearHL(){for(var k in cells)cells[k].className="cell";for(var b in B)B[b].hot.className="hot base";units.forEach(function(u){u.flag.style.filter=""})}
 function info(t){$("#info").innerHTML=t}
 function showSel(){
   clearHL();$("#wait").disabled=!sel;$("#post").disabled=true;
-  if(!sel){info("點我方部隊（綠色）下指令。攻破<b>城門</b>就贏；我方<b>糧倉</b>被打掉就輸。可拖動地圖。");return}
-  var u=sel;info("<b>"+u.name+"</b>　"+u.typ+"兵　兵力 "+Math.round(u.troops)+"　移動 "+u.mv+"　射程 "+u.rng.join("–")+(u.post?"　<b>駐守糧倉中</b>（受傷 ×0.6）":""));
-  if(!u.post){cells[u.x+","+u.y].classList.add("sel");if(!moved){var r=reach(u);for(var k in r)if(r[k]>0)cells[k].classList.add("mv")}
+  if(!sel){info("點我方部隊（綠色）下指令：每隊每回合移動一次、行動一次，動過會變灰。攻破<b>城門</b>（左上）就贏；我方<b>糧倉</b>被打掉就輸。可拖動地圖。");return}
+  var u=sel;info("<b>"+u.name+"</b>　"+u.typ+"兵　兵力 "+Math.round(u.troops)+"　移動 "+u.mv+"　射程 "+u.rng.join("–")+(u.post?"　<b>駐守糧倉中</b>（受傷 ×0.6）":u.moved?"　<b>已移動</b>：只能攻擊或待命":""));
+  if(!u.post){cells[u.x+","+u.y].classList.add("sel");if(!u.moved){var r=reach(u);for(var k in r)if(r[k]>0)cells[k].classList.add("mv")}
     if(!guard("granary")&&distB(u.x,u.y,"granary")===1)$("#post").disabled=false}
   targets(u).forEach(function(t){if(t.u){if(t.u.post)B[t.u.post].hot.classList.add("at");else cells[t.u.x+","+t.u.y].classList.add("at")}else B[t.b].hot.classList.add("at")});
 }
-function pick(u){sel=u;moved=false;showSel()}
+function pick(u){sel=u;showSel()}
 async function tap(el){
   if(busy||phase!=="p")return;var k=el&&el.dataset.k;if(!k){sel=null;showSel();return}
   if(k==="u"){var w=units[+el.dataset.id];el=w.post?B[w.post].hot:cells[w.x+","+w.y];k=el.dataset.k}   // 點到小兵或旗子＝點那一格
@@ -168,17 +164,25 @@ async function tap(el){
   if(sel&&v&&v.side==="e"){var t=targets(sel).filter(function(t){return t.u===v})[0];if(t){var a2=sel;sel=null;await attack(a2,t);showSel();return}}
   if(v&&v.side==="p"&&!v.done){pick(v);return}
   if(v){info("<b>"+v.name+"</b>　"+v.typ+"兵　兵力 "+Math.round(v.troops)+(v.done?"　（已行動）":""));return}
-  if(sel&&!sel.post&&!moved){var r=reach(sel);if((x+","+y) in r){sel.x=x;sel.y=y;moved=true;draw(sel);busy=true;await sleep(300);busy=false;showSel();return}}
+  if(sel&&!sel.post&&!sel.moved){var r=reach(sel);if((x+","+y) in r&&r[x+","+y]>0){var w2=sel;w2.x=x;w2.y=y;w2.moved=true;draw(w2);busy=true;await sleep(300);busy=false;
+      if(!targets(w2).length&&!(distB(x,y,"granary")===1&&!guard("granary"))){w2.done=true;draw(w2);sel=null}   // 走完沒東西可打就直接結束這隊
+      showSel();return}}
   sel=null;showSel();
 }
 $("#wait").onclick=function(){if(sel&&!busy){sel.done=true;draw(sel);sel=null;showSel()}};
 $("#post").onclick=function(){if(sel&&!busy&&!guard("granary")){var u=sel;u.post="granary";u.x=u.y=-1;u.done=true;u.men.forEach(function(s){s.remove()});u.men=[];draw(u);sel=null;showSel()}};
 function check(){var o=null;if(B.castle.hp<=0)o="城門攻破！<br>勝利";else if(B.granary.hp<=0)o="糧倉被毀…<br>敗北";else if(!units.some(function(u){return u.side==="p"&&u.troops>0}))o="全軍覆沒…<br>敗北";
   if(o){$("#otxt").innerHTML=o;$("#over").style.display="flex";busy=true}return !!o}
-function hud(){$("#turn").textContent="第 "+turn+" 回合・"+(phase==="p"?"我方":"敵方")}
+function tot(s){return Math.round(units.reduce(function(a,u){return a+(u.side===s&&u.troops>0?u.troops:0)},0))}
+function hud(){$("#turn").innerHTML="第 "+turn+" 回合・"+(phase==="p"?"我方":"敵方")+'<br><span style="color:'+COL.p+'">'+tot("p")+'</span> : <span style="color:'+COL.e+'">'+tot("e")+'</span>'}
+function roster(){var h='<div style="display:flex;gap:10px;width:100%">';["p","e"].forEach(function(sd){var k=sd==="p"?"granary":"castle",b=B[k];
+  h+='<div style="flex:1;min-width:0"><div style="color:'+COL[sd]+';font-weight:700;margin-bottom:4px">'+(sd==="p"?"我方（攻）":"敵方（守）")+'　總兵力 '+tot(sd)+'</div><div class="rr" style="border-color:'+COL[sd]+'"><b>'+b.name+'</b><span>'+Math.max(0,Math.round(b.hp))+'／'+b.max+'</span><u><i style="width:'+Math.max(0,b.hp/b.max*100)+'%;background:'+COL[sd]+'"></i></u></div>';
+  units.filter(function(u){return u.side===sd}).forEach(function(u){var st=u.troops<=0?"敗走":u.post?"駐守":u.done?"已行動":"";
+    h+='<div class="rr'+(u.troops<=0?" out":"")+'"><em'+(u.art?' style="background-image:url(../img/'+u.art+'_head.webp)"':"")+'>'+(u.art?"":u.typ)+'</em><b>'+u.name+'</b><span>'+u.typ+'　'+Math.max(0,Math.round(u.troops))+(st?"　"+st:"")+'</span><u><i style="width:'+Math.max(0,u.troops/u.max*100)+'%;background:'+COL[sd]+'"></i></u></div>'});h+="</div>"});
+  $("#rbody").innerHTML=h+"</div>";$("#rost").style.display="flex"}
 // ── 敵方 AI（很簡單，只為了看演出）─────────────────────
 async function enemy(){
-  phase="e";hud();sel=null;clearHL();info("敵方行動中…");$("#end").disabled=true;
+  phase="e";hud();sel=null;clearHL();info("敵方行動中…");$("#end").disabled=true;units.forEach(function(u){if(u.side==="e"){u.done=false;draw(u)}});
   for(var i=0;i<units.length;i++){var u=units[i];if(u.side!=="e"||u.troops<=0)continue;if($("#over").style.display==="flex")return;
     if(!u.post){var goal=null;
       if(u.role==="raid")goal={b:"granary"};else{var best=null,bd=99;units.forEach(function(v){if(v.side==="p"&&v.troops>0){var d=distU(u,v);if(d<bd){bd=d;best=v}}});if(best)goal={u:best}}
@@ -186,7 +190,7 @@ async function enemy(){
         if(bk&&(bk[0]!==u.x||bk[1]!==u.y)){u.x=bk[0];u.y=bk[1];draw(u);await sleep(330)}}}
     var ts=targets(u);if(ts.length){var t=u.role==="raid"?(ts.filter(function(t){return t.b})[0]||ts[0]):ts.sort(function(a,b){return (a.u?a.u.troops:1e9)-(b.u?b.u.troops:1e9)})[0];await attack(u,t);await sleep(150)}}
   if($("#over").style.display==="flex")return;
-  units.forEach(function(u){u.done=false});turn++;phase="p";busy=false;units.forEach(draw);hud();$("#end").disabled=false;showSel();
+  units.forEach(function(u){u.done=false;u.moved=false});turn++;phase="p";busy=false;units.forEach(draw);hud();$("#end").disabled=false;showSel();
 }
 $("#end").onclick=function(){if(!busy&&phase==="p")enemy()};
 // ── 拖動、縮放、點擊 ─────────────────────────────────
@@ -194,8 +198,10 @@ var dn=null;view.addEventListener("pointerdown",function(e){dn={x:e.clientX,y:e.
 view.addEventListener("pointermove",function(e){if(!dn)return;var dx=e.clientX-dn.x,dy=e.clientY-dn.y;if(Math.abs(dx)+Math.abs(dy)>8)dn.mv=true;if(dn.mv){px=dn.px+dx;py=dn.py+dy;place()}});
 view.addEventListener("pointerup",function(e){if(!dn)return;var d=dn;dn=null;if(d.mv)return;var el=document.elementFromPoint(e.clientX,e.clientY);while(el&&el!==view&&!(el.dataset&&el.dataset.k))el=el.parentElement;tap(el&&el!==view?el:null)});
 $("#zi").onclick=function(){zoom=Math.min(1.6,zoom+0.15);place()};$("#zo").onclick=function(){zoom=Math.max(0.5,zoom-0.15);place()};
-$("#snd").onclick=function(){snd=!snd;this.textContent="聲音："+(snd?"開":"關")};
-zoom=Math.min(1.15,view.clientWidth/(COLS*C)*1.55);py=view.clientHeight/2-ROWS*C/2*Math.cos(TILT*Math.PI/180)*zoom-24;place();hud();showSel();   // 開場看我方這一側，往上拖看城堡
-window.__f={units:units,B:B,tap:tap,enemy:enemy,cells:cells,attack:attack,targets:targets};
+$("#ros").onclick=roster;
+$("#snd").onclick=function(){snd=!snd;this.textContent="音："+(snd?"開":"關")};
+function focus(x,y){var r=cells[x+","+y].getBoundingClientRect(),v=view.getBoundingClientRect();px+=v.left+v.width/2-(r.left+r.width/2);py+=v.top+v.height/2-(r.top+r.height/2);place()}
+zoom=Math.min(1.2,view.clientWidth/(COLS*C*1.414)*2.7);px=0;py=0;place();focus(8,8);hud();showSel();   // 開場看我方這一角；往左上拖看城   // 開場看我方這一側，往上拖看城堡
+window.__f={units:units,B:B,tap:tap,enemy:enemy,cells:cells,attack:attack,targets:targets,focus:focus,roster:roster};
 })();
 </script></body></html>
