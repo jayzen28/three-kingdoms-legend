@@ -1,0 +1,104 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>關卡編輯器｜三國LEGEND</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:#07060a;color:#f0e8d8;font-family:"Noto Serif TC",system-ui,serif;overflow:hidden;-webkit-user-select:none;user-select:none}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+#top,#bot{background:#120f14;padding:8px 10px;font-size:13px;line-height:1.5}#top{border-bottom:1px solid #d4a853}#bot{border-top:1px solid #d4a853;padding-bottom:calc(8px + env(safe-area-inset-bottom));max-height:46%;overflow:auto}
+.row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px}.row:first-child{margin-top:0}
+button,select,input[type=text]{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6px;padding:7px 9px;font:inherit;font-size:13px}
+input[type=text]{flex:1;min-width:0;user-select:text;-webkit-user-select:text}
+button.go{background:#e05858;border-color:#d4a853;color:#fff}button.ok{background:#2f7a52;border-color:#2f7a52;color:#fff}
+#pal{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+#pal button{flex:none;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 7px;min-width:50px;font-size:11px}
+#pal button i{width:26px;height:26px;border-radius:4px;display:block;border:1px solid #0008;font-style:normal;line-height:24px;text-align:center;font-size:14px;color:#fff}
+#pal button.on{border-color:#d4a853;box-shadow:0 0 0 2px #d4a853 inset}
+#pal span.sep{flex:none;width:1px;background:#6b5a3a;margin:0 2px}
+#mid{flex:1;min-height:0;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:10px;background:#1a1218}
+#grid{display:grid;touch-action:none;border:2px solid #2a2118;background:#b9ae84}
+.c{position:relative;border:1px solid rgba(40,30,15,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.c[data-t="^"]{background:#7d776c}.c[data-t="~"]{background:#3c78be}.c[data-t="="]{background:repeating-linear-gradient(90deg,#9a7646 0 6px,#7c5c34 6px 8px)}.c[data-t="f"]{background:#3b7d45}.c[data-t="#"]{background:#8a6a3e}
+.c[data-t="^"]::before{content:"▲";color:#e9e6df;opacity:.8}.c[data-t="f"]::before{content:"♣";color:#173d1d}.c[data-t="#"]::before{content:"卌";color:#3a2a14}.c[data-t="~"]::before{content:"≈";color:#bfe0ff;opacity:.7}
+.c b{position:absolute;inset:2px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;border:2px solid #000a;z-index:1}
+.c b.p{background:#2f9a5c}.c b.e{background:#c79a1c;color:#201400}.c b.castle{background:#6b5a3a;border-radius:4px;border-color:#e0b030}.c b.granary{background:#7a5632;border-radius:4px;border-color:#4ec87a}
+#hint{color:#c9b98f;font-size:12px}#msg{color:#9fd0a0}
+textarea{width:100%;height:54px;background:#07060a;color:#9fd0a0;border:1px solid #6b5a3a;border-radius:6px;font:11px monospace;user-select:text;-webkit-user-select:text}
+</style></head><body><div id="wrap">
+<div id="top">
+  <div class="row"><b style="color:#d4a853">關卡編輯器</b><input id="name" type="text" placeholder="關卡名稱" maxlength="20">
+    <select id="cols"></select>×<select id="rows"></select></div>
+  <div class="row"><div id="pal"></div></div>
+</div>
+<div id="mid"><div id="grid"></div></div>
+<div id="bot">
+  <div id="hint"></div>
+  <div class="row"><button id="play" class="go">試玩（斜視）</button><button id="save" class="ok">存檔</button><select id="load"></select><button id="del">刪除</button><button id="new">全新</button></div>
+  <div class="row"><button id="exp">匯出並複製給 Claude</button><button id="imp">貼上匯入</button><span id="msg"></span></div>
+  <textarea id="io" placeholder="按「匯出」後這裡會出現關卡文字；要匯入就把文字貼在這裡再按「貼上匯入」"></textarea>
+</div></div>
+<script>
+(function(){
+var $=function(q){return document.querySelector(q)},KEY="sg_levels",grid=$("#grid");
+// 筆刷：地形（每格一種）／ 建築（各一座）／ 部隊
+var TOOLS=[
+ {k:"t.",n:"平地",c:"#b9ae84"},{k:"t^",n:"山",c:"#7d776c",s:"▲"},{k:"t~",n:"水",c:"#3c78be",s:"≈"},{k:"t=",n:"橋",c:"#9a7646",s:"="},{k:"tf",n:"樹林",c:"#3b7d45",s:"♣"},{k:"t#",n:"柵欄",c:"#8a6a3e",s:"卌"},{sep:1},
+ {k:"castle",n:"城",c:"#6b5a3a",s:"城"},{k:"granary",n:"糧倉",c:"#7a5632",s:"倉"},{sep:1},
+ {k:"p",n:"我方",c:"#2f9a5c",s:"我"},{k:"e槍",n:"敵槍兵",c:"#c79a1c",s:"槍"},{k:"e騎",n:"敵騎兵",c:"#c79a1c",s:"騎"},{k:"e弓",n:"敵弓兵",c:"#c79a1c",s:"弓"},{k:"e法",n:"敵法師",c:"#c79a1c",s:"法"},{k:"e刺",n:"敵刺客",c:"#c79a1c",s:"刺"},{k:"x",n:"拿掉部隊",c:"#444",s:"✕"}];
+var HINT={"t.":"平地：正常走。","t^":"山：不能走。","t~":"水：不能走，要過河得放橋。","t=":"橋：可以走，放在水上。","tf":"樹林：走進去要花 2 步；站在裡面受傷打八折。","t#":"柵欄：不能走（之後可以做成能打壞）。",
+ castle:"城：守方（敵方）的城，全場一座。點哪裡就搬到哪裡。城門被攻破守方就輸。",granary:"糧倉：攻方（我方）的糧倉，全場一座。被打掉攻方就輸。",
+ p:"我方出場格：最多 6 格，數字是出場順序（1 關羽、2 張飛、3 趙雲、4 黃忠、5 諸葛亮、6 劉備）。再點一次拿掉。",x:"拿掉部隊：點一下拿掉那格的我方或敵方部隊。"};
+var tool="t^",L=null,PN=["關","張","趙","黃","諸","劉"];
+function blank(c,r){var t=[];for(var y=0;y<r;y++)t.push(Array(c+1).join("."));return {name:"",cols:c,rows:r,t:t,castle:[1,1],granary:[c-2,r-2],p:[],e:[]}}
+function setT(x,y,ch){var s=L.t[y];L.t[y]=s.substr(0,x)+ch+s.substr(x+1)}
+function getT(x,y){return L.t[y].charAt(x)}
+function same(a,x,y){return a&&a[0]===x&&a[1]===y}
+function clearCell(x,y){L.p=L.p.filter(function(c){return !same(c,x,y)});L.e=L.e.filter(function(o){return !(o.x===x&&o.y===y)})}
+function occupied(x,y){return same(L.castle,x,y)||same(L.granary,x,y)||L.p.some(function(c){return same(c,x,y)})||L.e.some(function(o){return o.x===x&&o.y===y})}
+function apply(x,y,drag){
+  if(tool.charAt(0)==="t"){var ch=tool.charAt(1);if((ch==="^"||ch==="~"||ch==="#")&&occupied(x,y))return;setT(x,y,ch)}   // 有部隊或建築的格子不能改成不能走的地形
+  else if(drag)return;                                                                                                   // 建築和部隊只在點的時候放，拖動不連放
+  else if(tool==="castle"||tool==="granary"){if(same(L[tool==="castle"?"granary":"castle"],x,y))return;clearCell(x,y);L[tool]=[x,y];setT(x,y,".")}
+  else if(tool==="p"){if(L.p.some(function(c){return same(c,x,y)})){L.p=L.p.filter(function(c){return !same(c,x,y)})}else{if(same(L.castle,x,y)||same(L.granary,x,y))return;if(L.p.length>=6){$("#msg").textContent="我方最多 6 格";return}clearCell(x,y);L.p.push([x,y]);if("^~#".indexOf(getT(x,y))>=0)setT(x,y,".")}}
+  else if(tool.charAt(0)==="e"){if(same(L.castle,x,y)||same(L.granary,x,y))return;clearCell(x,y);L.e.push({x:x,y:y,typ:tool.charAt(1)});if("^~#".indexOf(getT(x,y))>=0)setT(x,y,".")}
+  else if(tool==="x")clearCell(x,y);
+  draw();
+}
+function draw(){
+  var sz=Math.max(22,Math.min(44,Math.floor((Math.min($("#mid").clientWidth,640)-24)/L.cols)));
+  grid.style.gridTemplateColumns="repeat("+L.cols+","+sz+"px)";grid.innerHTML="";
+  for(var y=0;y<L.rows;y++)for(var x=0;x<L.cols;x++){var d=document.createElement("div");d.className="c";d.style.height=sz+"px";d.dataset.x=x;d.dataset.y=y;d.dataset.t=getT(x,y);
+    var h="";if(same(L.castle,x,y))h='<b class="castle">城</b>';else if(same(L.granary,x,y))h='<b class="granary">倉</b>';
+    else{var pi=-1;L.p.forEach(function(c,i){if(same(c,x,y))pi=i});if(pi>=0)h='<b class="p">'+(pi+1)+PN[pi]+'</b>';else{var e=L.e.filter(function(o){return o.x===x&&o.y===y})[0];if(e)h='<b class="e">'+e.typ+'</b>'}}
+    d.innerHTML=h;grid.appendChild(d)}
+  $("#name").value=L.name||"";$("#cols").value=L.cols;$("#rows").value=L.rows;
+  $("#hint").innerHTML=(HINT[tool]||"敵方部隊：點格子放一隊。騎兵會去打糧倉，其他守在原地附近。城裡固定有張角守城。")+"　<span style='color:#888'>我方 "+L.p.length+"／6　敵方 "+L.e.length+" 隊</span>";
+}
+// 調色盤
+TOOLS.forEach(function(t){if(t.sep){var s=document.createElement("span");s.className="sep";$("#pal").appendChild(s);return}
+  var b=document.createElement("button");b.dataset.k=t.k;b.innerHTML='<i style="background:'+t.c+'">'+(t.s||"")+'</i>'+t.n;b.onclick=function(){tool=t.k;document.querySelectorAll("#pal button").forEach(function(x){x.classList.toggle("on",x===b)});draw()};if(t.k===tool)b.classList.add("on");$("#pal").appendChild(b)});
+for(var i=8;i<=16;i++){["cols","rows"].forEach(function(id){var o=document.createElement("option");o.value=i;o.textContent=i;$("#"+id).appendChild(o)})}
+function resize(){var c=+$("#cols").value,r=+$("#rows").value,t=[];for(var y=0;y<r;y++){var s=(L.t[y]||"");while(s.length<c)s+=".";t.push(s.substr(0,c))}L.t=t;L.cols=c;L.rows=r;
+  var inb=function(a){return a[0]<c&&a[1]<r};if(!inb(L.castle))L.castle=[Math.min(1,c-1),Math.min(1,r-1)];if(!inb(L.granary))L.granary=[c-2,r-2];L.p=L.p.filter(inb);L.e=L.e.filter(function(o){return o.x<c&&o.y<r});setT(L.castle[0],L.castle[1],".");setT(L.granary[0],L.granary[1],".");draw()}
+$("#cols").onchange=resize;$("#rows").onchange=resize;$("#name").oninput=function(){L.name=this.value};
+// 點和拖
+var down=false,last="";function cellAt(e){var el=document.elementFromPoint(e.clientX,e.clientY);while(el&&el!==grid&&!(el.classList&&el.classList.contains("c")))el=el.parentElement;return el&&el!==grid?el:null}
+grid.addEventListener("pointerdown",function(e){down=true;var c=cellAt(e);if(c){last=c.dataset.x+","+c.dataset.y;apply(+c.dataset.x,+c.dataset.y,false)}});
+grid.addEventListener("pointermove",function(e){if(!down)return;var c=cellAt(e);if(c){var k=c.dataset.x+","+c.dataset.y;if(k!==last){last=k;apply(+c.dataset.x,+c.dataset.y,true)}}});
+window.addEventListener("pointerup",function(){down=false});
+// 存取
+function all(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+function fillLoad(){var a=all(),s=$("#load");s.innerHTML='<option value="">載入…</option>';Object.keys(a).forEach(function(k){var o=document.createElement("option");o.value=k;o.textContent=k;s.appendChild(o)})}
+function check(){if(!L.p.length)return "至少放一格我方出場格";return ""}
+$("#save").onclick=function(){if(!L.name){$("#msg").textContent="先取個關卡名稱";return}var a=all();a[L.name]=L;localStorage.setItem(KEY,JSON.stringify(a));fillLoad();$("#load").value=L.name;$("#msg").textContent="已存「"+L.name+"」"};
+$("#load").onchange=function(){var a=all();if(a[this.value]){L=JSON.parse(JSON.stringify(a[this.value]));draw();$("#msg").textContent="已載入"}};
+$("#del").onclick=function(){var k=$("#load").value;if(!k){$("#msg").textContent="先在「載入…」選一個";return}var a=all();delete a[k];localStorage.setItem(KEY,JSON.stringify(a));fillLoad();$("#msg").textContent="已刪除「"+k+"」"};
+$("#new").onclick=function(){L=blank(12,12);draw();$("#msg").textContent="全新 12×12"};
+$("#play").onclick=function(){var m=check();if(m){$("#msg").textContent=m;return}localStorage.setItem("sg_level_test",JSON.stringify(L));localStorage.setItem("sg_level_draft",JSON.stringify(L));location.href="field.html?level=test"};
+$("#exp").onclick=function(){var t="LEVEL "+JSON.stringify(L),o=$("#io");o.value=t;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$("#msg").textContent="已複製，貼給 Claude"},function(){o.select();try{document.execCommand("copy");$("#msg").textContent="已複製"}catch(e){$("#msg").textContent="請長按文字複製"}})};
+$("#imp").onclick=function(){try{var t=$("#io").value.trim().replace(/^LEVEL\s*/,""),o=JSON.parse(t);if(!o.t||!o.cols||!o.rows)throw 0;o.p=o.p||[];o.e=o.e||[];o.castle=o.castle||[1,1];o.granary=o.granary||[o.cols-2,o.rows-2];L=o;draw();$("#msg").textContent="已匯入"}catch(e){$("#msg").textContent="這段文字讀不出來"}};
+// 開場：接著上次的草稿，沒有就給一張示範
+var draft=null;try{draft=JSON.parse(localStorage.getItem("sg_level_draft"))}catch(e){}
+L=draft&&draft.t?draft:{name:"示範：渡河攻城",cols:12,rows:12,t:["............","............","....f.......","...f....^^..","~~~~=~~~~~~~","~~~~=~~~~=~~","..........^.","..f.........","..ff........","............","............","............"],castle:[1,1],granary:[10,10],p:[[9,7],[8,8],[7,9],[10,8],[8,10],[9,9]],e:[{x:3,y:2,typ:"法"},{x:2,y:3,typ:"槍"},{x:5,y:3,typ:"槍"},{x:6,y:2,typ:"弓"},{x:7,y:1,typ:"騎"},{x:1,y:3,typ:"騎"}]};
+setInterval(function(){try{localStorage.setItem("sg_level_draft",JSON.stringify(L))}catch(e){}},3000);
+fillLoad();draw();window.addEventListener("resize",draw);window.__l={get:function(){return L},apply:apply,setTool:function(k){tool=k;draw()}};
+})();
+</script></body></html>
