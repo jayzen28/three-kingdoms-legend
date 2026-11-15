@@ -9,7 +9,7 @@ button{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6
 #pan{position:absolute;left:50%;top:50%;transform-style:preserve-3d}
 #board{position:absolute;transform-style:preserve-3d;transform-origin:50% 50%;outline:3px solid rgba(60,40,15,.75);outline-offset:1px}
 .cell{position:absolute;border:1px solid rgba(40,30,15,.2)}
-.cell[data-t="~"],.cell[data-t="="]{background:url(../img/bf/ground_water.webp) 0 0/256px 256px;border-color:rgba(20,60,110,.25)}.cell[data-t="="]::after{content:"";position:absolute;inset:-2px 12%;background:url(../img/bf/obj_bridge.webp) center/100% 100%}.cell[data-t="="].h::after{transform:rotate(90deg)}.cell[data-t="^"]{background:rgba(90,84,74,.28)}.cell[data-t="f"]{background:rgba(40,90,45,.25)}
+.cell[data-t="~"],.cell[data-t="="]{background:url(../img/bf/ground_water.webp) 0 0/256px 256px;border-color:rgba(20,60,110,.25)}.cell[data-t="="]::after{content:"";position:absolute;inset:-3px 9%;background:url(../img/bf/obj_bridge.webp) center/100% 100%}.cell[data-t="="].h::after{transform:rotate(90deg)}.cell[data-t="^"],.cell[data-t="M"],.cell[data-t="n"]{background:rgba(90,84,74,.28)}.cell[data-t="f"]{background:rgba(40,90,45,.25)}
 .cell.mv{background:rgba(70,150,255,.34);border-color:rgba(120,190,255,.9)}.cell.at{background:rgba(255,70,60,.38);border-color:#ff8a7a}.cell.sel{background:rgba(255,220,90,.4);border-color:#ffe07a}
 .g{position:absolute;transform-style:preserve-3d;transition:left .28s linear,top .28s linear}            /* 貼在地面上的定位點 */
 .up{position:absolute;left:0;top:0;transform-origin:50% 100%;transform-style:preserve-3d}                 /* 立起來的東西 */
@@ -22,7 +22,15 @@ button{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
 @keyframes die{to{transform:rotate(85deg) translateY(4px);opacity:0}}
 .flag{width:40px;height:62px;margin-left:-20px;margin-top:-74px;pointer-events:none}
-.flag .pole{position:absolute;left:19px;top:0;width:2px;height:62px;background:#3a2a18}
+.flag .pole{display:none}
+.flag .ban{position:absolute;left:30px;bottom:-12px;width:33px;height:100px;background:url(../img/bf/flag_p.webp) 0 0/300% 100% no-repeat;animation:wave .9s step-end infinite}   /* ✅ Jay：飄揚的軍旗，寫武將的姓，三格動畫 */
+.flag .ban.e{background-image:url(../img/bf/flag_e.webp)}
+.flag .ban span{position:absolute;left:5px;top:9px;width:20px;height:24px;display:flex;align-items:center;justify-content:center;font:700 15px/1 "Ma Shan Zheng","Noto Serif TC",serif;color:#f6e7b4;text-shadow:0 0 2px #400,0 1px 1px #000}
+.flag .ban.e span{color:#4a1c08;text-shadow:0 0 2px #fff6}.flag .ban span.two{font-size:10px;writing-mode:vertical-rl;letter-spacing:-1px}
+@keyframes wave{0%{background-position:0 0}25%{background-position:50% 0}50%{background-position:100% 0}75%{background-position:50% 0}}
+@keyframes sway{0%,100%{transform:translateX(-50%) rotate(-1.8deg)}50%{transform:translateX(-50%) rotate(1.8deg)}}
+.sway img{transform-origin:50% 100%;animation:sway 3.4s ease-in-out infinite}
+@keyframes flick{50%{filter:brightness(1.14) saturate(1.25)}}.bld .bi.fire img{animation:flick .4s step-end infinite}
 .flag .face{position:absolute;left:2px;top:0;width:36px;height:36px;border-radius:50%;border:2px solid var(--c);background:#222 center/cover;box-shadow:0 2px 6px rgba(0,0,0,.6)}
 .flag .hp{position:absolute;left:-6px;top:38px;width:52px;text-align:center;font:700 11px/1 monospace;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000}
 .flag .bar{position:absolute;left:0;top:50px;width:40px;height:4px;background:#0008;border-radius:2px;overflow:hidden}.flag .bar b{display:block;height:100%;background:var(--c)}
@@ -50,14 +58,14 @@ button{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6
 (function(){
 var $=function(q){return document.querySelector(q)},board=$("#board"),pan=$("#pan"),view=$("#view");
 // 關卡：地形每格一個字  . 平地  ^ 山  ~ 水  = 橋  f 樹林  # 柵欄。用關卡編輯器（level.html）做的關卡，按「試玩」會帶到這裡
-var DEF={name:"預設：渡河攻城",cols:12,rows:12,t:["............","............","....f.......","...f....^^..","~~~~=~~~~~~~","~~~~=~~~~=~~","..........^.","..f.........","..ff........","............","............","............"],
+var DEF={name:"預設：渡河攻城",cols:12,rows:12,t:["............","............","....f.......","...f....nM..","~~~~=~~~~~~~","~~~~=~~~~=~~","..........^.","..f.........","..ff........","............","............","............"],
   castle:[1,1],granary:[10,10],p:[[9,7],[8,8],[7,9],[10,8],[8,10],[9,9]],e:[{x:3,y:2,typ:"法"},{x:2,y:3,typ:"槍"},{x:5,y:3,typ:"槍"},{x:6,y:2,typ:"弓"},{x:7,y:1,typ:"騎"},{x:1,y:3,typ:"騎"}]};
 var LV=DEF;try{if(/[?&]level=test/.test(location.search)){var raw=JSON.parse(localStorage.getItem("sg_level_test"));if(raw&&raw.t&&raw.castle&&raw.granary)LV=raw}}catch(e){}
 var COLS=LV.cols,ROWS=LV.rows,C=56,TILT=56,ROT=45;
 function T(x,y){return x<0||y<0||x>=COLS||y>=ROWS?"^":(LV.t[y]||"").charAt(x)||"."}
 var UP="rotateZ(calc(var(--rot) * -1)) rotateX(-"+TILT+"deg)";   // 立起來的東西永遠正對鏡頭，地圖怎麼轉都一樣
-board.style.width=COLS*C+"px";board.style.height=ROWS*C+"px";board.style.left=-COLS*C/2+"px";board.style.top=-ROWS*C/2+"px";var GROUND={grass:"ground_grass",dirt:"ground_dirt",snow:"ground_snow"}[LV.bg]||"ground_grass";
-board.style.background="none";(function(){var m=9,gd=document.createElement("div");gd.id="ground";gd.style.cssText="position:absolute;left:"+(-m*C)+"px;top:"+(-m*C)+"px;width:"+(COLS+2*m)*C+"px;height:"+(ROWS+2*m)*C+"px;background:url(../img/bf/"+GROUND+".webp) 0 0/384px 384px;pointer-events:none;z-index:-1;filter:contrast(.62) brightness(1.12);-webkit-mask-image:radial-gradient(closest-side,#000 62%,transparent 100%);mask-image:radial-gradient(closest-side,#000 62%,transparent 100%)";board.appendChild(gd)})();   // ✅ Jay：底圖要比格子大
+board.style.width=COLS*C+"px";board.style.height=ROWS*C+"px";board.style.left=-COLS*C/2+"px";board.style.top=-ROWS*C/2+"px";var GROUND={grass:"ground_plain",dirt:"ground_dirt",snow:"ground_snow"}[LV.bg]||"ground_plain";
+board.style.background="none";(function(){var m=9,gd=document.createElement("div");gd.id="ground";gd.style.cssText="position:absolute;left:"+(-m*C)+"px;top:"+(-m*C)+"px;width:"+(COLS+2*m)*C+"px;height:"+(ROWS+2*m)*C+"px;background:url(../img/bf/"+GROUND+".webp) 0 0/"+(GROUND==="ground_plain"?"840px 840px":"384px 384px")+";pointer-events:none;z-index:-1;"+(GROUND==="ground_plain"?"filter:brightness(1.06);":"filter:contrast(.62) brightness(1.12);")+"-webkit-mask-image:radial-gradient(closest-side,#000 62%,transparent 100%);mask-image:radial-gradient(closest-side,#000 62%,transparent 100%)";board.appendChild(gd)})();   // ✅ Jay：底圖要比格子大
 var zoom=1,px=0,py=-120;function depth(x,y){var a=ROT*Math.PI/180;return Math.round(x*Math.sin(a)+y*Math.cos(a))+3000}   // 越靠近鏡頭的越晚畫
 function place(){board.style.setProperty("--rot",ROT+"deg");pan.style.transform="translate("+px+"px,"+py+"px) scale("+zoom+") rotateX("+TILT+"deg) rotateZ("+ROT+"deg)"}place();
 function resort(){board.querySelectorAll(".g").forEach(function(g){if(g.style.zIndex==="9999"||g.style.zIndex==="9998")return;g.style.zIndex=depth(parseFloat(g.style.left),parseFloat(g.style.top))+(+g.dataset.z||0)})}
@@ -78,18 +86,23 @@ function soldier(typ,side){return '<img src="../img/bf/sol_'+side+'_'+SN[typ]+'.
 var SLOT=[[0,6],[-15,-8],[15,-8],[-15,18],[15,18],[0,-21],[0,26],[-24,5],[24,5]];
 function nMen(u){return Math.max(1,Math.min(9,Math.ceil(u.troops/1000)))}
 // ── 畫面元素 ─────────────────────────────────────────
-var PROP={"^":["obj_mountain_1","obj_mountain_2"],"f":["obj_forest_1","obj_forest_2"],"#":["obj_fence"]};
-function prop(x,y,ch){var g=document.createElement("div");g.className="g";g.dataset.z="0";g.style.left=(x+.5)*C+"px";g.style.top=(y+.5)*C+"px";var v=PROP[ch],n=v[(x*7+y*13)%v.length],h=ch==="#"?46:ch==="^"?70:60,w=70;
-  g.innerHTML='<div class="up" style="transform:'+UP+';width:'+w+'px;height:'+h+'px;margin:-'+(h-8)+'px 0 0 -'+w/2+'px;pointer-events:none"><img src="../img/bf/'+n+'.webp" alt="" style="position:absolute;left:50%;bottom:0;max-width:100%;max-height:100%;transform:translateX(-50%)"></div>';board.appendChild(g)}
+var SNOW=LV.bg==="snow"?"_snow":"",PROP={"^":1,"M":1,"n":1,"f":1,"#":1};   // ✅ Jay：山分大中小、雪地換雪山；樹林一格塞三四棵
+function upimg(n,w,h,ox,oy,cls,dl){return '<div class="up '+(cls||"")+'" style="transform:'+UP+';left:'+ox+'px;top:'+oy+'px;width:'+w+'px;height:'+h+'px;margin:-'+(h-6)+'px 0 0 -'+w/2+'px;pointer-events:none"><img src="../img/bf/'+n+'.webp" alt="" style="position:absolute;left:50%;bottom:0;max-width:100%;max-height:100%;transform:translateX(-50%);animation-delay:-'+(dl||0)+'s"></div>'}
+function prop(x,y,ch){var g=document.createElement("div");g.className="g";g.dataset.z="0";g.style.left=(x+.5)*C+"px";g.style.top=(y+.5)*C+"px";var r=x*7+y*13,h;
+  if(ch==="f"){var o=[[-13,-14],[14,-10],[-11,12],[13,15]];if(r%3===0)o.splice(r%4,1);h=o.map(function(q,i){return upimg("obj_tree_"+((r+i*3)%4+1),36,46+((r+i)%3)*7,q[0],q[1],"sway",((r+i*5)%7)*.45)}).join("")}
+  else if(ch==="#")h=upimg("obj_fence",70,46,0,0);
+  else{var m=ch==="M"?["obj_mtn_l",64,116]:ch==="n"?["obj_mtn_s",54,46]:["obj_mtn_m",66,80];h=upimg(m[0]+SNOW,m[1],m[2],0,0)}
+  g.innerHTML=h;board.appendChild(g)}
 var cells={};for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){var d=document.createElement("div");d.className="cell";d.dataset.t=T(x,y);if(PROP[T(x,y)])prop(x,y,T(x,y));if(T(x,y)==="="&&!(T(x-1,y)==="~"||T(x+1,y)==="~"||T(x-1,y)==="="||T(x+1,y)==="=")){d.dataset.h="1";d.className="cell h"}   // 橋的方向：河是直的就轉 90 度
   d.style.backgroundPosition=(-x*C)+"px "+(-y*C)+"px";d.style.cssText="left:"+x*C+"px;top:"+y*C+"px;width:"+C+"px;height:"+C+"px";d.dataset.k="c";d.dataset.x=x;d.dataset.y=y;board.appendChild(d);cells[x+","+y]=d}
 function bpos(k){var c=B[k].cells[0];return [(c[0]+.5)*C,(c[1]+.5)*C]}
 function gpos(u){if(u.post)return bpos(u.post);return [(u.x+.5)*C,(u.y+.5)*C]}
 function lift(u){return u.post?" translateY(-58px)":""}   // 進駐的部隊：旗子掛在建築上方
+function sur(u){if(!u.art)return u.typ;var n=u.name,t=n.slice(0,2);return ["諸葛","司馬","夏侯","公孫","太史","皇甫"].indexOf(t)>=0?t:n.charAt(0)}
 function mk(u){
   var g=document.createElement("div");g.className="g unit";g.dataset.k="u";g.dataset.id=u.id;g.style.setProperty("--c",COL[u.side]);u.el=g;board.appendChild(g);
   var f=document.createElement("div");f.className="up flag";f.style.transform=UP;f.style.left="0px";f.style.top="0px";
-  f.innerHTML='<div class="pole"></div><div class="face"'+(u.art?' style="background-image:url(../img/'+u.art+'_head.webp)"':"")+'>'+(u.art?"":'<span style="display:block;text-align:center;line-height:32px;font-size:15px;color:'+COL[u.side]+'">'+u.typ+'</span>')+'</div><div class="hp"></div><div class="bar"><b></b></div>';g.appendChild(f);u.flag=f;
+  f.innerHTML='<div class="ban '+u.side+'" style="animation-delay:-'+(u.id%4*.2)+'s"><span'+(sur(u).length>1?' class="two"':'')+'>'+sur(u)+'</span></div><div class="face"'+(u.art?' style="background-image:url(../img/'+u.art+'_head.webp)"':"")+'>'+(u.art?"":'<span style="display:block;text-align:center;line-height:32px;font-size:15px;color:'+COL[u.side]+'">'+u.typ+'</span>')+'</div><div class="hp"></div><div class="bar"><b></b></div>';g.appendChild(f);u.flag=f;
   u.men=[];draw(u);
 }
 function draw(u){
@@ -105,12 +118,12 @@ function mkB(k){var b=B[k],p=bpos(k),c=b.cells[0],g=document.createElement("div"
   var u=document.createElement("div");u.className="up bld";u.style.cssText="width:86px;height:82px;margin-left:-43px;margin-top:-74px;transform:"+UP;u.style.setProperty("--c",COL[b.side]);
   u.innerHTML='<span class="bi">'+bimg(k,false)+'</span><div class="tag"><span></span><u><b></b></u></div>';g.appendChild(u);b.el=u;
   var hot=document.createElement("div");hot.className="hot base";hot.dataset.k="b";hot.dataset.b=k;hot.style.cssText="left:"+c[0]*C+"px;top:"+c[1]*C+"px;width:"+C+"px;height:"+C+"px";hot.style.setProperty("--c",COL[b.side]);board.appendChild(hot);b.hot=hot;drawB(k)}
-function drawB(k){var b=B[k];if(b.hp<=0&&!b.dead){b.dead=true;b.el.querySelector(".bi").innerHTML=bimg(k,true)}b.el.querySelector(".tag span").textContent=b.name+" "+Math.max(0,Math.round(b.hp));b.el.querySelector(".tag b").style.width=Math.max(0,b.hp/b.max*100)+"%"}
+function drawB(k){var b=B[k];if(b.hp<=0&&!b.dead){b.dead=true;b.el.querySelector(".bi").innerHTML=bimg(k,true);b.el.querySelector(".bi").classList.add("fire")}b.el.querySelector(".tag span").textContent=b.name+" "+Math.max(0,Math.round(b.hp));b.el.querySelector(".tag b").style.width=Math.max(0,b.hp/b.max*100)+"%"}
 mkB("castle");mkB("granary");units.forEach(mk);
 // ── 規則 ─────────────────────────────────────────────
 function at(x,y){for(var i=0;i<units.length;i++){var u=units[i];if(u.troops>0&&!u.post&&u.x===x&&u.y===y)return u}return null}
 function inB(x,y){for(var k in B){var c=B[k].cells;for(var i=0;i<c.length;i++)if(c[i][0]===x&&c[i][1]===y)return k}return null}
-var BLOCK={"^":1,"~":1,"#":1};function cost(x,y){return T(x,y)==="f"?2:1}   // ★ 山、水、柵欄不能走；樹林走進去要花 2 步
+var BLOCK={"^":1,"M":1,"n":1,"~":1,"#":1};function cost(x,y){return T(x,y)==="f"?2:1}   // ★ 山、水、柵欄不能走；樹林走進去要花 2 步
 function free(x,y){return x>=0&&y>=0&&x<COLS&&y<ROWS&&!BLOCK[T(x,y)]&&!inB(x,y)&&!at(x,y)}
 function reach(u){var out={},q=[[u.x,u.y,0]];out[u.x+","+u.y]=0;while(q.length){q.sort(function(a,b){return a[2]-b[2]});var c=q.shift();[[1,0],[-1,0],[0,1],[0,-1]].forEach(function(d){var nx=c[0]+d[0],ny=c[1]+d[1],k=nx+","+ny;if(!free(nx,ny))return;var w=c[2]+cost(nx,ny);if(w<=u.mv&&(!(k in out)||out[k]>w)){out[k]=w;q.push([nx,ny,w])}})}return out}
 function posOf(u){if(u.post)return B[u.post].cells[0];return [u.x,u.y]}

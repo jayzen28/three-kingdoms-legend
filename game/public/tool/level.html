@@ -16,7 +16,7 @@ button.go{background:#e05858;border-color:#d4a853;color:#fff}button.ok{backgroun
 #mid{flex:1;min-height:0;overflow:auto;display:flex;align-items:flex-start;justify-content:center;padding:10px;background:#1a1218}
 #grid{display:grid;touch-action:none;border:2px solid #2a2118;background:#b9ae84 0 0/256px 256px;outline:26px solid transparent}#gwrap{padding:26px;background:#b9ae84 0 0/256px 256px;border-radius:6px}
 .c{position:relative;border:1px solid rgba(40,30,15,.25);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
-.c[data-t="~"],.c[data-t="="]{background:url(../img/bf/ground_water.webp) 0 0/128px 128px}.c[data-t="^"]{background:rgba(90,84,74,.35) url(../img/bf/obj_mountain_1.webp) center/88% no-repeat}.c[data-t="f"]{background:rgba(40,90,45,.3) url(../img/bf/obj_forest_1.webp) center/88% no-repeat}.c[data-t="#"]{background:url(../img/bf/obj_fence.webp) center/92% no-repeat}.c[data-t="="]::before{content:"";position:absolute;inset:0 14%;background:url(../img/bf/obj_bridge.webp) center/100% 100%}
+.c[data-t="~"],.c[data-t="="]{background:url(../img/bf/ground_water.webp) 0 0/128px 128px}.c[data-t="^"]{background:rgba(90,84,74,.35) url(../img/bf/obj_mtn_m.webp) center/70% no-repeat}.c[data-t="n"]{background:rgba(90,84,74,.25) url(../img/bf/obj_mtn_s.webp) center/55% no-repeat}.c[data-t="M"]{background:rgba(90,84,74,.5) url(../img/bf/obj_mtn_l.webp) center/contain no-repeat}.c[data-t="f"]{background:rgba(40,90,45,.3) url(../img/bf/obj_tree_3.webp) center/contain no-repeat}.c[data-t="#"]{background:url(../img/bf/obj_fence.webp) center/92% no-repeat}.c[data-t="="]::before{content:"";position:absolute;inset:0 14%;background:url(../img/bf/obj_bridge.webp) center/100% 100%}
 .c b{position:absolute;inset:2px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;color:#fff;border:2px solid #000a;z-index:1}
 .c b.p{background:#2f9a5c}.c b.e{background:#c79a1c;color:#201400}.c b.castle{background:#6b5a3a;border-radius:4px;border-color:#e0b030}.c b.granary{background:#7a5632;border-radius:4px;border-color:#4ec87a}
 #hint{color:#c9b98f;font-size:12px}#msg{color:#9fd0a0}
@@ -39,10 +39,10 @@ textarea{width:100%;height:54px;background:#07060a;color:#9fd0a0;border:1px soli
 var $=function(q){return document.querySelector(q)},KEY="sg_levels",grid=$("#grid");
 // 筆刷：地形（每格一種）／ 建築（各一座）／ 部隊
 var TOOLS=[
- {k:"t.",n:"平地",c:"#b9ae84"},{k:"t^",n:"山",c:"#7d776c",s:"▲"},{k:"t~",n:"水",c:"#3c78be",s:"≈"},{k:"t=",n:"橋",c:"#9a7646",s:"="},{k:"tf",n:"樹林",c:"#3b7d45",s:"♣"},{k:"t#",n:"柵欄",c:"#8a6a3e",s:"卌"},{sep:1},
+ {k:"t.",n:"平地",c:"#b9ae84"},{k:"tn",n:"小山",c:"#8d877c",s:"△"},{k:"t^",n:"中山",c:"#7d776c",s:"▲"},{k:"tM",n:"大山",c:"#5d584f",s:"▲▲"},{k:"t~",n:"水",c:"#3c78be",s:"≈"},{k:"t=",n:"橋",c:"#9a7646",s:"="},{k:"tf",n:"樹林",c:"#3b7d45",s:"♣"},{k:"t#",n:"柵欄",c:"#8a6a3e",s:"卌"},{sep:1},
  {k:"castle",n:"城",c:"#6b5a3a",s:"城"},{k:"granary",n:"糧倉",c:"#7a5632",s:"倉"},{sep:1},
  {k:"p",n:"我方",c:"#2f9a5c",s:"我"},{k:"e槍",n:"敵槍兵",c:"#c79a1c",s:"槍"},{k:"e騎",n:"敵騎兵",c:"#c79a1c",s:"騎"},{k:"e弓",n:"敵弓兵",c:"#c79a1c",s:"弓"},{k:"e法",n:"敵法師",c:"#c79a1c",s:"法"},{k:"e刺",n:"敵刺客",c:"#c79a1c",s:"刺"},{k:"x",n:"拿掉部隊",c:"#444",s:"✕"}];
-var HINT={"t.":"平地：正常走。","t^":"山：不能走。","t~":"水：不能走，要過河得放橋。","t=":"橋：可以走，放在水上。","tf":"樹林：走進去要花 2 步；站在裡面受傷打八折。","t#":"柵欄：不能走（之後可以做成能打壞）。",
+var HINT={"t.":"平地：正常走。","tn":"小山：不能走，矮，不太擋視線。","t^":"中山：不能走。","tM":"大山：不能走，很高，會擋到後面的東西。雪地底圖會自動換成雪山。","t~":"水：不能走，要過河得放橋。","t=":"橋：可以走，放在水上。","tf":"樹林：走進去要花 2 步；站在裡面受傷打八折。","t#":"柵欄：不能走（之後可以做成能打壞）。",
  castle:"城：守方（敵方）的城，全場一座。點哪裡就搬到哪裡。城門被攻破守方就輸。",granary:"糧倉：攻方（我方）的糧倉，全場一座。被打掉攻方就輸。",
  p:"我方出場格：最多 6 格，數字是出場順序（1 關羽、2 張飛、3 趙雲、4 黃忠、5 諸葛亮、6 劉備）。再點一次拿掉。",x:"拿掉部隊：點一下拿掉那格的我方或敵方部隊。"};
 var tool="t^",L=null,PN=["關","張","趙","黃","諸","劉"];
@@ -53,7 +53,7 @@ function same(a,x,y){return a&&a[0]===x&&a[1]===y}
 function clearCell(x,y){L.p=L.p.filter(function(c){return !same(c,x,y)});L.e=L.e.filter(function(o){return !(o.x===x&&o.y===y)})}
 function occupied(x,y){return same(L.castle,x,y)||same(L.granary,x,y)||L.p.some(function(c){return same(c,x,y)})||L.e.some(function(o){return o.x===x&&o.y===y})}
 function apply(x,y,drag){
-  if(tool.charAt(0)==="t"){var ch=tool.charAt(1);if((ch==="^"||ch==="~"||ch==="#")&&occupied(x,y))return;setT(x,y,ch)}   // 有部隊或建築的格子不能改成不能走的地形
+  if(tool.charAt(0)==="t"){var ch=tool.charAt(1);if((ch==="^"||ch==="M"||ch==="n"||ch==="~"||ch==="#")&&occupied(x,y))return;setT(x,y,ch)}   // 有部隊或建築的格子不能改成不能走的地形
   else if(drag)return;                                                                                                   // 建築和部隊只在點的時候放，拖動不連放
   else if(tool==="castle"||tool==="granary"){if(same(L[tool==="castle"?"granary":"castle"],x,y))return;clearCell(x,y);L[tool]=[x,y];setT(x,y,".")}
   else if(tool==="p"){if(L.p.some(function(c){return same(c,x,y)})){L.p=L.p.filter(function(c){return !same(c,x,y)})}else{if(same(L.castle,x,y)||same(L.granary,x,y))return;if(L.p.length>=6){$("#msg").textContent="我方最多 6 格";return}clearCell(x,y);L.p.push([x,y]);if("^~#".indexOf(getT(x,y))>=0)setT(x,y,".")}}
