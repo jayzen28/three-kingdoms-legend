@@ -57,7 +57,7 @@
   };
   // 名帖：有圖用圖，沒圖用直書人名
   UI.rxc = function (r) { return r === "SR" || r === "SSR" || r === "UR" ? " rx rx-" + r : ""; };
-  UI.rxt = function (r) { return UI.rxc(r) ? "<b>" + r + "</b>" : r; };   // SR 以上用特效字樣
+  UI.rxt = function (r) { return UI.rxc(r) ? '<u data-t="' + r + '"><b>' + r + '</b></u>' : r; };   // SR 以上用特效字樣
   UI.cardHtml = function (card, b, opt) {
     opt = opt || {};
     var rar = b ? b.rar : (card.ur ? "UR" : card.vers[0]);
