@@ -22,7 +22,7 @@ button{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
 @keyframes die{to{transform:rotate(85deg) translateY(4px);opacity:0}}
 .flag{width:40px;height:62px;margin-left:-20px;margin-top:-74px;pointer-events:none}
-.flag .pole{display:none}
+.flag .pole{display:none}.flag .face,.flag .ban{pointer-events:auto;cursor:pointer}   /* ✅ Jay：點頭像或旗子也能選部隊 */
 .flag .ban{position:absolute;left:30px;bottom:-12px;width:33px;height:100px;background:url(../img/bf/flag_p.webp) 0 0/300% 100% no-repeat;animation:wave .9s step-end infinite}   /* ✅ Jay：飄揚的軍旗，寫武將的姓，三格動畫 */
 .flag .ban.e{background-image:url(../img/bf/flag_e.webp)}
 .flag .ban span{position:absolute;left:5px;top:9px;width:20px;height:24px;display:flex;align-items:center;justify-content:center;font:700 15px/1 "Ma Shan Zheng","Noto Serif TC",serif;color:#f6e7b4;text-shadow:0 0 2px #400,0 1px 1px #000}
@@ -87,7 +87,7 @@ var SLOT=[[0,6],[-15,-8],[15,-8],[-15,18],[15,18],[0,-21],[0,26],[-24,5],[24,5]]
 function nMen(u){return Math.max(1,Math.min(9,Math.ceil(u.troops/1000)))}
 // ── 畫面元素 ─────────────────────────────────────────
 var SNOW=LV.bg==="snow"?"_snow":"",PROP={"^":1,"M":1,"n":1,"f":1,"#":1};   // ✅ Jay：山分大中小、雪地換雪山；樹林一格塞三四棵
-function upimg(n,w,h,ox,oy,cls,dl){return '<div class="up '+(cls||"")+'" style="transform:'+UP+';left:'+ox+'px;top:'+oy+'px;width:'+w+'px;height:'+h+'px;margin:-'+(h-6)+'px 0 0 -'+w/2+'px;pointer-events:none"><img src="../img/bf/'+n+'.webp" alt="" style="position:absolute;left:50%;bottom:0;max-width:100%;max-height:100%;transform:translateX(-50%);animation-delay:-'+(dl||0)+'s"></div>'}
+function upimg(n,w,h,ox,oy,cls,dl){return '<div class="up '+(cls||"")+'" style="transform:'+UP+';left:'+ox+'px;top:'+oy+'px;width:'+w+'px;height:'+h+'px;margin:-'+(h-6)+'px 0 0 -'+w/2+'px;pointer-events:none"><img src="../img/bf/'+n+'.webp" alt="" style="position:absolute;left:50%;bottom:'+(/mtn/.test(n)?-14:0)+'%;max-width:100%;max-height:100%;transform:translateX(-50%);animation-delay:-'+(dl||0)+'s"></div>'}
 function prop(x,y,ch){var g=document.createElement("div");g.className="g";g.dataset.z="0";g.style.left=(x+.5)*C+"px";g.style.top=(y+.5)*C+"px";var r=x*7+y*13,h;
   if(ch==="f"){var o=[[-13,-14],[14,-10],[-11,12],[13,15]];if(r%3===0)o.splice(r%4,1);h=o.map(function(q,i){return upimg("obj_tree_"+((r+i*3)%4+1),36,46+((r+i)%3)*7,q[0],q[1],"sway",((r+i*5)%7)*.45)}).join("")}
   else if(ch==="#")h=upimg("obj_fence",70,46,0,0);
@@ -97,7 +97,7 @@ var cells={};for(var y=0;y<ROWS;y++)for(var x=0;x<COLS;x++){var d=document.creat
   d.style.backgroundPosition=(-x*C)+"px "+(-y*C)+"px";d.style.cssText="left:"+x*C+"px;top:"+y*C+"px;width:"+C+"px;height:"+C+"px";d.dataset.k="c";d.dataset.x=x;d.dataset.y=y;board.appendChild(d);cells[x+","+y]=d}
 function bpos(k){var c=B[k].cells[0];return [(c[0]+.5)*C,(c[1]+.5)*C]}
 function gpos(u){if(u.post)return bpos(u.post);return [(u.x+.5)*C,(u.y+.5)*C]}
-function lift(u){return u.post?" translateY(-58px)":""}   // 進駐的部隊：旗子掛在建築上方
+function lift(u){return u.post?" translateY(-88px)":""}   // 進駐的部隊：旗子掛在建築上方
 function sur(u){if(!u.art)return u.typ;var n=u.name,t=n.slice(0,2);return ["諸葛","司馬","夏侯","公孫","太史","皇甫"].indexOf(t)>=0?t:n.charAt(0)}
 function mk(u){
   var g=document.createElement("div");g.className="g unit";g.dataset.k="u";g.dataset.id=u.id;g.style.setProperty("--c",COL[u.side]);u.el=g;board.appendChild(g);
@@ -113,7 +113,7 @@ function draw(u){
   u.el.style.display=u.troops>0?"":"none";
 }
 function fall(u){var n=u.troops>0?nMen(u):0;while(u.men.length>n){var s=u.men.pop();s.classList.add("dead");(function(s){setTimeout(function(){s.remove()},520)})(s)}}
-function bimg(k,dead){return '<img src="../img/bf/bld_'+(k==="castle"?(dead?"castle_broken":"castle"):(dead?"granary_burnt":"granary"))+'.webp" alt="" draggable="false" style="position:absolute;left:50%;bottom:0;height:100%;transform:translateX(-50%)">'}
+function bimg(k,dead){return '<img src="../img/bf/bld_'+(k==="castle"?(dead?"castle_broken":"castle"):(dead?"granary_burnt":"granary"))+'.webp" alt="" draggable="false" style="position:absolute;left:50%;bottom:'+(k==="castle"?-24:-30)+'%;height:100%;transform:translateX(-50%)">'}   // ✅ Jay：建築的地基要壓在它那一格上，不是浮在格子後面
 function mkB(k){var b=B[k],p=bpos(k),c=b.cells[0],g=document.createElement("div");g.className="g";g.style.left=p[0]+"px";g.style.top=p[1]+"px";g.dataset.z="2";g.style.zIndex=depth(p[0],p[1])+2;board.appendChild(g);
   var u=document.createElement("div");u.className="up bld";u.style.cssText="width:86px;height:82px;margin-left:-43px;margin-top:-74px;transform:"+UP;u.style.setProperty("--c",COL[b.side]);
   u.innerHTML='<span class="bi">'+bimg(k,false)+'</span><div class="tag"><span></span><u><b></b></u></div>';g.appendChild(u);b.el=u;
