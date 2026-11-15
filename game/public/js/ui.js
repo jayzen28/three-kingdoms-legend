@@ -56,6 +56,8 @@
     return '<div class="strip"><canvas id="' + id + '"></canvas><div class="cap">' + title + (sub ? '<small>' + sub + '</small>' : '') + '</div></div>';
   };
   // 名帖：有圖用圖，沒圖用直書人名
+  UI.rxc = function (r) { return r === "SR" || r === "SSR" || r === "UR" ? " rx rx-" + r : ""; };
+  UI.rxt = function (r) { return UI.rxc(r) ? "<b>" + r + "</b>" : r; };   // SR 以上用特效字樣
   UI.cardHtml = function (card, b, opt) {
     opt = opt || {};
     var rar = b ? b.rar : (card.ur ? "UR" : card.vers[0]);
@@ -63,7 +65,7 @@
       (card.art ? '<img class="pic" src="img/' + card.art + '_card.webp" alt="">' : '') +
       '<span class="nm n' + Math.min(4, card.gen.length) + '">' + card.gen + '</span>' +
       (card.ver && (card.ur || card.male) && card.ver !== "一般" ? '<span class="ver">' + card.ver + '</span>' : '') +
-      '<span class="ty">' + card.typ + '</span><span class="rb">' + rar + '</span>' +
+      '<span class="ty">' + card.typ + '</span><span class="rb' + UI.rxc(rar) + '">' + UI.rxt(rar) + '</span>' +
       '<span class="stars">' + (b ? "★".repeat(b.star) : "") + '</span></div>';
   };
   UI.statBars = function (card, u) {
@@ -89,7 +91,7 @@
       ? '<div class="bigart ' + show.rar + (b ? '' : ' none') + (card.artBg ? '' : ' f-' + FV[card.fac] + ' v' + SG.bgv(card.art)) + '"' + (card.artBg ? ' style="background-image:url(img/' + card.art + '_full.webp)"' : '') + '>' +
         (card.artBg ? '' : '<img src="img/' + card.art + '_full.webp" alt="' + card.name + '">') +
         '<span class="nm">' + card.gen + '</span>' + (card.ver && (card.ur || card.male) && card.ver !== "一般" ? '<span class="ver">' + card.ver + '</span>' : '') +
-        '<span class="rk">' + show.rar + '<i>' + "★".repeat(show.star) + '</i></span></div>'
+        '<span class="rk' + (UI.rxc(show.rar) ? ' rxw' : '') + '"><span class="' + UI.rxc(show.rar).trim() + '">' + UI.rxt(show.rar) + '</span><i>' + "★".repeat(show.star) + '</i></span></div>'
       : '';
     UI.modal(art + '<div class="detail' + (art ? ' noart' : '') + '">' + (art ? '' : UI.cardHtml(card, b)) +
       '<div class="grow" style="display:flex;flex-direction:column;gap:8px"><div class="name">' + card.name + '</div>' +
@@ -134,7 +136,7 @@
     var spot = function (x, cls, ms) {
       return new Promise(function (res) {
         var sp = document.createElement("div"); sp.className = "rv-spot " + cls;
-        sp.innerHTML = '<div class="rays"></div><div class="lab">' + x.rar + '</div>' +
+        sp.innerHTML = '<div class="rays"></div><div class="lab' + (UI.rxc(x.rar) ? ' rxw' : '') + '"><span class="' + UI.rxc(x.rar).trim() + '">' + UI.rxt(x.rar) + '</span></div>' +
           (x.card.art ? '<div class="pic' + (x.card.artBg ? '' : ' f-' + FV[x.card.fac] + ' v' + SG.bgv(x.card.art)) + '"><img src="img/' + x.card.art + '_full.webp" alt=""></div>' : '<div class="pic txt">' + x.card.gen + '</div>') +
           '<div class="who">' + x.card.name + '</div><div class="tip">點一下繼續</div>';
         el.appendChild(sp);
