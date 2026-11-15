@@ -1,11 +1,10 @@
 /* 戰棋引擎（無畫面）：UI 透過 hooks 接收事件 */
 (function (SG) {
-  var B = SG.BATTLE, W = B.W, H = B.H;
-  var BOT = { r: H - 1, c: 4 }, TOP = { r: 0, c: 3 };
+  var B = SG.BATTLE, W = B.W, H = B.H;   // 每場開打時依關卡地圖重設（✅ Jay 2026-11-15：每關大小不同）
   var dist = function (a, b) { return Math.abs(a.r - b.r) + Math.abs(a.c - b.c); };
   var cheb = function (a, b) { return Math.max(Math.abs(a.r - b.r), Math.abs(a.c - b.c)); };
   var shuffle = function (a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.random() * (i + 1) | 0; var t = a[i]; a[i] = a[j]; a[j] = t; } return a; };
-  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, ms); }); };
+  var sleep = function (ms) { return new Promise(function (r) { setTimeout(r, typeof window !== "undefined" && window.__fast ? 0 : ms); }); };
   function mult(a, d) {
     var tri = { "槍騎": 1, "騎弓": 1, "弓槍": 1 };
     if (tri[a + d]) return 1.5; if (tri[d + a]) return 0.75;
@@ -27,13 +26,13 @@
   function Battle(stage, team, hooks) {
     var G = this;
     G.stage = stage; G.hooks = hooks || {};
-    G.block = {}; (stage.block || []).forEach(function (p) { G.block[p[0] * W + p[1]] = 1; });
-    G.voidc = {};     // 不屬於戰場的格子（形狀外）
-    (stage.shape || []).forEach(function (row, r) { for (var c = 0; c < W; c++) { var ch = row.charAt(c); if (ch === ".") { G.block[r * W + c] = 1; G.voidc[r * W + c] = 1; } else if (ch === "^") G.block[r * W + c] = 1; } });
+    var M = stage.map; W = B.W = M.cols; H = B.H = M.rows; G.W = W; G.H = H;
+    G.block = {}; G.voidc = {}; G.terr = {}; G.forest = {};
+    M.t.forEach(function (row, r) { for (var c = 0; c < W; c++) { var ch = row.charAt(c) || ".", k = r * W + c; G.terr[k] = ch; if ("^Mn~#".indexOf(ch) >= 0) G.block[k] = 1; if (ch === "f") G.forest[k] = 1; } });
     G.mode = stage.mode;
-    // 據點：siege＝我方軍營(下)/敵城堡(上)；defend＝我方城堡(下)/敵軍營(上)；annihilate 沒有據點
-    G.base = G.mode === "annihilate" ? null : { P: BOT, E: TOP };
-    G.kind = G.mode === "siege" ? { P: "camp", E: "castle" } : G.mode === "defend" ? { P: "castle", E: "camp" } : null;
+    // 據點（✅ Jay 2026-11-15）：野戰＝雙方軍營；siege＝我方軍營/敵城；defend＝我方城/敵軍營。城門或軍營的耐久歸零，那一方就輸
+    G.base = { P: { r: M.P.r, c: M.P.c }, E: { r: M.E.r, c: M.E.c } };
+    G.kind = G.mode === "siege" ? { P: "camp", E: "castle" } : G.mode === "defend" ? { P: "castle", E: "camp" } : { P: "camp", E: "camp" };
     G.first = G.mode === "defend" ? "E" : "P";
     G.maxT = stage.turns || B.MAXT;
     G.round = 1; G.turnSide = null; G.st = 0; G.carry = { P: 0, E: 0 }; G.over = false; G.busy = false;
@@ -47,18 +46,24 @@
     });
     G.deploy(P, "P"); G.deploy(E, "E");
     G.units = P.concat(E);
+    G.struct = {};
+    [["P", P], ["E", E]].forEach(function (x) {
+      var avg = x[1].reduce(function (a, u) { return a + u.maxhp; }, 0) / Math.max(1, x[1].length), kd = G.kind[x[0]];
+      var hp = Math.max(500, Math.round(avg * (kd === "castle" ? B.CASTLE_HP : B.CAMP_HP) / 100) * 100);
+      G.struct[x[0]] = { side: x[0], kind: kd, name: kd === "castle" ? "城門" : "軍營", hp: hp, max: hp, r: G.base[x[0]].r, c: G.base[x[0]].c };
+    });
   }
   var BP = Battle.prototype;
 
   BP.free = function (r, c) { return r >= 0 && r < H && c >= 0 && c < W && !this.block[r * W + c]; };
   BP.deploy = function (units, side) {
     var G = this, rows = side === "P" ? [H - 1, H - 2] : [0, 1];
-    var base = G.base ? G.base[side] : null;
+    var base = G.base ? G.base[side] : null, garrison = base && G.kind[side] === "castle";   // 只有城會先派一隊進駐；軍營不強制
     var cells = [];
     rows.forEach(function (r) { for (var c = 0; c < W; c++) if (G.free(r, c) && !(base && base.r === r && base.c === c)) cells.push({ r: r, c: c }); });
     var front = shuffle(cells.filter(function (p) { return p.r === rows[1]; })), back = shuffle(cells.filter(function (p) { return p.r === rows[0]; }));
     var list = units.slice();
-    if (base) {
+    if (garrison) {
       var g = list.slice().sort(function (a, b) { return (a.typ === "槍" ? 0 : 1) - (b.typ === "槍" ? 0 : 1) || a.maxhp - b.maxhp; })[0];
       g.r = base.r; g.c = base.c; g.guard = true; list.splice(list.indexOf(g), 1);
     }
@@ -75,19 +80,34 @@
   BP.other = function (s) { return s === "P" ? "E" : "P"; };
   BP.visible = function (u, viewer) { return !(u.stealth && u.side !== viewer); };
   BP.onOwnBase = function (u) { var b = this.base && this.base[u.side]; return b && u.r === b.r && u.c === b.c; };
-  BP.reduction = function (u) { if (!this.onOwnBase(u)) return 1; return this.kind[u.side] === "castle" ? B.CASTLE : B.CAMP; };
+  BP.reduction = function (u) { var f = this.forest[u.r * W + u.c] ? B.FOREST : 1; if (!this.onOwnBase(u) || this.struct[u.side].hp <= 0) return f; return this.kind[u.side] === "castle" ? B.CASTLE : B.CAMP; };
+  BP.stepCost = function (r, c) { return this.forest[r * W + c] ? 2 : 1; };
+  BP.isBase = function (r, c, side) { var b = this.base[side]; return b.r === r && b.c === c; };
+  // 打據點：敵方城門／軍營在射程內就能打（法師 1～3）。攻擊力 ×0.7，有人駐守再 ×0.5，不會被反擊
+  BP.canSiege = function (u) { var s = this.struct[this.other(u.side)]; if (!s || s.hp <= 0) return false; var d = dist(u, s); return d >= (u.typ === "法" ? 1 : u.rmin) && d <= u.rmax; };
+  BP.doSiege = function (a, rush) {
+    var G = this, s = G.struct[G.other(a.side)], gu = G.at(s.r, s.c), guarded = gu && gu.side === s.side;
+    var dmg = Math.round(a.atk * B.SIEGE * (rush ? B.RUSHX : 1) * (guarded ? B.GUARDED : 1));
+    G.face(a, s.r - a.r, s.c - a.c);
+    s.hp = Math.max(0, s.hp - dmg); G.hook("sfloat", s, "-" + dmg);
+    if (a.stealth) a.stealth = false;
+    G.hook("log", a.name + " 攻打" + (s.side === "E" ? "敵方" : "我方") + s.name + (guarded ? "（有人駐守，傷害減半）" : "") + (rush ? "（猛攻）" : ""));
+    a.acted = true;
+  };
 
-  BP.bfs = function (u, maxd) {
-    var G = this, seen = {}, q = [[u.r, u.c]];
+  BP.bfs = function (u, maxd) {     // 樹林一格算 2 步；敵方據點那一格不能進
+    var G = this, seen = {}, open = [u.r * W + u.c], foe = G.base[G.other(u.side)];
     seen[u.r * W + u.c] = { d: 0, p: null, r: u.r, c: u.c };
-    while (q.length) {
-      var cur = q.shift(), d = seen[cur[0] * W + cur[1]].d;
-      if (d >= maxd) continue;
+    while (open.length) {
+      var bi = 0; for (var i = 1; i < open.length; i++) if (seen[open[i]].d < seen[open[bi]].d) bi = i;
+      var ck = open.splice(bi, 1)[0], cur = seen[ck];
       [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (dd) {
-        var r = cur[0] + dd[0], c = cur[1] + dd[1], k = r * W + c;
-        if (!G.free(r, c) || seen[k]) return;
+        var r = cur.r + dd[0], c = cur.c + dd[1], k = r * W + c;
+        if (!G.free(r, c) || (foe.r === r && foe.c === c)) return;
         var o = G.at(r, c); if (o && o.side !== u.side) return;
-        seen[k] = { d: d + 1, p: cur[0] * W + cur[1], r: r, c: c }; q.push([r, c]);
+        var nd = cur.d + G.stepCost(r, c); if (nd > maxd) return;
+        if (seen[k] && seen[k].d <= nd) return;
+        var fresh = !seen[k]; seen[k] = { d: nd, p: ck, r: r, c: c }; if (fresh || open.indexOf(k) < 0) open.push(k);
       });
     }
     return seen;
@@ -183,6 +203,11 @@
       var cost = G.attackCost(u, arg.rush, melee); if (G.st < cost) return "體力不夠（需要 " + cost + "）";
       G.st -= cost; G.doAttack(u, arg.t, arg.rush, melee); G.checkEnd(); return null;
     }
+    if (action === "siege") {
+      if (!G.canSiege(u)) return "打不到敵方據點";
+      var sc = G.attackCost(u, arg && arg.rush, false); if (G.st < sc) return "體力不夠（需要 " + sc + "）";
+      G.st -= sc; G.doSiege(u, arg && arg.rush); G.checkEnd(); return null;
+    }
     if (action === "heal") {
       if (G.st < B.HEAL) return "體力不夠"; if (dist(u, arg.t) > 3 || arg.t.side !== "P") return "太遠了";
       G.st -= B.HEAL; G.heal(u, [arg.t], 1.5); G.hook("log", u.name + " 補血 " + arg.t.name); return null;
@@ -204,7 +229,7 @@
     var G = this;
     if (u.wait || u.acted || u.stun || u.sneak) return true;
     if (!u.moved && !u.frozen && G.moveCells(u).length) return false;
-    if (G.st >= (u.typ === "法" ? B.MAGE_ATK : 0) && G.targets(u, "P").length) return false;
+    if (G.st >= (u.typ === "法" ? B.MAGE_ATK : 0) && (G.targets(u, "P").length || G.canSiege(u))) return false;
     if (u.typ === "法" && G.meleeTargets(u, "P").length) return false;
     if (u.typ === "法" && G.st >= 1 && G.alive("P").some(function (a) { return a.hp < a.maxhp && dist(a, u) <= 3; })) return false;
     return true;
@@ -213,10 +238,12 @@
 
   // ===== 回合 =====
   BP.occupiedBy = function (s) {
-    if (!this.base) return false; var b = this.base[this.other(s)], u = this.at(b.r, b.c); return u && u.side === s;
+    return false;   // ✅ Jay 2026-11-15：不再用「站上去佔領」，改成城門／軍營耐久歸零
   };
   BP.checkEnd = function () {
     var G = this;
+    if (G.struct.E.hp <= 0) { G.finish(true, G.struct.E.kind === "castle" ? "攻破城門" : "燒毀敵方軍營"); return true; }
+    if (G.struct.P.hp <= 0) { G.finish(false, G.struct.P.kind === "castle" ? "城門被攻破" : "我方軍營被燒毀"); return true; }
     if (!G.alive("E").length) { G.finish(true, "殲滅敵軍"); return true; }
     if (!G.alive("P").length) { G.finish(false, "我軍全滅"); return true; }
     return false;
@@ -312,10 +339,11 @@
       Object.keys(seen).forEach(function (k) {
         var n = seen[k], oc = G.at(n.r, n.c); if (oc && oc !== u) return;
         var sc;
-        if (enB && n.r === enB.r && n.c === enB.c && !G.at(enB.r, enB.c)) sc = [n.d - 3, 0];
+        var hits = en().filter(function (e) { var d = Math.abs(n.r - e.r) + Math.abs(n.c - e.c); return d >= u.rmin && d <= u.rmax; });
+        var ds = Math.abs(n.r - enB.r) + Math.abs(n.c - enB.c), sg = !G.stage.tutorial && G.struct[o].hp > 0 && ds >= (u.typ === "法" ? 1 : u.rmin) && ds <= u.rmax;
+        if (!hits.length && !sg) return;
+        if (!hits.length || (sg && u.typ === "騎")) sc = [n.d + (u.typ === "騎" ? -2 : 2), 0.5];   // ★ 騎兵優先去打對方據點，其他兵種沒人可打才去
         else {
-          var hits = en().filter(function (e) { var d = Math.abs(n.r - e.r) + Math.abs(n.c - e.c); return d >= u.rmin && d <= u.rmax; });
-          if (!hits.length) return;
           var bk = G.canBack(u, false) && hits.some(function (e) { return G.isBack(u, e, n); });
           sc = [n.d - (bk ? 1.5 : 0), Math.min.apply(null, hits.map(function (e) { return u.typ === "刺" && "法弓".indexOf(e.typ) >= 0 ? 0 : 1; }))];
         }
@@ -323,7 +351,7 @@
       });
       if (!best || best.n.d === 0) continue;
       var path = []; for (var k = best.n; k && k.p !== null; k = seen[k.p]) path.unshift(k);
-      var step = null; path.slice(0, budget).forEach(function (kk, idx) { if (!G.at(kk.r, kk.c)) step = { d: idx + 1, k: kk }; });
+      var step = null; path.forEach(function (kk) { if (kk.d <= budget && !G.at(kk.r, kk.c)) step = { d: kk.d, k: kk }; });
       if (step) { G.st -= step.d; G.stepTo(u, step.k); u.moved = step.d; G.hook("render"); await sleep(200); }
     }
     var att = G.alive(s).sort(function (a, b) { return b.atk - a.atk; });
@@ -341,7 +369,11 @@
         }
       }
       var mel = a.typ === "法" && G.st < 2;             // 體力不夠放法術就近身普攻
-      var tg = mel ? G.meleeTargets(a, s) : G.targets(a, s); if (!tg.length) continue;
+      var tg = mel ? G.meleeTargets(a, s) : G.targets(a, s);
+      if (!tg.length || (a.typ === "騎" && G.canSiege(a))) {
+        if (!G.stage.tutorial && G.canSiege(a) && G.st >= (a.typ === "法" ? 2 : 0)) { /* ★ 教學關敵軍不打我方軍營，免得新手莫名其妙輸掉 */ G.st -= a.typ === "法" ? 2 : 0; G.doSiege(a, false); G.hook("render"); await sleep(380); if (G.checkEnd()) return; continue; }
+        if (!tg.length) continue;
+      }
       var pw = mel ? a.am : a.atk;
       var bx = function (e) { return (a.typ !== "法" || mel) && G.canBack(a, mel) && G.isBack(a, e) ? B.BACK : 1; };
       var score = function (e) { var m = mult(a.typ, e.typ) * bx(e); return [(e.hp <= pw * m * G.reduction(e) * (1 - e.dr)) ? 1 : 0, m, a.typ === "法" && !mel ? -e.z : 0, -e.hp]; };
@@ -362,5 +394,4 @@
       am: SG.atkOf(e.typ, st.w, x), asp: SG.atkOf(e.typ, st.z, x), art: g ? g.art : SG.gruntArt(e.name), named: !!g };
   };
   SG.Battle = Battle;
-  SG.BASES = { BOT: BOT, TOP: TOP };
 })(window.SG);

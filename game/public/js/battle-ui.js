@@ -1,7 +1,7 @@
 /* 戰鬥畫面：棋盤、小人、選取面板、戰後招降 */
 (function (SG) {
   var $ = function (s) { return document.querySelector(s); };
-  var B = SG.BATTLE, W = B.W, H = B.H;
+  var B = SG.BATTLE;
   var BU = SG.BattleUI = {};
   var G = null, view = null, tut = null, sel = null, rush = false, mode = null, melee = false, logs = [], stage = null, autoT = null;
   BU.game = function () { return G; };   // 測試用
@@ -20,7 +20,9 @@
     '<p><b>背襲</b>：每名武將有面向（棋子邊上的金色箭頭），等於她最後一次移動或攻擊的方向。近戰從她正後方那一格打，傷害 ×2；弓箭和法術不算。</p>' +
     '<p><b>相剋</b>：槍剋騎、騎剋弓、弓剋槍；刺客與法師互剋（×1.5，被剋 ×0.75）。</p>' +
     '<p><b>兵種</b>：槍兵反擊全額；騎兵移動 3，走 2 格以上衝鋒 ×1.5；弓兵射程 2～4，被貼身不能打；刺客移動 2、兵力較少、不會被反擊、可隱身（2 體力），最適合繞背；法師法術射程 1～3 會波及旁邊、火燃燒冰凍結，近身也能用武力普攻，另有補血 1、群療 3、索敵 5×5。</p>' +
-    '<p><b>據點</b>：站上敵方據點並撐到你下回合開始就佔領。守城受傷 −30%、守營 −15%。</p>' +
+    '<p><b>據點</b>：雙方各有一個據點（城或軍營），頭上有耐久。把對方的打到 0 就贏，自己的被打到 0 就輸。敵方據點在射程內就能打（選好武將，點那一格或按「攻城門／攻軍營」），傷害是攻擊力的七成，有人駐守再減半。自己人站進自家據點是駐守：守城受傷 −30%、守營 −15%。</p>' +
+    '<p><b>地形</b>：山、水、拒馬不能走，過河要走橋。樹林走進去多花 1 體力，站在裡面受傷 −20%。</p>' +
+    '<p><b>視角</b>：單指拖動，雙指旋轉和縮放，右上角也有按鈕。點頭像或旗子等於點那一隊。</p>' +
     '<p><b>小人</b>：每 1000 兵力一個人（最多 9）。</p>' +
     '<div class="row end"><button onclick="SG.UI.close()">知道了</button></div>';
 
@@ -28,7 +30,7 @@
     stage = st; logs = []; sel = null; view = null;
     tut = st.tutorial && !S().cleared[st.id] ? { 槍: 0, 騎: 0, 弓: 0, 刺: 0, 法: 0 } : null; rush = false; mode = null; melee = false;
     fxq = []; prev = {};
-    G = new SG.Battle(st, SG.teamUnits(S()), { render: render, log: logMsg, banner: SG.UI.banner, float: floatTxt, finish: finish });
+    G = new SG.Battle(st, SG.teamUnits(S()), { render: render, log: logMsg, banner: SG.UI.banner, float: floatTxt, sfloat: function (s, txt) { SG.B3D.float(s.r, s.c, txt, "big"); SG.B3D.hitBase(s.side); }, finish: finish });
     // 攔下攻擊與補血，記下要播的動作（衝刺、法術、刀光）
     var atk0 = G.doAttack, heal0 = G.heal;
     G.doAttack = function (a, d, r, m) {
@@ -43,12 +45,9 @@
     $("#blog").innerHTML = "";
     SG.UI.go("battle");
 
-    var bw = $("#b-wrap"); bw.classList.toggle("shaped", !!st.shape);
-    bw.className = bw.className.replace(/\bfd\d+/g, "").trim(); bw.classList.add("fd" + (SG.STAGES.indexOf(st) + 1));
-    if (st.shape) {
-      var rects = ""; st.shape.forEach(function (row, r) { for (var c = 0; c < row.length; c++) if (row.charAt(c) !== ".") rects += "<rect x='" + c + "' y='" + r + "' width='1.03' height='1.03'/>"; });
-      bw.style.setProperty("--mask", 'url("data:image/svg+xml;utf8,' + encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 10' preserveAspectRatio='none'>" + rects + "</svg>") + '")');
-    } bw.className = bw.className.replace(/\benv-\S+/g, "").trim(); bw.classList.add("env-" + SG.WEATHERS[Math.floor(Math.random() * SG.WEATHERS.length)]);
+    var bw = $("#b-wrap"); bw.classList.remove("shaped"); bw.classList.add("b3d");
+    bw.className = bw.className.replace(/\bfd\d+/g, "").replace(/\benv-\S+/g, "").trim(); bw.classList.add("env-" + SG.WEATHERS[Math.floor(Math.random() * SG.WEATHERS.length)]);
+    SG.B3D.mount($("#b-board"), G, st, clickCell);
     G.start();
     if (tut) SG.UI.modal('<h2>作戰說明</h2><p>把敵人全部打倒就贏。點我方武將，<b>藍格</b>可以走，<b>紅框</b>可以打。全隊每回合共 10 點體力，走一格扣 1 點。</p>' +
       '<p>五種兵種用法不同。棋盤下方有教學清單，每種兵種出手一次就會打勾。</p>' + SG.UI.typeGuide() + '<div class="row end"><button class="pri" onclick="SG.UI.close()">開始</button></div>');
@@ -92,6 +91,10 @@
       if (u && u.side === "P") err = G.act("heal", cur, { t: u });
       mode = null; if (err) SG.UI.flash(err); render(); return;
     }
+    if (cur && G.isBase(r, c, "E") && !(u && G.visible(u, "P"))) {     // 點敵方據點：打得到就打（有人駐守時點到的是守軍，要打據點請按面板上的按鈕）
+      if (!cur.acted && !cur.stun && !cur.sneak && G.canSiege(cur)) { err = G.act("siege", cur, { rush: rush }); if (err) SG.UI.flash(err); else rush = false; render(); return; }
+      SG.UI.flash("打不到" + G.struct.E.name + "，再靠近一點"); return;
+    }
     if (u && u.side === "E" && G.visible(u, "P")) {
       var canHit = cur && !cur.acted && !cur.stun && !cur.sneak && (cur.typ === "法" && melee ? G.meleeTargets(cur, "P") : G.targets(cur, "P")).indexOf(u) >= 0;
       if (canHit) { view = null; err = G.act("attack", cur, { t: u, rush: rush, melee: melee }); if (err) SG.UI.flash(err); else { rush = false; melee = false; } render(); return; }
@@ -103,40 +106,12 @@
     sel = null; mode = null; melee = false; render();
   }
 
-  function unitHtml(u) {
-    var fx = (u.burn ? "火" : "") + (u.frozen ? "冰" : "") + (u.stun ? "懾" : "") + (u.stealth ? "隱" : "");
-    var men = Math.min(9, Math.ceil(u.hp / 1000)), g = '<svg><use href="#' + (u.typ === "騎" ? "i-horse" : "i-foot") + '"/></svg>';
-    var done = u.side === "P" && G.turnSide === "P" && G.unitDone(u);
-    return '<div class="u ' + u.side + (u.uid === sel ? " sel" : "") + (done ? " done" : "") + (u.stealth ? " hid" : "") + '" data-uid="' + u.uid + '">' +
-      '<div class="men">' + Array(men + 1).join(g) + '</div>' +
-      '<span class="head' + (u.art ? ' f-' + SG.FAC_KEY[SG.GEN[u.name] ? SG.GEN[u.name].fac : "黃巾"] + ' v' + SG.bgv(u.art) : '') + '">' + (u.art ? '<img src="img/' + u.art + '_head.webp" alt="">' : u.name[0]) + '</span><span class="ty">' + u.typ + '</span>' +
-      (fx ? '<span class="fx">' + fx + '</span>' : '') +
-      '<i class="fa" style="transform:rotate(' + (u.fr === -1 ? 0 : u.fc === 1 ? 90 : u.fr === 1 ? 180 : 270) + 'deg)"></i>' +
-      '<div class="hp"><i style="width:' + Math.max(0, u.hp / u.maxhp * 100) + '%"></i></div></div>';
-  }
-  // 動作：移動滑行、攻擊衝刺、受擊震動、法術與刀光
-  function playFx(board) {
-    var cs = board.clientWidth / W, fxl = $("#b-fx");
-    var find = function (uid) { return board.querySelector('[data-uid="' + uid + '"]'); };
-    var now = {};
-    G.units.forEach(function (u) {
-      if (u.hp <= 0) return; now[u.uid] = { r: u.r, c: u.c };
-      var p = prev[u.uid], el = find(u.uid);
-      if (!still && p && el && el.animate && (p.r !== u.r || p.c !== u.c))
-        el.animate([{ transform: "translate(" + (p.c - u.c) * cs + "px," + (p.r - u.r) * cs + "px)" }, { transform: "none" }], { duration: 240, easing: "ease-out" });
-    });
-    prev = now;
+  function playFx() {
     var q = fxq; fxq = [];
     q.forEach(function (f) {
-      if (f.k === "lunge" || f.k === "hit") {
-        var el = find(f.uid); if (!el || !el.animate || still) return;
-        if (f.k === "lunge") { var d = f.far ? 0.18 : 0.5; el.animate([{ transform: "none" }, { transform: "translate(" + f.dx * cs * d + "px," + f.dy * cs * d + "px) scale(1.08)" }, { transform: "none" }], { duration: 300, easing: "ease-in-out" }); }
-        else el.animate([{ transform: "translateX(0)", filter: "brightness(2.2)" }, { transform: "translateX(-5px)" }, { transform: "translateX(5px)", filter: "brightness(1)" }, { transform: "translateX(-3px)" }, { transform: "none" }], { duration: 320, delay: 120 });
-        return;
-      }
-      var b = document.createElement("div"); b.className = (f.k === "slash" ? "slash" : "burst " + f.k);
-      b.style.left = (f.c / W * 100) + "%"; b.style.top = (f.r / H * 100) + "%"; if (f.k !== "ink") b.style.animationDelay = ".1s";
-      fxl.appendChild(b); setTimeout(function () { b.remove(); }, 800);
+      if (f.k === "lunge") SG.B3D.jab(f.uid);
+      else if (f.k === "hit") SG.B3D.hit(f.uid);
+      else if (!still) SG.B3D.fx(f.k, f.r, f.c);
     });
   }
   function render() {
@@ -148,32 +123,13 @@
     var mv = cur && my ? G.moveCells(cur) : [];
     var tg = canAct ? (cur.typ === "法" && melee ? G.meleeTargets(cur, "P") : G.targets(cur, "P")) : [];
     var hl = cur && mode === "heal" ? G.alive("P").filter(function (a) { return dist(a, cur) <= 3; }) : [];
-    var b = document.createElement("div"); b.className = "board"; var shaped = !!stage.shape;
-    for (var r = 0; r < H; r++) for (var c = 0; c < W; c++) {
-      var d = document.createElement("div"), k = r * W + c;
-      var isBase = G.base && ((r === G.base.P.r && c === G.base.P.c) || (r === G.base.E.r && c === G.base.E.c));
-      if (G.voidc[k]) { d.className = "cell void"; b.appendChild(d); continue; }
-      d.className = "cell" + (G.block[k] ? " blk" : "") + (isBase ? " base " + G.kind[r === G.base.P.r ? "P" : "E"] : "");
-      if (isBase || G.block[k]) d.innerHTML = '<div class="bi"></div>';
-      if (shaped) {      // 戰場外緣描邊
-        var out = function (rr, cc) { return rr < 0 || rr >= H || cc < 0 || cc >= W || G.voidc[rr * W + cc]; };
-        var bw4 = [out(r - 1, c), out(r, c + 1), out(r + 1, c), out(r, c - 1)];
-        if (bw4[0] || bw4[1] || bw4[2] || bw4[3]) d.innerHTML += '<i class="eg" style="border-width:' + bw4.map(function (x) { return x ? "3px" : "0"; }).join(" ") + '"></i>';
-      }
-      var u = G.at(r, c); if (u && (u.side === "P" || G.visible(u, "P"))) d.innerHTML += unitHtml(u);
-      var inL = function (arr) { return arr.some(function (x) { return x.r === r && x.c === c; }); };
-      if (inL(hl)) d.classList.add("hl");
-      else if (inL(tg)) {
-        d.classList.add("tg");
-        if (spell && u) d.innerHTML += '<span class="pc">' + Math.round(G.chance(cur, u) * 100) + '%</span>';
-        else if (u && G.canBack(cur, melee) && G.isBack(cur, u)) { d.classList.add("back"); d.innerHTML += '<span class="pc bk">背襲×2</span>'; }
-      }
-      else if (inL(mv)) d.classList.add("mv");
-      (function (rr, cc) { d.onclick = function () { clickCell(rr, cc); }; })(r, c);
-      b.appendChild(d);
-    }
-    var box = $("#b-board"); box.innerHTML = ""; box.appendChild(b);
-    playFx(b);
+    var label = {};
+    tg.forEach(function (u) {
+      if (spell) label[u.r + "," + u.c] = [Math.round(G.chance(cur, u) * 100) + "%", ""];
+      else if (G.canBack(cur, melee) && G.isBack(cur, u)) label[u.r + "," + u.c] = ["背襲×2", "bk"];
+    });
+    SG.B3D.sync({ sel: sel, mv: mv, tg: tg, hl: hl, label: label, siege: canAct && G.canSiege(cur), done: function (u) { return u.side === "P" && G.turnSide === "P" && G.unitDone(u); } });
+    playFx();
     $("#b-round").textContent = "第 " + Math.min(G.round, G.maxT) + " / " + G.maxT + " 回合";
     $("#b-side").textContent = G.turnSide === "P" ? "我方行動" : "敵軍行動中…";
     var st = G.turnSide === "P" ? G.st : 0, pips = "";
@@ -219,7 +175,7 @@
   }
   function panel(cur) {
     var p = $("#bpanel");
-    if (!cur) { p.innerHTML = '<div class="dim">點選我方武將：藍格可移動、紅框可攻擊、綠框可補血。<br>金色箭頭是面向，近戰從正後方打 ×2（背襲）。<br>法術目標上的數字是成功率。每名武將行動完或按「待命」，全軍完成就換敵軍。<br>金圈的體力點可以留到下回合。</div>'; return; }
+    if (!cur) { p.innerHTML = '<div class="dim">點選我方武將（或她的頭像）：藍格可移動、紅格可攻擊、綠格可補血。單指拖動地圖，雙指旋轉縮放。<br>金色箭頭是面向，近戰從正後方打 ×2（背襲）。<br>法術目標上的數字是成功率。每名武將行動完或按「待命」，全軍完成就換敵軍。<br>金圈的體力點可以留到下回合。</div>'; return; }
     var card = cur.cardId ? SG.CARD_BY_ID[cur.cardId] : null, t = SG.TYPES[cur.typ], isMage = cur.typ === "法";
     var my = G.turnSide === "P" && !G.busy, can = my && !cur.acted && !cur.stun && !cur.sneak;
     var st = [];
@@ -229,6 +185,7 @@
     var btn = '<button id="p-wait" ' + (my && !G.unitDone(cur) ? '' : 'disabled') + '>待命</button>' +
       '<button id="p-rush" class="' + (rush ? 'on' : '') + '" ' + (can && G.st >= B.RUSH + base ? '' : 'disabled') + '>猛攻' + (rush ? '：開' : '') + '（3）</button>';
     if (cur.typ === "刺") btn += '<button id="p-hide" ' + (can && !cur.moved && !cur.stealth && G.st >= 2 ? '' : 'disabled') + '>隱身（2）</button>';
+    btn += '<button id="p-siege" ' + (can && G.canSiege(cur) && G.st >= base + (rush ? B.RUSH : 0) ? '' : 'disabled') + '>攻' + G.struct.E.name + '（' + (isMage ? 2 : 0) + '）</button>';
     if (isMage) btn += '<button id="p-melee" class="' + (melee ? 'on' : '') + '" ' + (can && G.meleeTargets(cur, "P").length ? '' : 'disabled') + '>' + (melee ? '普攻：開' : '改用普攻') + '（0）</button>' +
       '<button id="p-heal" class="' + (mode === "heal" ? 'on' : '') + '" ' + (can && G.st >= 1 ? '' : 'disabled') + '>補血（1）</button>' +
       '<button id="p-aoe" ' + (can && G.st >= 3 ? '' : 'disabled') + '>群療（3）</button><button id="p-scout" ' + (can ? '' : 'disabled') + '>索敵（0）</button>';
@@ -243,19 +200,16 @@
     on("p-wait", function () { run("wait"); });
     on("p-rush", function () { rush = !rush; render(); });
     on("p-hide", function () { run("stealth"); });
+    on("p-siege", function () { var e = G.act("siege", cur, { rush: rush }); if (e) SG.UI.flash(e); else rush = false; render(); });
     on("p-melee", function () { melee = !melee; mode = null; render(); });
     on("p-heal", function () { mode = mode === "heal" ? null : "heal"; render(); });
     on("p-aoe", function () { run("aoe"); });
     on("p-scout", function () { run("scout"); });
   }
   function floatTxt(u, txt, cls) {
-    var fx = $("#b-fx"); if (!fx) return;
     if (u.side === "E" && !G.visible(u, "P")) return;
     if (txt.charAt(0) === "-") { if (u.hp <= 0) fxq.push({ k: "ink", r: u.r, c: u.c }); else fxq.push({ k: "hit", uid: u.uid }); }
-    var f = document.createElement("div"); f.className = "float " + (cls || ""); f.textContent = txt;
-    f.style.left = ((u.c + 0.5) / W * 100) + "%"; f.style.top = (u.r / H * 100) + "%";
-    fx.appendChild(f);
-    setTimeout(function () { f.remove(); }, 900);
+    SG.B3D.float(u.r, u.c, txt, cls);
   }
   function logMsg(m) { logs.unshift(m); logs = logs.slice(0, 4); $("#blog").innerHTML = logs.join("<br>"); }
 })(window.SG);
