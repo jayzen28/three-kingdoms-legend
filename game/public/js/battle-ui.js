@@ -39,8 +39,13 @@
       if (tut && a.side === "P") tut[a.typ] = 1;
       fxq.push({ k: "lunge", uid: a.uid, dx: Math.sign(d.c - a.c), dy: Math.sign(d.r - a.r), far: sp || a.typ === "弓" });
       fxq.push({ k: sp ? (a.elem === "火" ? "fire" : "ice") : "slash", r: d.r, c: d.c });
+      if (a.side === "E" && G.visible(a, "P")) SG.B3D.follow(d.r, d.c);      // ✅ Jay：敵軍行動時鏡頭跟過去
       return atk0.apply(G, arguments);
     };
+    var step0 = G.stepTo, siege0 = G.doSiege;
+    G.stepTo = function (u, n) { if (u.side === "E" && G.turnSide === "E" && G.visible(u, "P")) SG.B3D.follow(n.r, n.c); return step0.apply(G, arguments); };
+    G.doSiege = function (a) { var s = G.struct[G.other(a.side)]; if (a.side === "E") SG.B3D.follow(s.r, s.c); fxq.push({ k: "lunge", uid: a.uid }); fxq.push({ k: "slash", r: s.r, c: s.c }); return siege0.apply(G, arguments); };
+    var eb2 = $("#b-edit"); eb2.style.display = BU.fromEditor || st.mapEdited ? "" : "none"; eb2.onclick = function () { location.href = "tool/level.html?stage=" + st.id; };
     G.heal = function (m, list) { if (tut && m.side === "P") tut["法"] = 1; list.forEach(function (t) { fxq.push({ k: "heal", r: t.r, c: t.c }); }); return heal0.apply(G, arguments); };
     var tip = $("#b-tip"); tip.innerHTML = '<b>' + st.id + '　' + st.name + '</b><span>' + SG.UI.clauses(st.tip) + '</span><i>點一下關閉</i>'; tip.style.display = "block"; tip.onclick = function () { tip.style.display = "none"; };
     $("#blog").innerHTML = "";
@@ -55,6 +60,23 @@
   };
   $("#b-help").onclick = function () { SG.UI.modal(HELP); };
   $("#b-quit").onclick = function () { if (G && !G.over) G.finish(false, "撤退"); };
+  // 部隊總覽（✅ Jay 2026-11-15：要有地方看雙方兵力和陣容）
+  $("#b-ros").onclick = function () {
+    if (!G) return;
+    var side = function (s, title) {
+      var st = G.struct[s], us = G.units.filter(function (u) { return u.side === s && (s === "P" || u.hp <= 0 || G.visible(u, "P")); });
+      var hid = s === "E" ? G.alive("E").filter(function (u) { return !G.visible(u, "P"); }).length : 0;
+      var tot = us.reduce(function (a, u) { return a + Math.max(0, u.hp); }, 0);
+      return '<h2>' + title + ' <small>兵力 ' + fmt(tot) + '・' + st.name + ' ' + fmt(st.hp) + ' / ' + fmt(st.max) + '</small></h2><div class="paper flush">' +
+        us.sort(function (a, b) { return (b.hp > 0) - (a.hp > 0) || b.hp - a.hp; }).map(function (u) {
+          var fx = (u.hp <= 0 ? ["陣亡"] : []).concat(u.burn ? ["燃燒"] : [], u.frozen ? ["凍結"] : [], u.stun ? ["震懾"] : [], u.stealth ? ["隱身"] : [], G.onOwnBase(u) && u.hp > 0 ? ["駐守"] : []);
+          return '<div class="li"' + (u.hp <= 0 ? ' style="opacity:.4"' : '') + '>' + SG.UI.head(u.name, SG.GEN[u.name] ? SG.GEN[u.name].fac : "黃巾", u.art) +
+            '<div class="grow"><b>' + u.name + '</b> <span class="tag">' + SG.TYPES[u.typ].name + '</span>' + (fx.length ? ' <span class="tag red">' + fx.join("・") + '</span>' : '') +
+            '<div class="sub">兵力 ' + fmt(u.hp) + ' / ' + fmt(u.maxhp) + '・武 ' + u.w + '・智 ' + u.z + '</div></div></div>';
+        }).join("") + (hid ? '<div class="li"><div class="grow dim">還有 ' + hid + ' 隊隱身中，看不到</div></div>' : '') + '</div>';
+    };
+    SG.UI.modal(side("P", "我方") + side("E", "敵方") + '<div class="row end"><button onclick="SG.UI.close()">關閉</button></div>');
+  };
   $("#b-end").onclick = function () {      // ★ 結束回合：不用每個人都按待機
     if (!G || G.over || G.busy || G.turnSide !== "P") return;
     sel = null; menu = null; pick = null; view = null; G.busy = true; render();

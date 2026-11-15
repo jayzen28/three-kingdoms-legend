@@ -21,6 +21,7 @@ button.go{background:#e05858;border-color:#d4a853;color:#fff}button.ok{backgroun
 .c b.p{background:#2f9a5c}.c b.e{background:#c79a1c;color:#201400}.c b.castle{background:#6b5a3a;border-radius:4px;border-color:#e0b030}.c b.granary{background:#7a5632;border-radius:4px;border-color:#4ec87a}
 #hint{color:#c9b98f;font-size:12px}#msg{color:#9fd0a0}
 textarea{width:100%;height:54px;background:#07060a;color:#9fd0a0;border:1px solid #6b5a3a;border-radius:6px;font:11px monospace;user-select:text;-webkit-user-select:text}
+body.off #pal button[data-k="p"],body.off #pal button[data-k^="e"],body.off #pal button[data-k="x"],body.off #play{display:none}
 </style></head><body><div id="wrap">
 <div id="top">
   <div class="row"><b style="color:#d4a853">關卡編輯器</b><input id="name" type="text" placeholder="關卡名稱" maxlength="20">
@@ -30,10 +31,12 @@ textarea{width:100%;height:54px;background:#07060a;color:#9fd0a0;border:1px soli
 <div id="mid"><div id="gwrap"><div id="grid"></div></div></div>
 <div id="bot">
   <div id="hint"></div>
+  <div class="row"><select id="stage"><option value="">編輯正式關卡…</option></select><button id="splay" class="go" style="display:none">在正式版試玩</button><button id="sreset" style="display:none">還原這一關</button></div>
   <div class="row"><button id="play" class="go">試玩（斜視）</button><button id="save" class="ok">存檔</button><select id="load"></select><button id="del">刪除</button><button id="new">全新</button></div>
   <div class="row"><button id="exp">匯出並複製給 Claude</button><button id="imp">貼上匯入</button><span id="msg"></span></div>
   <textarea id="io" placeholder="按「匯出」後這裡會出現關卡文字；要匯入就把文字貼在這裡再按「貼上匯入」"></textarea>
 </div></div>
+<script src="../js/data.js"></script>
 <script>
 (function(){
 var $=function(q){return document.querySelector(q)},KEY="sg_levels",grid=$("#grid");
@@ -65,12 +68,14 @@ function draw(){
   var sz=Math.max(22,Math.min(44,Math.floor((Math.min($("#mid").clientWidth,640)-24-52)/L.cols)));
   grid.style.gridTemplateColumns="repeat("+L.cols+","+sz+"px)";grid.innerHTML="";
   for(var y=0;y<L.rows;y++)for(var x=0;x<L.cols;x++){var d=document.createElement("div");d.className="c";d.style.height=sz+"px";d.dataset.x=x;d.dataset.y=y;d.dataset.t=getT(x,y);
-    var h="";if(same(L.castle,x,y))h='<b class="castle">城</b>';else if(same(L.granary,x,y))h='<b class="granary">倉</b>';
+    var h="";if(same(L.castle,x,y))h='<b class="castle">'+(L.stage?"敵":"城")+'</b>';else if(same(L.granary,x,y))h='<b class="granary">'+(L.stage?"我":"倉")+'</b>';
     else{var pi=-1;L.p.forEach(function(c,i){if(same(c,x,y))pi=i});if(pi>=0)h='<b class="p">'+(pi+1)+PN[pi]+'</b>';else{var e=L.e.filter(function(o){return o.x===x&&o.y===y})[0];if(e)h='<b class="e">'+e.typ+'</b>'}}
     d.innerHTML=h;grid.appendChild(d)}
   $("#name").value=L.name||"";$("#cols").value=L.cols;$("#rows").value=L.rows;$("#bg").value=L.bg||"grass";var gu="url(../img/bf/ground_"+(L.bg||"grass")+".webp)";grid.style.backgroundImage=gu;$("#gwrap").style.backgroundImage=gu;
   $("#hint").innerHTML=(HINT[tool]||"敵方部隊：點格子放一隊。騎兵會去打糧倉，其他守在原地附近。城裡固定有張角守城。")+"　<span style='color:#888'>我方 "+L.p.length+"／6　敵方 "+L.e.length+" 隊</span>";
+  if(L.stage)$("#hint").innerHTML="<b style='color:#d4a853'>正式關卡 "+L.name+"</b>　"+(tool==="castle"?"敵方據點（"+KIND(L.mode)[0]+"）：點哪裡就搬到哪裡。":tool==="granary"?"我方據點（"+KIND(L.mode)[1]+"）：點哪裡就搬到哪裡。":(HINT[tool]||""))+"<br><span style='color:#aaa'>部隊不用擺：我方會自動排在最下面兩排，敵方 "+L.need+" 隊排在最上面兩排，這四排請多留空地。</span>";
 }
+function KIND(m){return m==="siege"?["城","軍營"]:m==="defend"?["軍營","城"]:["軍營","軍營"]}
 // 調色盤
 TOOLS.forEach(function(t){if(t.sep){var s=document.createElement("span");s.className="sep";$("#pal").appendChild(s);return}
   var b=document.createElement("button");b.dataset.k=t.k;b.innerHTML='<i style="background:'+t.c+'">'+(t.s||"")+'</i>'+t.n;b.onclick=function(){tool=t.k;document.querySelectorAll("#pal button").forEach(function(x){x.classList.toggle("on",x===b)});draw()};if(t.k===tool)b.classList.add("on");$("#pal").appendChild(b)});
@@ -87,17 +92,40 @@ window.addEventListener("pointerup",function(){down=false});
 function all(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
 function fillLoad(){var a=all(),s=$("#load");s.innerHTML='<option value="">載入…</option>';Object.keys(a).forEach(function(k){var o=document.createElement("option");o.value=k;o.textContent=k;s.appendChild(o)})}
 function check(){if(!L.p.length)return "至少放一格我方出場格";return ""}
+// ── 正式關卡（✅ Jay 2026-11-15：8 關草稿由 Claude 排，Jay 用編輯器改）────────────
+var MKEY="sg_stage_maps",STG=(window.SG&&SG.STAGES)||[];
+function ovr(){try{return JSON.parse(localStorage.getItem(MKEY))||{}}catch(e){return {}}}
+function stageMap(){return {cols:L.cols,rows:L.rows,bg:L.bg||"grass",t:L.t.slice(),P:{r:L.granary[1],c:L.granary[0]},E:{r:L.castle[1],c:L.castle[0]}}}
+function official(){var on=!!L.stage;document.body.classList.toggle("off",on);$("#splay").style.display=$("#sreset").style.display=on?"":"none";$("#stage").value=L.stage||"";
+  var k=KIND(L.mode),bc=document.querySelector('#pal button[data-k="castle"]'),bg=document.querySelector('#pal button[data-k="granary"]');
+  bc.lastChild.textContent=on?"敵方"+k[0]:"城";bg.lastChild.textContent=on?"我方"+k[1]:"糧倉";
+  if(on&&(tool==="p"||tool==="x"||tool.charAt(0)==="e")){tool="t^";document.querySelectorAll("#pal button").forEach(function(x){x.classList.toggle("on",x.dataset.k===tool)})}}
+function loadStage(id,orig){var st=STG.filter(function(x){return x.id===id})[0];if(!st)return;var o=ovr()[id],m=(!orig&&o)||st.map0||st.map;
+  L={name:id+" "+st.name,stage:id,mode:st.mode,need:st.enemy.length,bg:m.bg||"grass",cols:m.cols,rows:m.rows,t:m.t.slice(),castle:[m.E.c,m.E.r],granary:[m.P.c,m.P.r],p:[],e:[]};
+  official();draw();$("#msg").textContent="已載入 "+id+(!orig&&o?"（你改過的版本）":"（目前的正式版）")}
+function checkStage(){var W=L.cols,H=L.rows,blk=function(x,y){return "^Mn~#".indexOf(getT(x,y))>=0},free=function(y){var n=0;for(var x=0;x<W;x++)if(!blk(x,y)&&!same(L.castle,x,y)&&!same(L.granary,x,y))n++;return n};
+  if(free(H-1)+free(H-2)<10)return "最下面兩排空地不到 10 格，我方排不下";
+  if(free(0)+free(1)<L.need+2)return "最上面兩排空地不夠，敵方 "+L.need+" 隊排不下";
+  var seen={},q=[L.granary],ok=false;seen[L.granary[0]+","+L.granary[1]]=1;
+  while(q.length){var c=q.shift();[[1,0],[-1,0],[0,1],[0,-1]].forEach(function(d){var x=c[0]+d[0],y=c[1]+d[1];if(x<0||y<0||x>=W||y>=H)return;if(same(L.castle,x,y)){ok=true;return}if(blk(x,y)||seen[x+","+y])return;seen[x+","+y]=1;q.push([x,y])})}
+  return ok?"":"我方走不到敵方據點（被山、水或拒馬擋死了），請留一條路或放橋"}
+STG.forEach(function(st){var o=document.createElement("option");o.value=st.id;o.textContent=st.id+" "+st.name;$("#stage").appendChild(o)});
+$("#stage").onchange=function(){if(this.value)loadStage(this.value);else{L=blank(12,12);official();draw()}};
+$("#splay").onclick=function(){var m=checkStage();if(m){$("#msg").textContent=m;return}var o=ovr();o[L.stage]=stageMap();localStorage.setItem(MKEY,JSON.stringify(o));localStorage.setItem("sg_level_draft",JSON.stringify(L));location.href="../index.html?play="+L.stage};
+$("#sreset").onclick=function(){var o=ovr();delete o[L.stage];localStorage.setItem(MKEY,JSON.stringify(o));loadStage(L.stage,true);$("#msg").textContent="已還原成目前的正式版"};
 $("#save").onclick=function(){if(!L.name){$("#msg").textContent="先取個關卡名稱";return}var a=all();a[L.name]=L;localStorage.setItem(KEY,JSON.stringify(a));fillLoad();$("#load").value=L.name;$("#msg").textContent="已存「"+L.name+"」"};
-$("#load").onchange=function(){var a=all();if(a[this.value]){L=JSON.parse(JSON.stringify(a[this.value]));draw();$("#msg").textContent="已載入"}};
+$("#load").onchange=function(){var a=all();if(a[this.value]){L=JSON.parse(JSON.stringify(a[this.value]));official();draw();$("#msg").textContent="已載入"}};
 $("#del").onclick=function(){var k=$("#load").value;if(!k){$("#msg").textContent="先在「載入…」選一個";return}var a=all();delete a[k];localStorage.setItem(KEY,JSON.stringify(a));fillLoad();$("#msg").textContent="已刪除「"+k+"」"};
-$("#new").onclick=function(){L=blank(12,12);draw();$("#msg").textContent="全新 12×12"};
+$("#new").onclick=function(){L=blank(12,12);official();draw();$("#msg").textContent="全新 12×12"};
 $("#play").onclick=function(){var m=check();if(m){$("#msg").textContent=m;return}localStorage.setItem("sg_level_test",JSON.stringify(L));localStorage.setItem("sg_level_draft",JSON.stringify(L));location.href="field.html?level=test"};
-$("#exp").onclick=function(){var t="LEVEL "+JSON.stringify(L),o=$("#io");o.value=t;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$("#msg").textContent="已複製，貼給 Claude"},function(){o.select();try{document.execCommand("copy");$("#msg").textContent="已複製"}catch(e){$("#msg").textContent="請長按文字複製"}})};
-$("#imp").onclick=function(){try{var t=$("#io").value.trim().replace(/^LEVEL\s*/,""),o=JSON.parse(t);if(!o.t||!o.cols||!o.rows)throw 0;o.p=o.p||[];o.e=o.e||[];o.castle=o.castle||[1,1];o.granary=o.granary||[o.cols-2,o.rows-2];L=o;draw();$("#msg").textContent="已匯入"}catch(e){$("#msg").textContent="這段文字讀不出來"}};
+$("#exp").onclick=function(){if(L.stage){var m0=checkStage();if(m0){$("#msg").textContent=m0;return}}var t=L.stage?"STAGE "+L.stage+" "+JSON.stringify(stageMap()):"LEVEL "+JSON.stringify(L),o=$("#io");o.value=t;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){$("#msg").textContent="已複製，貼給 Claude"},function(){o.select();try{document.execCommand("copy");$("#msg").textContent="已複製"}catch(e){$("#msg").textContent="請長按文字複製"}})};
+$("#imp").onclick=function(){try{var raw=$("#io").value.trim(),sm=/^STAGE\s+([\w-]+)\s+(\{[\s\S]*\})$/.exec(raw);
+  if(sm){var mm=JSON.parse(sm[2]),sx=STG.filter(function(x){return x.id===sm[1]})[0];if(!sx||!mm.t)throw 0;L={name:sx.id+" "+sx.name,stage:sx.id,mode:sx.mode,need:sx.enemy.length,bg:mm.bg||"grass",cols:mm.cols,rows:mm.rows,t:mm.t,castle:[mm.E.c,mm.E.r],granary:[mm.P.c,mm.P.r],p:[],e:[]};official();draw();$("#msg").textContent="已匯入正式關卡 "+sx.id;return}
+  var t=raw.replace(/^LEVEL\s*/,""),o=JSON.parse(t);if(!o.t||!o.cols||!o.rows)throw 0;o.p=o.p||[];o.e=o.e||[];o.castle=o.castle||[1,1];o.granary=o.granary||[o.cols-2,o.rows-2];L=o;draw();$("#msg").textContent="已匯入"}catch(e){$("#msg").textContent="這段文字讀不出來"}};
 // 開場：接著上次的草稿，沒有就給一張示範
 var draft=null;try{draft=JSON.parse(localStorage.getItem("sg_level_draft"))}catch(e){}
 L=draft&&draft.t?draft:{name:"示範：渡河攻城",cols:12,rows:12,t:["............","............","....f.......","...f....^^..","~~~~=~~~~~~~","~~~~=~~~~=~~","..........^.","..f.........","..ff........","............","............","............"],castle:[1,1],granary:[10,10],p:[[9,7],[8,8],[7,9],[10,8],[8,10],[9,9]],e:[{x:3,y:2,typ:"法"},{x:2,y:3,typ:"槍"},{x:5,y:3,typ:"槍"},{x:6,y:2,typ:"弓"},{x:7,y:1,typ:"騎"},{x:1,y:3,typ:"騎"}]};
 setInterval(function(){try{localStorage.setItem("sg_level_draft",JSON.stringify(L))}catch(e){}},3000);
-fillLoad();draw();window.addEventListener("resize",draw);window.__l={get:function(){return L},apply:apply,setTool:function(k){tool=k;draw()}};
+fillLoad();official();draw();var qs=/[?&]stage=([\w-]+)/.exec(location.search);if(qs)loadStage(qs[1]);window.addEventListener("resize",draw);window.__l={get:function(){return L},apply:apply,setTool:function(k){tool=k;draw()}};
 })();
 </script></body></html>

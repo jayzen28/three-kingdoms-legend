@@ -79,6 +79,15 @@
     zoom = Math.max(0.55, Math.min(1.05, view.clientWidth / (W * C * 1.414) * 1.9)); px = 0; py = 0; place();
     S3.focus(G.H - 3, Math.floor(G.W / 2));
   };
+  // 鏡頭跟過去：那一格已經在畫面中間一帶就不動，免得晃
+  var folT = null;
+  S3.follow = function (r, c) {
+    if (!board || !cells[r + "," + c]) return;
+    var a = cells[r + "," + c].getBoundingClientRect(), v = view.getBoundingClientRect(), cx = a.left + a.width / 2, cy = a.top + a.height / 2;
+    if (cx > v.left + v.width * .22 && cx < v.right - v.width * .22 && cy > v.top + v.height * .25 && cy < v.bottom - v.height * .28) return;
+    var dx = v.left + v.width / 2 - cx, dy = v.top + v.height * .48 - cy, x0 = px, y0 = py, n = 0; cancelAnimationFrame(folT);
+    (function f() { n++; var t = n / 12, e = 1 - (1 - t) * (1 - t); px = x0 + dx * e; py = y0 + dy * e; place(); if (n < 12) folT = requestAnimationFrame(f); })();
+  };
   S3.focus = function (r, c) {
     r = Math.max(0, Math.min(G.H - 1, r)); c = Math.max(0, Math.min(G.W - 1, c));
     var a = cells[r + "," + c].getBoundingClientRect(), v = view.getBoundingClientRect();

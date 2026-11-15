@@ -688,3 +688,9 @@ p,h2,.dim,.sub,.lead,.t,#modal-body p,#banner{text-wrap:balance}
 .cc .rb.rx{font-size:11cqw;right:0;top:0;padding:0}
 .bigart .rk.rxw{background:none;box-shadow:none;padding:0;display:flex;align-items:center;gap:6px}.bigart .rk.rxw .rx{font-size:26px}
 .rv-spot .lab.rxw{background:none;-webkit-background-clip:border-box;background-clip:border-box;filter:none;letter-spacing:0}
+
+/* 抽卡、合成動畫裡的字（✅ Jay 2026-11-15：不要小字；一句一行） */
+.rv-spot .tip{font-size:17px;letter-spacing:.12em;color:#f0e2bd}
+.mg-cap{padding:0 14px;text-wrap:balance}.mg-cap b{display:block;font-size:28px;margin-bottom:4px}
+.mg-cap small{font-size:15px;margin-top:8px;color:#e6d6ae}
+#fxl .rv-top span{font-size:16px}

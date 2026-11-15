@@ -11,4 +11,6 @@
   SG.Audio.init();
   SG.UI.go("home");
   if (tut) SG.UI.welcome();
+  var play = /[?&]play=([\w-]+)/.exec(location.search);     // 從關卡編輯器按「在正式版試玩」過來
+  if (play) { var st = SG.STAGES.find(function (x) { return x.id === play[1]; }); if (st) setTimeout(function () { SG.UI.close(); SG.BattleUI.fromEditor = true; SG.BattleUI.start(st); }, 400); }
 })(window.SG);

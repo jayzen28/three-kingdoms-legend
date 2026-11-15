@@ -336,8 +336,14 @@ SG.gruntArt = function (name) { var g = SG.GRUNT_BY[name]; return g && SG.GRUNT_
   SG.STAGES.forEach(function (st) {
     var rows = MAPS[st.id], m = { cols: rows[0].length, rows: rows.length, t: [], bg: "grass" };
     rows.forEach(function (row, r) { ["P", "E"].forEach(function (k) { var c = row.indexOf(k); if (c >= 0) m[k] = { r: r, c: c }; }); m.t.push(row.replace(/[PE]/g, ".")); });
-    st.map = m; st.shape = null; st.block = [];
+    st.map = st.map0 = m; st.shape = null; st.block = [];
   });
+  // 編輯器在這台裝置上改過的正式關卡地圖（只存在這台裝置的瀏覽器；要變成大家的正式版，得把編輯器匯出的文字交給 Claude 寫進上面的 MAPS）
+  try {
+    var ov = JSON.parse(localStorage.getItem("sg_stage_maps")) || {};
+    SG.STAGES.forEach(function (st) { var o = ov[st.id]; if (o && o.t && o.cols && o.rows && o.P && o.E && o.t.length === o.rows) { st.map = o; st.mapEdited = true; } });
+  } catch (e) { }
+
   // 天氣：每場隨機（✅ Jay 2026-11-14）
   SG.WEATHERS = ["day", "day", "dusk", "mist", "night", "snow", "rain", "storm"];
   SG.STAGE_FIRST = { copper: 100000, tickets: 10 };
