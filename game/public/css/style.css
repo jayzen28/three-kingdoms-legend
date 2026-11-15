@@ -635,3 +635,38 @@ button.chip.on{background:linear-gradient(#c8372c,#8b1c16);color:#fff1d2;border-
 @keyframes b3rise{from{opacity:1;margin-top:-70px}to{opacity:0;margin-top:-120px}}
 @keyframes b3burst{from{opacity:1;scale:.4}to{opacity:0;scale:1.5}}
 @media (prefers-reduced-motion:reduce){.b3-sol i,.b3-ban,.b3-sway>img{animation:none}}
+
+/* 戰鬥畫面滿版（✅ Jay 2026-11-15：上下的框拿掉，指令改成頭像旁的選單） */
+#s-battle #b-wrap.b3d{position:fixed;inset:0;height:auto;min-height:0;max-height:none;border:0;box-shadow:none;z-index:20}
+#s-battle #hud{position:fixed;left:8px;top:8px;z-index:22;background:rgba(18,15,20,.8);border:1px solid #6b5a3a;border-radius:8px;padding:5px 10px;gap:14px;color:#f0e8d8;pointer-events:none;box-shadow:none}
+#s-battle #hud::before,#s-battle #hud::after{display:none}
+#s-battle #hud .kai{font-size:14px;color:#f0e8d8}#s-battle #b-side{font-size:11px;color:#c9b88f}
+#s-battle .stam .dim{color:#c9b88f;font-size:11px}#s-battle .stam b{font-size:18px;color:#ff9a8a}
+#s-battle .pips i{width:7px;height:7px;border-color:#a89a7c}
+#s-battle #b-tip{display:none;position:fixed;left:7%;right:7%;top:30%;z-index:26;background:rgba(18,15,20,.92);border:1px solid #d4a853;border-radius:10px;padding:16px 16px 12px;color:#f0e8d8;font-size:16px;line-height:1.7;text-align:center;text-wrap:balance}
+#s-battle #b-tip b{display:block;font-family:var(--kai);font-size:21px;color:#d4a853;margin-bottom:6px}
+#s-battle #b-tip i{display:block;margin-top:8px;font-style:normal;font-size:12px;color:#a89a7c}
+#s-battle #blog{position:fixed;left:8px;bottom:8px;width:52%;z-index:22;min-height:0;font-size:11px;line-height:1.35;color:#f0e8d8;text-shadow:0 0 3px #000,0 0 3px #000;pointer-events:none}
+#s-battle #b-btns{position:fixed;right:8px;bottom:8px;z-index:22;gap:5px;margin:0}
+#s-battle #b-btns button{padding:6px 8px;font-size:13px}
+#s-battle #b-tut{position:fixed;left:8px;top:58px;right:auto;max-width:78%;z-index:22;background:rgba(18,15,20,.8);border:1px solid #6b5a3a;border-radius:8px;padding:5px 8px;font-size:11px;color:#f0e8d8;box-shadow:none;pointer-events:none}
+#s-battle #b-tut::before,#s-battle #b-tut::after{display:none}
+#s-battle #b-tut .tk{color:#c9b88f;margin-right:6px}#s-battle #b-tut .tk.ok{color:#7be0a0}#s-battle #b-tut .tk.cur{color:#ffb0a0;outline-color:#ffb0a0}#s-battle #b-tut .sub{color:#f0e8d8}
+#s-battle #bpanel{display:none}
+#s-battle #bpanel.show{display:flex;position:fixed;left:8px;right:8px;bottom:50px;z-index:24;min-height:0}
+#b-pick{position:absolute;left:0;right:0;bottom:46px;z-index:7;text-align:center;font-size:13px;color:#ffe9a8;text-shadow:0 0 3px #000,0 0 3px #000;pointer-events:none}
+.b3-ctl{top:8px}
+.b3-menu{position:absolute;z-index:8;display:flex;flex-direction:column;gap:4px;min-width:96px;padding:6px;background:rgba(18,15,20,.9);border:1px solid #d4a853;border-radius:8px;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+.b3-menu b{font-family:var(--kai);font-size:14px;color:#d4a853;text-align:center;padding-bottom:2px;border-bottom:1px solid #6b5a3a;margin-bottom:1px}
+.b3-menu button{padding:8px 12px;font-size:15px;white-space:nowrap;background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6px;box-shadow:none;letter-spacing:.05em}
+.b3-menu button:disabled{opacity:.35}.b3-menu button.bk{background:none;border-color:transparent;color:#c9b88f;padding:4px}
+.sen{display:block}.cl{display:inline-block}
+
+/* 文字排版（✅ Jay 2026-11-15）：一句話盡量平均分成兩行，不要只掉一兩個字到第二行；說明放中間、點一下消失 */
+p,h2,.dim,.sub,.lead,.t,#modal-body p,#banner{text-wrap:balance}
+#note{position:fixed;inset:0;z-index:80;display:none;align-items:center;justify-content:center;background:rgba(10,6,4,.55);padding:22px}
+#note.show{display:flex}
+#note .nb{max-width:440px;width:100%;background:rgba(18,15,20,.95);border:1px solid #d4a853;border-radius:12px;padding:20px 18px 14px;text-align:center;color:#f0e8d8;box-shadow:0 8px 30px rgba(0,0,0,.6)}
+#note .nb b{display:block;font-family:var(--kai);font-size:24px;letter-spacing:.12em;color:#d4a853;margin-bottom:10px}
+#note .nb p{font-size:18px;line-height:1.6;margin:8px 0;color:#f0e8d8;text-wrap:balance}
+#note .nb i{display:block;margin-top:12px;font-style:normal;font-size:12px;color:#a89a7c}

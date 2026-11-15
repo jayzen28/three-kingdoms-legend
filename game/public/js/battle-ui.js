@@ -4,6 +4,7 @@
   var B = SG.BATTLE;
   var BU = SG.BattleUI = {};
   var G = null, view = null, tut = null, sel = null, rush = false, mode = null, melee = false, logs = [], stage = null, autoT = null;
+  var menu = null, pick = null;   // menu：頭像旁的選單（main／atk）；pick：選了哪個指令、正在等玩家點格子（move／attack／heal）
   BU.game = function () { return G; };   // 測試用
   var fxq = [], prev = {};          // 待播放的動作、上一幀各單位位置
   var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -27,7 +28,7 @@
     '<div class="row end"><button onclick="SG.UI.close()">知道了</button></div>';
 
   BU.start = function (st) {
-    stage = st; logs = []; sel = null; view = null;
+    stage = st; logs = []; sel = null; view = null; menu = null; pick = null;
     tut = st.tutorial && !S().cleared[st.id] ? { 槍: 0, 騎: 0, 弓: 0, 刺: 0, 法: 0 } : null; rush = false; mode = null; melee = false;
     fxq = []; prev = {};
     G = new SG.Battle(st, SG.teamUnits(S()), { render: render, log: logMsg, banner: SG.UI.banner, float: floatTxt, sfloat: function (s, txt) { SG.B3D.float(s.r, s.c, txt, "big"); SG.B3D.hitBase(s.side); }, finish: finish });
@@ -41,7 +42,7 @@
       return atk0.apply(G, arguments);
     };
     G.heal = function (m, list) { if (tut && m.side === "P") tut["法"] = 1; list.forEach(function (t) { fxq.push({ k: "heal", r: t.r, c: t.c }); }); return heal0.apply(G, arguments); };
-    $("#b-tip").textContent = st.id + "　" + st.name + "：" + st.tip;
+    var tip = $("#b-tip"); tip.innerHTML = '<b>' + st.id + '　' + st.name + '</b><span>' + SG.UI.clauses(st.tip) + '</span><i>點一下關閉</i>'; tip.style.display = "block"; tip.onclick = function () { tip.style.display = "none"; };
     $("#blog").innerHTML = "";
     SG.UI.go("battle");
 
@@ -54,8 +55,14 @@
   };
   $("#b-help").onclick = function () { SG.UI.modal(HELP); };
   $("#b-quit").onclick = function () { if (G && !G.over) G.finish(false, "撤退"); };
+  $("#b-end").onclick = function () {      // ★ 結束回合：不用每個人都按待機
+    if (!G || G.over || G.busy || G.turnSide !== "P") return;
+    sel = null; menu = null; pick = null; view = null; G.busy = true; render();
+    setTimeout(function () { G.busy = false; if (!G.over) G.endSide("P"); }, 250);
+  };
 
   function finish(win, why) {
+    $("#b-tip").style.display = "none"; menu = null; pick = null;
     render();
     var st = S(), first = win && !st.cleared[stage.id], gain = 0, rec = null;
     if (win) {
@@ -86,26 +93,61 @@
   function clickCell(r, c) {
     if (!G || G.over || G.busy || G.turnSide !== "P") return;
     var u = G.at(r, c), cur = sel && G.units.find(function (x) { return x.uid === sel && x.hp > 0; });
-    var err = null;
-    if (cur && mode === "heal") {
+    var err = null, ready = cur && !cur.acted && !cur.stun && !cur.sneak;
+    if (cur && pick === "heal") {
       if (u && u.side === "P") err = G.act("heal", cur, { t: u });
-      mode = null; if (err) SG.UI.flash(err); render(); return;
+      pick = null; menu = null; if (err) { SG.UI.flash(err); menu = "main"; } render(); return;
     }
-    if (cur && G.isBase(r, c, "E") && !(u && G.visible(u, "P"))) {     // 點敵方據點：打得到就打（有人駐守時點到的是守軍，要打據點請按面板上的按鈕）
-      if (!cur.acted && !cur.stun && !cur.sneak && G.canSiege(cur)) { err = G.act("siege", cur, { rush: rush }); if (err) SG.UI.flash(err); else rush = false; render(); return; }
-      SG.UI.flash("打不到" + G.struct.E.name + "，再靠近一點"); return;
+    if (cur && pick === "attack") {
+      if (G.isBase(r, c, "E") && !(u && G.visible(u, "P"))) {
+        if (ready && G.canSiege(cur)) { err = G.act("siege", cur, { rush: rush }); if (err) SG.UI.flash(err); else { rush = false; pick = null; menu = null; } render(); return; }
+        SG.UI.flash("打不到" + G.struct.E.name + "，再靠近一點"); return;
+      }
+      if (u && u.side === "E" && G.visible(u, "P") && ready && (cur.typ === "法" && melee ? G.meleeTargets(cur, "P") : G.targets(cur, "P")).indexOf(u) >= 0) {
+        err = G.act("attack", cur, { t: u, rush: rush, melee: melee }); if (err) SG.UI.flash(err); else { rush = false; melee = false; pick = null; menu = null; }
+        render(); return;
+      }
+      pick = null; rush = false; melee = false; menu = "main"; render(); return;      // 點別的地方＝取消，回到選單
     }
-    if (u && u.side === "E" && G.visible(u, "P")) {
-      var canHit = cur && !cur.acted && !cur.stun && !cur.sneak && (cur.typ === "法" && melee ? G.meleeTargets(cur, "P") : G.targets(cur, "P")).indexOf(u) >= 0;
-      if (canHit) { view = null; err = G.act("attack", cur, { t: u, rush: rush, melee: melee }); if (err) SG.UI.flash(err); else { rush = false; melee = false; } render(); return; }
-      view = u.uid; render(); return;       // 打不到（或沒選人）：看她的資料
+    if (cur && pick === "move") {
+      if (!u && G.free(r, c)) { err = G.act("move", cur, { r: r, c: c }); if (!err) { pick = null; menu = G.unitDone(cur) ? null : "main"; render(); return; } }
+      pick = null; menu = "main"; render(); return;
     }
+    if (u && u.side === "E" && G.visible(u, "P")) { view = u.uid; menu = null; render(); return; }   // 沒在下指令時點敵人：看她的資料
     view = null;
-    if (u && u.side === "P") { sel = u.uid; mode = null; rush = false; melee = false; render(); return; }
-    if (cur && !u && G.free(r, c)) { err = G.act("move", cur, { r: r, c: c }); if (!err) { render(); return; } }
-    sel = null; mode = null; melee = false; render();
+    if (u && u.side === "P") { sel = u.uid; menu = "main"; pick = null; rush = false; melee = false; render(); return; }
+    sel = null; menu = null; pick = null; melee = false; render();
   }
-
+  // 頭像旁的選單。main：移動／攻擊／待機／個人情報；atk：這個兵種能用的攻擊和技能
+  function menuHtml(cur) {
+    var my = G.turnSide === "P" && !G.busy, can = my && !cur.acted && !cur.stun && !cur.sneak, mage = cur.typ === "法";
+    var bt = function (a, t, ok, cls) { return '<button type="button" data-a="' + a + '"' + (ok ? '' : ' disabled') + (cls ? ' class="' + cls + '"' : '') + '>' + t + '</button>'; };
+    if (menu === "main") return '<b>' + cur.name + '</b>' +
+      bt("mv", "移動", my && G.moveCells(cur).length > 0) + bt("atk", "攻擊", can) + bt("wait", "待機", my && !G.unitDone(cur)) + bt("info", "個人情報", true);
+    var tg = G.targets(cur, "P").length > 0, base = mage ? B.MAGE_ATK : 0, h = '<b>' + cur.name + '</b>';
+    h += bt("a", mage ? "法術（2）" : "攻擊", can && tg && G.st >= base);
+    h += bt("r", "猛攻（" + (base + B.RUSH) + "）", can && tg && G.st >= base + B.RUSH);
+    if (mage) h += bt("m", "普攻", can && G.meleeTargets(cur, "P").length > 0) + bt("heal", "補血（1）", can && G.st >= B.HEAL) + bt("aoe", "群療（3）", can && G.st >= B.AOE_HEAL) + bt("scout", "索敵", can);
+    if (cur.typ === "刺") h += bt("hide", "隱身（2）", can && !cur.moved && !cur.stealth && G.st >= B.STEALTH);
+    h += bt("siege", "攻" + G.struct.E.name, can && G.canSiege(cur) && G.st >= base);
+    return h + bt("back", "返回", true, "bk");
+  }
+  function menuAct(a) {
+    var cur = sel && G.units.find(function (x) { return x.uid === sel && x.hp > 0; }); if (!cur || G.over || G.busy) return;
+    var run = function (act, arg) { var e = G.act(act, cur, arg); if (e) SG.UI.flash(e); else { menu = null; pick = null; } };
+    if (a === "mv") { pick = "move"; menu = null; }
+    else if (a === "atk") menu = "atk";
+    else if (a === "back") menu = "main";
+    else if (a === "wait") { run("wait"); sel = null; }
+    else if (a === "info") { SG.UI.unitDetail(cur); return; }
+    else if (a === "a" || a === "r" || a === "m") { pick = "attack"; rush = a === "r"; melee = a === "m"; menu = null; }
+    else if (a === "heal") { pick = "heal"; menu = null; }
+    else if (a === "aoe") run("aoe");
+    else if (a === "scout") run("scout");
+    else if (a === "hide") run("stealth");
+    else if (a === "siege") run("siege", { rush: false });
+    render();
+  }
   function playFx() {
     var q = fxq; fxq = [];
     q.forEach(function (f) {
@@ -120,15 +162,15 @@
     var my = G.turnSide === "P" && !G.busy;
     var canAct = cur && my && !cur.acted && !cur.sneak && !cur.stun;
     var spell = cur && cur.typ === "法" && !melee;
-    var mv = cur && my ? G.moveCells(cur) : [];
-    var tg = canAct ? (cur.typ === "法" && melee ? G.meleeTargets(cur, "P") : G.targets(cur, "P")) : [];
-    var hl = cur && mode === "heal" ? G.alive("P").filter(function (a) { return dist(a, cur) <= 3; }) : [];
+    var mv = cur && my && pick === "move" ? G.moveCells(cur) : [];
+    var tg = canAct && pick === "attack" ? (cur.typ === "法" && melee ? G.meleeTargets(cur, "P") : G.targets(cur, "P")) : [];
+    var hl = cur && pick === "heal" ? G.alive("P").filter(function (a) { return dist(a, cur) <= 3; }) : [];
     var label = {};
     tg.forEach(function (u) {
       if (spell) label[u.r + "," + u.c] = [Math.round(G.chance(cur, u) * 100) + "%", ""];
       else if (G.canBack(cur, melee) && G.isBack(cur, u)) label[u.r + "," + u.c] = ["背襲×2", "bk"];
     });
-    SG.B3D.sync({ sel: sel, mv: mv, tg: tg, hl: hl, label: label, siege: canAct && G.canSiege(cur), done: function (u) { return u.side === "P" && G.turnSide === "P" && G.unitDone(u); } });
+    SG.B3D.sync({ sel: sel, mv: mv, tg: tg, hl: hl, label: label, siege: canAct && pick === "attack" && G.canSiege(cur), done: function (u) { return u.side === "P" && G.turnSide === "P" && G.unitDone(u); } });
     playFx();
     $("#b-round").textContent = "第 " + Math.min(G.round, G.maxT) + " / " + G.maxT + " 回合";
     $("#b-side").textContent = G.turnSide === "P" ? "我方行動" : "敵軍行動中…";
@@ -137,14 +179,19 @@
     $("#b-st").textContent = G.turnSide === "P" ? G.st : "—";
     $("#b-pips").innerHTML = pips;
     var vu = view && G.units.find(function (x) { return x.uid === view && x.hp > 0; });
-    if (vu) enemyPanel(vu); else panel(cur);
+    var bp = $("#bpanel"); bp.classList.toggle("show", !!vu); bp.onclick = function (ev) { if (ev.target.closest && ev.target.closest("#p-head")) return; view = null; render(); };
+    if (vu) enemyPanel(vu); else bp.innerHTML = "";
+    SG.B3D.setMenu(cur && my && menu && !vu ? cur.uid : null, cur && menu ? menuHtml(cur) : "", menuAct);
+    var hint = $("#b-pick"); if (!hint) { hint = document.createElement("div"); hint.id = "b-pick"; $("#b-wrap").appendChild(hint); }
+    hint.textContent = !cur || !pick ? "" : pick === "move" ? "點藍色的格子移動，點別處取消" : pick === "heal" ? "點綠色格子裡的隊友補血，點別處取消" : (rush ? "猛攻：" : "") + "點紅色的格子攻擊，點別處取消";
+    var eb = $("#b-end"); if (eb) eb.disabled = !my || G.over;
     tutBar();
     if (my && !G.over) { clearTimeout(autoT); autoT = setTimeout(checkAuto, 0); }
   }
   function checkAuto() {
     if (!G || G.over || G.busy || G.turnSide !== "P") return;
     if (G.allDone()) {
-      G.busy = true; sel = null; render(); SG.UI.banner("全軍行動完畢", "#cfe0f3");
+      G.busy = true; sel = null; menu = null; pick = null; render(); SG.UI.banner("全軍行動完畢", "#cfe0f3");
       setTimeout(function () { G.busy = false; if (!G.over) G.endSide("P"); }, 700);
     }
   }
@@ -160,7 +207,7 @@
       '<div class="sub">武 ' + e.w + '・智 ' + e.z + '・魅 ' + e.m + '｜兵力 ' + fmt(e.hp) + ' / ' + fmt(e.maxhp) + '</div>' +
       '<div class="sub">普攻 ' + e.am + (e.typ === "法" ? '・法術 ' + e.asp : '') + '・受傷 −' + SG.UI.pct(e.dr) + '・移動 ' + t.mv + '・射程 ' + (t.r[0] === t.r[1] ? t.r[0] : t.r[0] + '～' + t.r[1]) + '</div>' +
       (st.length || rel ? '<div class="sub" style="color:var(--red)">' + st.concat(rel ? [rel] : []).join('；') + '</div>' : '') +
-      '</div></div><div class="dim">點頭像看大卡。要打她，先選我方武將，她在紅框裡才打得到。</div>';
+      '</div></div><div class="dim">點頭像看大卡，點其他地方關閉。</div>';
     bindHead(e);
   }
   var TUT = { 槍: "槍兵：站前面，讓敵人來打她，她會全額反擊", 騎: "騎兵：走 2 格以上再打弓兵，衝鋒加相剋", 弓: "弓兵：隔 2～4 格射槍兵，別讓敵人貼身", 刺: "刺客：繞到敵人正後方打，背襲 ×2", 法: "法師：對 1～3 格內的敵人放法術，或幫隊友補血" };

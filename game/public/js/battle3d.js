@@ -3,31 +3,53 @@
   var C = 56, TILT = 56, UP = "rotateZ(calc(var(--rot) * -1)) rotateX(-" + TILT + "deg)";
   var S3 = SG.B3D = {};
   var G = null, view = null, pan = null, board = null, cells = {}, UE = {}, SE = {}, labels = [], onTap = null;
-  var ROT = 45, zoom = 1, px = 0, py = 0, snow = "";
+  var ROT = 45, zoom = 1, px = 0, py = 0, snow = "", offs = [], menu = null, KT = Math.cos(TILT * Math.PI / 180);
   var SN = { "槍": "spear", "騎": "cav", "弓": "bow", "法": "mage", "刺": "assassin" };
   var SLOT = [[0, 6], [-15, -8], [15, -8], [-15, 18], [15, 18], [0, -21], [0, 26], [-24, 5], [24, 5]];
   var RING = [[20, 20], [-4, 26], [26, -4], [30, 12], [12, 30], [-18, 22], [22, -18], [34, 30], [0, 36]];
   var TWO = ["諸葛", "司馬", "夏侯", "公孫", "太史", "皇甫"];
   function el(cls, html) { var d = document.createElement("div"); d.className = cls; if (html) d.innerHTML = html; return d; }
   function depth(x, y) { var a = ROT * Math.PI / 180; return Math.round(x * Math.sin(a) + y * Math.cos(a)) + 3000; }
-  function place() { board.style.setProperty("--rot", ROT + "deg"); pan.style.transform = "translate(" + px + "px," + py + "px) scale(" + zoom + ") rotateX(" + TILT + "deg) rotateZ(" + ROT + "deg)"; }
+  function place() {
+    board.style.setProperty("--rot", ROT + "deg"); pan.style.transform = "translate(" + px + "px," + py + "px) scale(" + zoom + ") rotateX(" + TILT + "deg) rotateZ(" + ROT + "deg)";
+    // 圖的地基中心不在圖的最下緣：把立牌的落點往鏡頭方向挪，地基才會壓在它那一格上（不能把圖往下推，推到地面下會被地面吃掉）
+    var a = ROT * Math.PI / 180, sx = Math.sin(a), cy = Math.cos(a);
+    offs.forEach(function (o) { o.g.style.transform = "translate(" + (o.d * sx).toFixed(1) + "px," + (o.d * cy).toFixed(1) + "px)"; });
+    posMenu();
+  }
+  function off(g, px2) { offs.push({ g: g, d: px2 / KT }); }
+  function posMenu() {
+    if (!menu || !menu.el) return; var e = UE[menu.uid]; if (!e) return;
+    var f = e.flag.querySelector(".b3-face").getBoundingClientRect(), v = view.getBoundingClientRect(), w = menu.el.offsetWidth, h = menu.el.offsetHeight;
+    var x = f.right - v.left + 10; if (x + w > v.width - 4) x = f.left - v.left - w - 10; x = Math.max(4, Math.min(v.width - w - 4, x));
+    var y = Math.max(50, Math.min(v.height - h - 6, f.top - v.top - 6));
+    menu.el.style.left = x + "px"; menu.el.style.top = y + "px";
+  }
+  // 頭像旁的指令選單（✅ Jay 2026-11-15：移動／攻擊／待機／個人情報，不要放在畫面下面）
+  S3.setMenu = function (uid, html, cb) {
+    if (menu && menu.el) menu.el.remove(); menu = null;
+    if (!uid || !html || !view) return;
+    var m = el("b3-menu", html); view.appendChild(m);
+    m.addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (b && !b.disabled && cb) cb(b.dataset.a); });
+    menu = { uid: uid, el: m }; posMenu();
+  };
   function resort() { board.querySelectorAll(".b3-g").forEach(function (g) { if (g.dataset.top) return; g.style.zIndex = depth(parseFloat(g.style.left), parseFloat(g.style.top)) + (+g.dataset.z || 0); }); }
   function gAt(r, c, z) { var g = el("b3-g"); g.style.left = (c + .5) * C + "px"; g.style.top = (r + .5) * C + "px"; g.dataset.z = z || 0; g.style.zIndex = depth((c + .5) * C, (r + .5) * C) + (z || 0); return g; }
   function upimg(n, w, h, ox, oy, cls, dl) {
-    return '<div class="b3-up ' + (cls || "") + '" style="transform:' + UP + ';left:' + ox + 'px;top:' + oy + 'px;width:' + w + 'px;height:' + h + 'px;margin:-' + (h - 6) + 'px 0 0 -' + w / 2 + 'px"><img src="img/bf/' + n + '.webp" alt="" draggable="false" style="bottom:' + (/mtn/.test(n) ? -14 : 0) + '%;animation-delay:-' + (dl || 0) + 's"></div>';
+    return '<div class="b3-up ' + (cls || "") + '" style="transform:' + UP + ';left:' + ox + 'px;top:' + oy + 'px;width:' + w + 'px;height:' + h + 'px;margin:-' + (h - 6) + 'px 0 0 -' + w / 2 + 'px"><img src="img/bf/' + n + '.webp" alt="" draggable="false" style="bottom:0;animation-delay:-' + (dl || 0) + 's"></div>';
   }
   function prop(r, c, ch) {
     var g = gAt(r, c, 0), k = c * 7 + r * 13, h;
     if (ch === "f") { var o = [[-13, -14], [14, -10], [-11, 12], [13, 15]]; if (k % 3 === 0) o.splice(k % 4, 1); h = o.map(function (q, i) { return upimg("obj_tree_" + ((k + i * 3) % 4 + 1), 36, 46 + ((k + i) % 3) * 7, q[0], q[1], "b3-sway", ((k + i * 5) % 7) * .45); }).join(""); }
     else if (ch === "#") h = upimg("obj_fence", 70, 46, 0, 0);
-    else { var m = ch === "M" ? ["obj_mtn_l", 64, 116] : ch === "n" ? ["obj_mtn_s", 54, 46] : ["obj_mtn_m", 66, 80]; h = upimg(m[0] + snow, m[1], m[2], 0, 0); }
+    else { var m = ch === "M" ? ["obj_mtn_l", 64, 116] : ch === "n" ? ["obj_mtn_s", 54, 46] : ["obj_mtn_m", 66, 80]; h = upimg(m[0] + snow, m[1], m[2], 0, 0); off(g, m[2] * .14); }
     g.innerHTML = h; board.appendChild(g);
   }
   function sur(u) { if (!u.named && u.side === "E") return u.typ; var t = u.name.slice(0, 2); return TWO.indexOf(t) >= 0 ? t : u.name.charAt(0); }
   function bimg(s) { return "img/bf/bld_" + (s.kind === "castle" ? (s.hp > 0 ? "castle" : "castle_broken") : (s.hp > 0 ? "granary" : "granary_burnt")) + ".webp"; }
 
   S3.mount = function (box, game, stage, tap) {
-    G = game; onTap = tap; cells = {}; UE = {}; SE = {}; labels = []; ROT = 45; snow = stage.map.bg === "snow" ? "_snow" : "";
+    G = game; onTap = tap; cells = {}; UE = {}; SE = {}; labels = []; offs = []; menu = null; ROT = 45; snow = stage.map.bg === "snow" ? "_snow" : "";
     var W = G.W, H = G.H;
     box.innerHTML = '<div class="b3-view"><div class="b3-pan"><div class="b3-board"></div></div><div class="b3-ctl"><button type="button" data-a="rl" title="向左轉">⟲</button><button type="button" data-a="rr" title="向右轉">⟳</button><button type="button" data-a="zo" title="縮小">－</button><button type="button" data-a="zi" title="放大">＋</button></div></div>';
     view = box.querySelector(".b3-view"); pan = box.querySelector(".b3-pan"); board = box.querySelector(".b3-board");
@@ -47,15 +69,15 @@
     ["P", "E"].forEach(function (side) {
       var s = G.struct[side], g = gAt(s.r, s.c, 2), u = el("b3-up b3-bld " + side);
       u.style.cssText = "width:86px;height:82px;margin-left:-43px;margin-top:-74px;transform:" + UP;
-      u.innerHTML = '<span class="b3-bi"><img src="' + bimg(s) + '" alt="" draggable="false" style="bottom:' + (s.kind === "castle" ? -24 : -30) + '%"></span><div class="b3-tag"><span></span><u><b></b></u></div>';
-      g.appendChild(u); board.appendChild(g);
+      u.innerHTML = '<span class="b3-bi"><img src="' + bimg(s) + '" alt="" draggable="false" style="bottom:0"></span><div class="b3-tag"><span></span><u><b></b></u></div>';
+      g.appendChild(u); board.appendChild(g); off(g, 82 * (s.kind === "castle" ? .23 : .36));
       var hot = el("b3-hot " + side); hot.dataset.k = "c"; hot.dataset.r = s.r; hot.dataset.c = s.c;
       hot.style.cssText = "left:" + s.c * C + "px;top:" + s.r * C + "px;width:" + C + "px;height:" + C + "px"; board.appendChild(hot);
       SE[side] = { el: u, hot: hot, dead: false };
     });
     bind();
-    zoom = Math.max(0.55, Math.min(1.15, view.clientWidth / (W * C * 1.414) * 2.4)); px = 0; py = 0; place();
-    S3.focus(G.base.P.r - 2, G.base.P.c);
+    zoom = Math.max(0.55, Math.min(1.05, view.clientWidth / (W * C * 1.414) * 1.9)); px = 0; py = 0; place();
+    S3.focus(G.H - 3, Math.floor(G.W / 2));
   };
   S3.focus = function (r, c) {
     r = Math.max(0, Math.min(G.H - 1, r)); c = Math.max(0, Math.min(G.W - 1, c));
@@ -124,7 +146,7 @@
     var PT = {}, dn = null, g2 = null;
     function two() { var k = Object.keys(PT); if (k.length < 2) return null; var a = PT[k[0]], b = PT[k[1]]; return { ang: Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI, dist: Math.hypot(b.x - a.x, b.y - a.y), mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2 }; }
     view.addEventListener("pointerdown", function (e) {
-      if (e.target.closest && e.target.closest(".b3-ctl")) return;
+      if (e.target.closest && (e.target.closest(".b3-ctl") || e.target.closest(".b3-menu"))) return;
       PT[e.pointerId] = { x: e.clientX, y: e.clientY }; try { view.setPointerCapture(e.pointerId); } catch (x) { }
       if (Object.keys(PT).length === 1) dn = { x: e.clientX, y: e.clientY, px: px, py: py, mv: false };
       else { var t = two(); g2 = { ang: t.ang, dist: t.dist, rot: ROT, zoom: zoom, mx: t.mx, my: t.my, px: px, py: py }; if (dn) dn.mv = true; }
@@ -138,7 +160,10 @@
       if (!PT[e.pointerId]) return;
       var was = !!g2; delete PT[e.pointerId]; if (Object.keys(PT).length < 2) g2 = null; if (Object.keys(PT).length > 0 || !dn) return;
       var d = dn; dn = null; if (d.mv || was || e.type === "pointercancel") return;
-      var t = document.elementFromPoint(e.clientX, e.clientY); while (t && t !== view && !(t.dataset && t.dataset.k)) t = t.parentElement;
+      // 先看手指底下有沒有亮著的格子（可走、可打、可補）：有就算點那一格，就算上面蓋著別人的頭像或旗子（✅ Jay：槍兵往前走一格很難按）
+      var st = document.elementsFromPoint ? document.elementsFromPoint(e.clientX, e.clientY) : [document.elementFromPoint(e.clientX, e.clientY)], t = null, i;
+      for (i = 0; i < st.length && !t; i++) { var c = st[i].classList; if (c && ((c.contains("b3-c") && (c.contains("mv") || c.contains("at") || c.contains("hl"))) || (c.contains("b3-hot") && c.contains("at")))) t = st[i]; }
+      if (!t) { t = st[0]; while (t && t !== view && !(t.dataset && t.dataset.k)) t = t.parentElement; }
       if (!t || t === view || !onTap) return;
       if (t.dataset.k === "u") { var u = G.units.find(function (x) { return x.uid === t.dataset.uid; }); if (u) onTap(u.r, u.c); }
       else onTap(+t.dataset.r, +t.dataset.c);

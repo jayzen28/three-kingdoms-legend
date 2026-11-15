@@ -20,6 +20,20 @@
     clearTimeout(UI._bt); UI._bt = setTimeout(function () { b.style.display = "none"; }, 1000);
   };
   UI.flash = function (t) { UI.banner(t, "#ecd391"); };
+  // 一句話不要在句子中間斷行（✅ Jay 2026-11-15）：照標點切成小段，每段不拆開；句號、分號後面直接換行
+  // 提醒和說明：大字放在畫面中間，點一下就消失（✅ Jay 2026-11-15：不要小小的寫在上面）。同一個畫面每次開遊戲只自動跳一次，之後按「說明」再看
+  UI._noted = {};
+  UI.note = function (title, lines, onceKey) {
+    if (onceKey) { if (UI._noted[onceKey]) return; UI._noted[onceKey] = 1; }
+    var n = document.getElementById("note"); if (!n) { n = document.createElement("div"); n.id = "note"; document.body.appendChild(n); n.onclick = function () { n.classList.remove("show"); }; }
+    n.innerHTML = '<div class="nb"><b>' + title + '</b>' + lines.map(function (l) { return '<p>' + UI.clauses(l) + '</p>'; }).join("") + '<i>點一下關閉</i></div>';
+    n.classList.add("show");
+  };
+  UI.clauses = function (t) {
+    return String(t).split(/(?<=[。；！？])/).map(function (sen) {
+      return '<span class="sen">' + sen.split(/(?<=[，、：])/).map(function (c) { return '<span class="cl">' + c + '</span>'; }).join("") + '</span>';
+    }).join("");
+  };
 
   UI.go = function (name) {
     $$(".screen").forEach(function (s) { s.classList.toggle("show", s.id === "s-" + name); });
@@ -383,21 +397,21 @@
     var sur = RAR.reduce(function (a, r) { return a + S.surplus[r]; }, 0);
     var surVal = RAR.reduce(function (a, r) { return a + S.surplus[r] * SG.SELL[r]; }, 0);
     var html = UI.strip("st-rec", "招賢納士", "茶館用銅錢、酒館用元寶") + '<h2>茶館 <small>銅錢招募・一抽 ' + fmt(SG.TEA_COST) + '</small></h2>' +
-      '<p class="lead">兩張同星可以合成下一星，兩張 6★ 合成下一稀有度的 1★。抽完到這裡或收集冊按「一鍵合成」。</p>' +
-      '<div class="row"><button class="gold" id="rc-merge" ' + (UI.mergeCount() ? '' : 'disabled') + '>一鍵合成（' + UI.mergeCount() + ' 位可合）</button></div>';
+      '<div class="row"><button class="gold" id="rc-merge" ' + (UI.mergeCount() ? '' : 'disabled') + '>一鍵合成（' + UI.mergeCount() + ' 位可合）</button><span class="grow"></span><button class="sm" id="rc-help">說明</button></div>';
     SG.TEAHOUSES.forEach(function (h) {
       html += '<div class="paper house"><span class="sign">茶</span><div class="grow"><b class="t">' + h.name + '</b> <span class="dim">' + h.desc + (h.series ? '・池子小，同名卡多' : '') + '</span>' +
         '<div class="row" style="margin-top:6px"><button data-tea="' + h.id + '" data-n="1">1 抽</button><button data-tea="' + h.id + '" data-n="10">10 抽</button><button class="gold" data-tea="' + h.id + '" data-n="100">100 抽</button>' +
         (h.id === "tea_all" ? '<button data-tea="tea_all" data-n="10" data-tk="1" ' + (S.tickets >= 10 ? '' : 'disabled') + '>用抽券 10 抽</button>' : '') + '</div></div></div>';
     });
-    html += '<p class="dim">茶館機率：N 79%・R 20%・SR 0.95%（系列茶館 0.4%）・SSR 1/6,000・UR 1/6,000（測試期）</p>' +
-      '<h2>酒館 <small>元寶招募・沒有 N 卡</small></h2>' +
+    html += '<h2>酒館 <small>元寶招募・沒有 N 卡</small></h2>' +
       '<div class="paper house tavern"><span class="sign">酒</span><div class="grow"><b class="t">一般酒館</b> <span class="dim">R 60%・SR 37%・SSR 2%・UR 1%</span>' +
       '<div class="row" style="margin-top:6px"><button data-tav="1">單抽・1 元寶</button><button class="pri" data-tav="11">11 連・10 元寶</button><button class="sm" id="yb-test">測試用：領 100 元寶</button></div>' +
       '<div class="dim" style="margin-top:4px">隱藏酒館之後開放。</div></div></div>' +
       '<div class="paper"><b class="kai" style="font-size:17px">多餘卡片</b><div class="dim">武將到頂後再抽到的卡：' +
       RAR.map(function (r) { return r + " " + S.surplus[r]; }).join("・") + '</div><div class="row" style="margin-top:6px"><button class="gold" id="sell" ' + (sur ? '' : 'disabled') + '>全部出售，換銅錢 ' + fmt(surVal) + '</button></div></div>';
     $("#s-recruit").innerHTML = html;
+    var recNote = function (key) { UI.note("招募說明", ["兩張同星可以合成下一星。", "兩張 6★ 合成下一稀有度的 1★。", "抽完按「一鍵合成」。", "茶館機率：N 79%、R 20%、SR 0.95%（系列茶館 0.4%）、SSR 1/6,000、UR 1/6,000（測試期）。", "酒館機率：R 60%、SR 37%、SSR 2%、UR 1%。"], key); };
+    $("#rc-help").onclick = function () { recNote(); }; recNote("recruit");
     SG.Scene.banner($("#st-rec"), 34);
     $$("[data-tea]").forEach(function (b) {
       b.onclick = function () {
@@ -437,10 +451,12 @@
         var all = SG.CARDS.filter(function (c) { return c.fac === f; });
         return '<button class="' + (f === UI.bookFac ? 'on' : '') + '" data-fac="' + f + '">' + f + '<small>' + all.filter(own).length + '/' + all.length + '</small></button>';
       }).join("") + '</div>' +
-      '<div class="row"><span class="dim grow">兩張同星合成下一星。隊伍裡的卡要先移出才能合。</span><button class="gold" id="bk-merge" ' + (UI.mergeCount() ? '' : 'disabled') + '>一鍵合成（' + UI.mergeCount() + '）</button></div>' +
+      '<div class="row"><span class="grow"></span><button class="sm" id="bk-help">說明</button><button class="gold" id="bk-merge" ' + (UI.mergeCount() ? '' : 'disabled') + '>一鍵合成（' + UI.mergeCount() + '）</button></div>' +
       '<div class="cards">' + list.map(function (c) { return UI.cardHtml(c, SG.best(S, c.id), { attr: 'data-card="' + c.id + '"' + (SG.canMerge(S, c.id) ? ' data-mg="1"' : '') }); }).join("") + '</div>';
     SG.Scene.banner($("#st-book"), 52);
     $("#bk-merge").onclick = function () { UI.mergeAllFlow(function () { if ($("#s-book").classList.contains("show")) UI.r_book(); }); };
+    var bkNote = function (key) { UI.note("合成說明", ["兩張同星合成下一星。", "隊伍裡的卡要先移出才能合。"], key); };
+    $("#bk-help").onclick = function () { bkNote(); }; bkNote("book");
     $$("[data-fac]").forEach(function (b) { b.onclick = function () { UI.bookFac = b.dataset.fac; UI.r_book(); }; });
     $$("[data-card]").forEach(function (b) { b.onclick = function () { UI.cardDetail(SG.CARD_BY_ID[b.dataset.card]); }; });
   };
