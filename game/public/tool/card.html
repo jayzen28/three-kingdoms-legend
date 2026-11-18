@@ -1,0 +1,196 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>卡面特效樣品｜三國LEGEND</title>
+<link rel="stylesheet" href="../css/style.css">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#07060a;color:#f0e8d8;overflow:hidden;-webkit-user-select:none;user-select:none}
+body{display:block;padding:0;font-family:"Noto Serif TC",system-ui,serif}
+#wrap{position:fixed;inset:0;display:flex;flex-direction:column}
+#mid{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;perspective:900px;padding:14px;background:radial-gradient(circle at 50% 40%,#231a22,#07060a 75%)}
+#bot{background:#120f14;border-top:1px solid #d4a853;padding:8px 10px calc(8px + env(safe-area-inset-bottom));font-size:13px}
+.row{display:flex;gap:6px;align-items:center;margin-top:6px}.row:first-child{margin-top:0}
+button,select{background:#2a2430;color:#f0e8d8;border:1px solid #6b5a3a;border-radius:6px;padding:8px 6px;font:inherit;font-size:13px;min-width:0}
+select{flex:1}.row.t button{flex:1;line-height:1.25}.row.t button small{display:block;font-size:10px;opacity:.75}
+button.on{background:#d4a853;color:#120f14;border-color:#d4a853}
+#hint{font-size:11px;opacity:.7;text-align:center;margin-top:6px}
+
+#card{position:relative;height:100%;max-height:100%;aspect-ratio:615/900;max-width:100%;border-radius:14px;overflow:hidden;background:#17110c;
+  box-shadow:0 18px 40px rgba(0,0,0,.7),0 0 0 2px #8a6a2c;transform-style:preserve-3d;will-change:transform;touch-action:none;
+  --tx:0;--ty:0;--px:50%;--py:50%;--mag:0}
+#card.d3{transform:rotateY(calc(var(--tx) * 13deg)) rotateX(calc(var(--ty) * -11deg))}
+.L{position:absolute;inset:0;pointer-events:none}
+.L.bg{background-size:cover;background-position:center top}
+#card.d3 .L.bg{inset:-6%;transform:translate(calc(var(--tx) * -14px),calc(var(--ty) * -10px))}
+.L.ch{pointer-events:auto}
+.L.ch img,.L.ch canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;filter:drop-shadow(0 0 12px rgba(0,0,0,.6));touch-action:none}
+#card.d3 .L.ch{transform:translate(calc(var(--tx) * 7px),calc(var(--ty) * 5px)) scale(1.03)}
+#card.d3 canvas.pb{transform:translate(calc(var(--tx) * -5px),calc(var(--ty) * -4px))}
+#card.d3 canvas.pf{transform:translate(calc(var(--tx) * 20px),calc(var(--ty) * 14px)) scale(1.06)}
+canvas.pb,canvas.pf{width:100%;height:100%}
+#card:not(.fx) canvas.pb,#card:not(.fx) canvas.pf{display:none}
+
+/* 1 閃卡反光 */
+.holo,.glit,.glare,.chfoil{opacity:0;transition:opacity .25s}
+#card.holo-on .glare{opacity:1;mix-blend-mode:overlay;background:radial-gradient(circle at var(--px) var(--py),rgba(255,255,255,.5),rgba(255,255,255,.08) 30%,rgba(0,0,0,.18) 75%)}
+/* SR：一道斜的銀藍光帶掃過 */
+#card.holo-on.SR .holo{opacity:.5;mix-blend-mode:color-dodge;
+  background:linear-gradient(115deg,transparent 30%,rgba(120,190,255,.55) 44%,rgba(255,255,255,.9) 50%,rgba(170,140,255,.55) 56%,transparent 70%) var(--px) var(--py)/260% 260% no-repeat}
+/* SSR：整面彩虹箔條紋，偏金 */
+#card.holo-on.SSR .holo{opacity:.3;mix-blend-mode:color-dodge;
+  background:repeating-linear-gradient(115deg,#ff5a5a 0%,#ffd76a 7%,#7dff9a 14%,#62d6ff 21%,#a98bff 28%,#ff7ad8 35%,#ff5a5a 42%) var(--px) var(--py)/320% 320%;filter:brightness(.75) contrast(1.5) saturate(1.2)}
+#card.holo-on.SSR .glit{opacity:.5}
+/* UR：彩虹箔＋交叉紋＋亮片，人物本身另有一層箔光 */
+#card.holo-on.UR .holo{opacity:.36;mix-blend-mode:color-dodge;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.14) 0 2px,transparent 2px 6px),
+    repeating-linear-gradient(125deg,#ff4d6d 0%,#ffd166 6%,#6dffb0 12%,#4dd2ff 18%,#b28dff 24%,#ff6fd8 30%,#ff4d6d 36%) var(--px) var(--py)/280% 280%;
+  filter:brightness(.8) contrast(1.7) saturate(1.35)}
+#card.holo-on.UR .glit{opacity:.95}
+#card.holo-on.UR .chfoil{opacity:.4;mix-blend-mode:color-dodge;
+  background:linear-gradient(calc(100deg + var(--tx) * 40deg),transparent 25%,rgba(255,230,160,.9) 45%,rgba(255,255,255,1) 50%,rgba(160,220,255,.9) 55%,transparent 75%) var(--px) var(--py)/240% 240% no-repeat;
+  -webkit-mask:var(--art) center top/cover no-repeat;mask:var(--art) center top/cover no-repeat}
+#card.d3.holo-on .chfoil{transform:translate(calc(var(--tx) * 7px),calc(var(--ty) * 5px)) scale(1.03)}
+/* 亮片：亮點圖案只在一條會隨傾斜移動的帶子裡顯現，所以一傾斜就一顆顆輪流閃 */
+.glit{mix-blend-mode:color-dodge;background-image:var(--glit);background-size:220px 220px;background-position:calc(var(--tx) * 30px) calc(var(--ty) * 30px);
+  -webkit-mask:repeating-linear-gradient(calc(120deg + var(--ty) * 30deg),transparent 0,#000 7%,transparent 14%,transparent 22%) var(--px) var(--py)/300% 300%;
+  mask:repeating-linear-gradient(calc(120deg + var(--ty) * 30deg),transparent 0,#000 7%,transparent 14%,transparent 22%) var(--px) var(--py)/300% 300%}
+
+.L.fr{border-radius:14px;box-shadow:inset 0 0 0 3px #d4a853,inset 0 0 0 5px rgba(20,14,8,.85),inset 0 0 0 6px #8a6a2c}
+#card.UR .L.fr{box-shadow:inset 0 0 0 3px #ffe6a6,inset 0 0 0 5px rgba(20,14,8,.85),inset 0 0 0 6px #d4a853,inset 0 0 46px rgba(255,160,90,.4)}
+#card.d3 .L.fr{transform:translateZ(24px) scale(.975)}
+.fr .nm{position:absolute;left:16px;top:18px;writing-mode:vertical-rl;font-family:var(--kai);font-weight:700;font-size:40px;line-height:1.05;letter-spacing:.08em;color:#fff4dc;text-shadow:0 2px 0 rgba(0,0,0,.7),0 0 12px rgba(0,0,0,.85)}
+.fr .rk{position:absolute;right:16px;bottom:16px}.fr .rk .rx{font-size:30px}
+</style></head><body>
+<div id="wrap">
+  <div id="mid"><div id="card">
+    <div class="L bg"></div>
+    <canvas class="L pb"></canvas>
+    <div class="L ch"></div>
+    <canvas class="L pf"></canvas>
+    <div class="L holo"></div><div class="L chfoil"></div><div class="L glit"></div><div class="L glare"></div>
+    <div class="L fr"><span class="nm"></span><span class="rk"></span></div>
+  </div></div>
+  <div id="bot">
+    <div class="row"><select id="gen"></select><select id="rar" style="flex:0 0 76px"><option>SR</option><option>SSR</option><option>UR</option></select><select id="pt" style="flex:0 0 96px"></select></div>
+    <div class="row t">
+      <button data-k="holo">1 閃卡反光<small>傾斜或滑動</small></button>
+      <button data-k="wind">2 呼吸飄動<small>髮尾披風</small></button>
+      <button data-k="d3">3 景深<small>分層立體</small></button>
+      <button data-k="fx">4 粒子<small>飄在卡面</small></button>
+    </div>
+    <div class="row"><button id="all" style="flex:1">全開／全關（對照原本）</button><button id="gyro" style="flex:1">開啟傾斜感應</button></div>
+    <div id="hint">手指在卡片上滑動，或開傾斜感應後晃手機</div>
+  </div>
+</div>
+<script>window.SG = {};</script>
+<script src="../js/data.js"></script>
+<script src="../js/jiggle.js"></script>
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); }, card = $("#card"), FV = { "魏": "wei", "蜀": "shu", "吳": "wu", "群雄": "qun", "黃巾": "yt" };
+  var q = new URLSearchParams(location.search);
+  var ON = { holo: 1, wind: 1, d3: 1, fx: 1 };
+  if (q.get("on") != null) Object.keys(ON).forEach(function (k) { ON[k] = q.get("on").indexOf(k) >= 0 ? 1 : 0; });
+  var WIND = 0.011;
+
+  // ---------- 卡片 ----------
+  var list = SG.CARDS.filter(function (c) { return c.art && !c.artBg; });
+  var order = { UR: 0, SSR: 1, SR: 2 };
+  list.sort(function (a, b) { return order[a.cap[0]] - order[b.cap[0]] || (a.male ? 1 : 0) - (b.male ? 1 : 0); });
+  $("#gen").innerHTML = list.map(function (c, i) { return '<option value="' + i + '">' + c.cap[0] + "　" + c.name + (c.male ? "（男）" : "") + '</option>'; }).join("");
+  var PT = [["auto", "粒子：自動"], ["gold", "金粉"], ["fire", "火星"], ["ice", "冰晶"], ["petal", "花瓣"], ["leaf", "落葉"], ["water", "水珠"], ["poison", "毒霧"], ["wind", "風"]];
+  $("#pt").innerHTML = PT.map(function (p) { return '<option value="' + p[0] + '">' + p[1] + '</option>'; }).join("");
+  var cur = null, kind = "gold";
+  function autoKind(c) { return c.elem === "火" ? "fire" : c.elem === "冰" ? "ice" : c.male ? "gold" : c.cap[0] === "UR" ? "gold" : "petal"; }
+  function show(i, keepRar) {
+    cur = list[i]; var c = cur, r = keepRar ? $("#rar").value : c.cap[0]; $("#rar").value = r;
+    card.classList.remove("SR", "SSR", "UR"); card.classList.add(r);
+    $(".L.bg").style.backgroundImage = "url(../img/bg_" + FV[c.fac] + (SG.bgv(c.art) ? "_" + SG.bgv(c.art) : "") + ".webp)";
+    card.style.setProperty("--art", "url(../img/" + c.art + "_full.webp)");
+    var ch = $(".L.ch"); ch.innerHTML = ""; var im = new Image(); im.alt = c.name; im.src = "../img/" + c.art + "_full.webp"; ch.appendChild(im);
+    if (!c.male && SG.Jiggle) SG.Jiggle.attach(im, c.art, { noLayer: true, wind: ON.wind ? WIND : 0 });
+    $(".fr .nm").textContent = c.gen;
+    $(".fr .rk").innerHTML = '<span class="rx rx-' + r + '"><u data-t="' + r + '"><b>' + r + '</b></u></span>';
+    kind = $("#pt").value === "auto" ? autoKind(c) : $("#pt").value; parts.length = 0;
+    apply();
+  }
+  function apply() {
+    card.classList.toggle("holo-on", !!ON.holo); card.classList.toggle("d3", !!ON.d3); card.classList.toggle("fx", !!ON.fx);
+    var cv = $(".L.ch canvas"); if (cv) { cv._wind = ON.wind ? WIND : 0; cv._still = !ON.wind; }
+    document.querySelectorAll(".row.t button").forEach(function (b) { b.classList.toggle("on", !!ON[b.dataset.k]); });
+  }
+  document.querySelectorAll(".row.t button").forEach(function (b) { b.onclick = function () { ON[b.dataset.k] = ON[b.dataset.k] ? 0 : 1; apply(); }; });
+  $("#all").onclick = function () { var any = ON.holo || ON.wind || ON.d3 || ON.fx; Object.keys(ON).forEach(function (k) { ON[k] = any ? 0 : 1; }); apply(); };
+  $("#gen").onchange = function () { show(+this.value); };
+  $("#rar").onchange = function () { show(+$("#gen").value, true); };
+  $("#pt").onchange = function () { kind = this.value === "auto" ? autoKind(cur) : this.value; parts.length = 0; };
+
+  // ---------- 亮片圖案 ----------
+  (function () {
+    var c = document.createElement("canvas"); c.width = c.height = 220; var x = c.getContext("2d"), s = 7;
+    var rnd = function () { s = (s * 16807) % 2147483647; return s / 2147483647; };
+    for (var i = 0; i < 150; i++) { var px = rnd() * 220, py = rnd() * 220, r = 0.6 + rnd() * rnd() * 2.6, h = rnd() * 360;
+      var g = x.createRadialGradient(px, py, 0, px, py, r * 2.2); g.addColorStop(0, "hsla(" + h + ",100%,92%,1)"); g.addColorStop(0.4, "hsla(" + h + ",100%,70%,.6)"); g.addColorStop(1, "hsla(" + h + ",100%,60%,0)");
+      x.fillStyle = g; x.fillRect(px - 8, py - 8, 16, 16);
+      if (r > 2) { x.strokeStyle = "rgba(255,255,255,.8)"; x.lineWidth = 0.6; x.beginPath(); x.moveTo(px - r * 3, py); x.lineTo(px + r * 3, py); x.moveTo(px, py - r * 3); x.lineTo(px, py + r * 3); x.stroke(); } }
+    card.style.setProperty("--glit", "url(" + c.toDataURL() + ")");
+  })();
+
+  // ---------- 傾斜 ----------
+  var T = { x: 0, y: 0 }, G = { x: 0, y: 0 }, src = "idle", touchAt = 0, base = null;
+  card.addEventListener("pointermove", function (e) { var r = card.getBoundingClientRect(); G.x = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width - 0.5) * 2)); G.y = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height - 0.5) * 2)); src = "ptr"; touchAt = performance.now(); });
+  var leave = function () { if (src === "ptr") src = "idle"; }; card.addEventListener("pointerleave", leave); card.addEventListener("pointerup", function (e) { if (e.pointerType !== "mouse") leave(); }); card.addEventListener("pointercancel", leave);
+  function onOri(e) { if (e.gamma == null) return; if (!base) base = { b: e.beta, g: e.gamma }; if (performance.now() - touchAt < 600) return;
+    G.x = Math.max(-1, Math.min(1, (e.gamma - base.g) / 22)); G.y = Math.max(-1, Math.min(1, (e.beta - base.b) / 22)); src = "gyro"; $("#gyro").classList.add("on"); $("#gyro").textContent = "傾斜感應已開（點此歸零）"; }
+  $("#gyro").onclick = function () { base = null;
+    var D = window.DeviceOrientationEvent; if (!D) { this.textContent = "這台裝置沒有傾斜感應"; return; }
+    if (D.requestPermission) D.requestPermission().then(function (s) { if (s === "granted") window.addEventListener("deviceorientation", onOri); }).catch(function () {}); else window.addEventListener("deviceorientation", onOri); };
+  if (window.DeviceOrientationEvent && !DeviceOrientationEvent.requestPermission) window.addEventListener("deviceorientation", onOri);
+
+  // ---------- 粒子 ----------
+  var pb = $("canvas.pb"), pf = $("canvas.pf"), xb = pb.getContext("2d"), xf = pf.getContext("2d"), parts = [], PW = 410, PH = 600;
+  pb.width = pf.width = PW; pb.height = pf.height = PH;
+  var R = Math.random;
+  var K = {
+    gold: { n: 46, add: 1, mk: function () { return { x: R() * PW, y: PH + 10, vx: (R() - .5) * 8, vy: -(10 + R() * 26), r: .8 + R() * 2.2, life: 5 + R() * 5, h: 38 + R() * 14, tw: R() * 6 }; } },
+    fire: { n: 60, add: 1, mk: function () { return { x: R() * PW, y: PH + 10, vx: (R() - .5) * 22, vy: -(50 + R() * 110), r: .8 + R() * 2.4, life: 2 + R() * 3, h: 14 + R() * 26, tw: R() * 6 }; } },
+    ice: { n: 40, add: 1, mk: function () { return { x: R() * PW, y: -10, vx: (R() - .5) * 10, vy: 12 + R() * 26, r: 1.5 + R() * 3.5, life: 9 + R() * 6, h: 195 + R() * 20, tw: R() * 6, rot: R() * 6, vr: (R() - .5) * 1.2 }; } },
+    petal: { n: 30, add: 0, mk: function () { return { x: R() * PW * 1.2 - PW * .1, y: -12, vx: -8 + R() * 30, vy: 22 + R() * 34, r: 3.5 + R() * 4.5, life: 12, h: 338 + R() * 16, tw: R() * 6, rot: R() * 6, vr: (R() - .5) * 3 }; } },
+    leaf: { n: 24, add: 0, mk: function () { return { x: R() * PW * 1.2 - PW * .1, y: -12, vx: -6 + R() * 34, vy: 26 + R() * 36, r: 4 + R() * 5, life: 12, h: 85 + R() * 45, tw: R() * 6, rot: R() * 6, vr: (R() - .5) * 3 }; } },
+    water: { n: 38, add: 1, mk: function () { return { x: R() * PW, y: PH + 10, vx: (R() - .5) * 6, vy: -(18 + R() * 40), r: 1.5 + R() * 4.5, life: 8, h: 200 + R() * 15, tw: R() * 6 }; } },
+    poison: { n: 26, add: 1, mk: function () { return { x: R() * PW, y: PH * (.55 + R() * .5), vx: (R() - .5) * 10, vy: -(6 + R() * 16), r: 16 + R() * 34, life: 5 + R() * 5, h: 280 + R() * 30, tw: R() * 6 }; } },
+    wind: { n: 16, add: 1, mk: function () { return { x: -80, y: R() * PH, vx: 260 + R() * 260, vy: (R() - .5) * 30, r: 30 + R() * 70, life: 3, h: 0, tw: R() * 6 }; } }
+  };
+  function draw(x, p, k, t) {
+    var a = Math.min(1, p.age / .6) * Math.min(1, (p.life - p.age) / 1.2), tw = .55 + .45 * Math.sin(t * 5 + p.tw); if (a <= 0) return;
+    if (k === "gold" || k === "fire") { var rr = p.r * (k === "fire" ? 1 : tw + .3), g = x.createRadialGradient(p.x, p.y, 0, p.x, p.y, rr * 4); g.addColorStop(0, "hsla(" + p.h + ",100%,85%," + a * tw + ")"); g.addColorStop(.3, "hsla(" + p.h + ",100%,60%," + a * .55 * tw + ")"); g.addColorStop(1, "hsla(" + p.h + ",100%,50%,0)"); x.fillStyle = g; x.fillRect(p.x - rr * 4, p.y - rr * 4, rr * 8, rr * 8); }
+    else if (k === "ice") { x.save(); x.translate(p.x, p.y); x.rotate(p.rot); x.strokeStyle = "hsla(" + p.h + ",100%,88%," + a * tw + ")"; x.lineWidth = .9; x.shadowColor = "#9fe4ff"; x.shadowBlur = 6; x.beginPath(); for (var i = 0; i < 3; i++) { x.rotate(Math.PI / 3); x.moveTo(-p.r, 0); x.lineTo(p.r, 0); } x.stroke(); x.restore(); }
+    else if (k === "petal" || k === "leaf") { x.save(); x.translate(p.x, p.y); x.rotate(p.rot); x.scale(1, .35 + .55 * Math.abs(Math.sin(t * 1.7 + p.tw))); x.fillStyle = "hsla(" + p.h + "," + (k === "leaf" ? 55 : 90) + "%," + (k === "leaf" ? 48 : 84) + "%," + a * .92 + ")"; x.beginPath(); x.moveTo(-p.r, 0); x.quadraticCurveTo(0, -p.r * .8, p.r, 0); x.quadraticCurveTo(0, p.r * .8, -p.r, 0); x.fill(); x.restore(); }
+    else if (k === "water") { x.strokeStyle = "hsla(" + p.h + ",100%,85%," + a * .8 + ")"; x.lineWidth = 1; x.beginPath(); x.arc(p.x, p.y, p.r, 0, 6.3); x.stroke(); x.fillStyle = "hsla(" + p.h + ",100%,95%," + a * .7 + ")"; x.beginPath(); x.arc(p.x - p.r * .35, p.y - p.r * .35, p.r * .22, 0, 6.3); x.fill(); }
+    else if (k === "poison") { var g2 = x.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r); g2.addColorStop(0, "hsla(" + p.h + ",80%,55%," + a * .22 + ")"); g2.addColorStop(1, "hsla(" + p.h + ",80%,40%,0)"); x.fillStyle = g2; x.fillRect(p.x - p.r, p.y - p.r, p.r * 2, p.r * 2); }
+    else if (k === "wind") { var g3 = x.createLinearGradient(p.x - p.r, 0, p.x, 0); g3.addColorStop(0, "rgba(255,255,255,0)"); g3.addColorStop(1, "rgba(235,250,255," + a * .5 + ")"); x.strokeStyle = g3; x.lineWidth = 1.2; x.beginPath(); x.moveTo(p.x - p.r, p.y); x.quadraticCurveTo(p.x - p.r * .5, p.y + Math.sin(p.tw) * 6, p.x, p.y); x.stroke(); }
+  }
+  var last = performance.now();
+  function frame(now) {
+    var dt = Math.min(.05, (now - last) / 1000), t = now / 1000; last = now;
+    // 沒人碰的時候自己慢慢擺，讓箔光一直有在流動
+    if (src === "idle") { G.x = Math.sin(t * .7) * .55; G.y = Math.cos(t * .53) * .4; }
+    T.x += (G.x - T.x) * Math.min(1, dt * 7); T.y += (G.y - T.y) * Math.min(1, dt * 7);
+    card.style.setProperty("--tx", T.x.toFixed(3)); card.style.setProperty("--ty", T.y.toFixed(3));
+    card.style.setProperty("--px", (50 + T.x * 50).toFixed(1) + "%"); card.style.setProperty("--py", (50 + T.y * 50).toFixed(1) + "%");
+    if (ON.fx) {
+      var cfg = K[kind]; xb.clearRect(0, 0, PW, PH); xf.clearRect(0, 0, PW, PH);
+      xb.globalCompositeOperation = xf.globalCompositeOperation = cfg.add ? "lighter" : "source-over";
+      if (parts.length < cfg.n && R() < dt * cfg.n / 2.5) { var p = cfg.mk(); p.age = 0; p.front = R() < .4; parts.push(p); }
+      if (!parts.length) for (var w = 0; w < cfg.n * .7; w++) { var pw = cfg.mk(); pw.age = R() * pw.life * .7; pw.front = R() < .4; pw.x += pw.vx * pw.age; pw.y += pw.vy * pw.age; parts.push(pw); }
+      for (var i = parts.length - 1; i >= 0; i--) { var p2 = parts[i]; p2.age += dt; p2.x += (p2.vx + T.x * 30 + Math.sin(t * 1.3 + p2.tw) * 8) * dt; p2.y += p2.vy * dt; if (p2.rot != null) p2.rot += p2.vr * dt;
+        if (p2.age > p2.life || p2.y < -40 || p2.y > PH + 40 || p2.x > PW + 120) { parts.splice(i, 1); continue; }
+        draw(p2.front ? xf : xb, p2, kind, t); }
+    }
+    requestAnimationFrame(frame);
+  }
+  var start = Math.max(0, list.findIndex(function (c) { return c.art === (q.get("art") || "sunquan_ur"); }));
+  $("#gen").value = start; if (q.get("pt")) $("#pt").value = q.get("pt"); show(start); if (q.get("rar")) { $("#rar").value = q.get("rar"); show(start, true); }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body></html>

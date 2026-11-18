@@ -17,8 +17,8 @@
   var still = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   // 頂點位移：整張圖以底部為支點做身體起伏（s）；胸部區域上緣固定、越往下動越多，並依上下位移做擠壓／拉長
   // 每個頂點的權重在 JS 先算好（w = 左右兩區的位移權重，sq = 擠壓用的橫向係數），這樣範圍可以是橢圓，也可以是自己圈的任意形狀
-  var VS = "attribute vec2 p;attribute vec2 w;attribute vec2 sq;uniform vec2 o0;uniform vec2 o1;uniform float s;uniform float sx;varying vec2 uv;" +
-    "void main(){uv=p;vec2 q=p+w.x*o0+w.y*o1+vec2(sq.x*(-o0.y)+sq.y*(-o1.y),0.);q.x+=sx*(1.-q.y);q.y=1.-(1.-q.y)*(1.+s);gl_Position=vec4(q.x*2.-1.,1.-q.y*2.,0.,1.);}";
+  var VS = "attribute vec2 p;attribute vec2 w;attribute vec2 sq;attribute float sw;uniform float tm;uniform float wa;uniform vec2 o0;uniform vec2 o1;uniform float s;uniform float sx;varying vec2 uv;" +
+    "void main(){uv=p;vec2 q=p+w.x*o0+w.y*o1+vec2(sq.x*(-o0.y)+sq.y*(-o1.y),0.);q.x+=wa*sw*sin(tm*2.1-p.x*6.+p.y*7.)*(.65+.35*sin(tm*.43));q.y+=wa*.35*sw*cos(tm*1.6+p.x*5.);q.x+=sx*(1.-q.y);q.y=1.-(1.-q.y)*(1.+s);gl_Position=vec4(q.x*2.-1.,1.-q.y*2.,0.,1.);}";
   var FS = "precision mediump float;uniform sampler2D t;varying vec2 uv;void main(){gl_FragColor=texture2D(t,uv);}";
   function smooth(pts, n) {   // 封閉平滑曲線
     var out = [], N = pts.length; if (N < 3) return pts.slice();
@@ -40,16 +40,35 @@
     return function (x, y) { if (x < x0 || x > x1 || y < y0 || y > y1) return [0, 0]; var e = edge(x, y); if (!e) return [0, 0];
       var u = Math.min(1, e / md), k = 1 - (1 - u) * (1 - u), wv = k * Math.sqrt(k), dy = (y - cy) / ry, t = Math.max(0, Math.min(1, (dy + 0.7) / 1.25)), a = t * t * (3 - 2 * t); return [wv * a, wv * a * (x - cx)]; };
   }
-  function build(gl, cfg, asp) {
+  // 飄動權重（★ 2026-11-18 樣品，預設關）：從立繪的透明度自動找「細的、離身體遠的」部位（髮尾、披風邊、飄帶），越細越遠晃越多；身體和臉這種厚的地方不動
+  function windMap(img, NX, NY, prot, asp) {
+    var W = NX + 1, H = NY + 1, c = document.createElement("canvas"); c.width = W; c.height = H;
+    var x = c.getContext("2d"), d; try { x.drawImage(img, 0, 0, W, H); d = x.getImageData(0, 0, W, H).data; } catch (e) { return null; }
+    var D = new Float32Array(W * H), T = new Float32Array(W * H), O = new Float32Array(W * H), i, j, k, v;
+    for (i = 0; i < W * H; i++) D[i] = d[i * 4 + 3] > 40 ? 99 : 0;   // 圖的四邊當成實心（被裁掉的地方不能晃，不然會露縫）
+    var g = function (a, b) { return a < 0 || b < 0 || a >= W || b >= H ? 99 : D[b * W + a]; };
+    for (j = 0; j < H; j++) for (i = 0; i < W; i++) { k = j * W + i; if (D[k]) D[k] = Math.min(D[k], g(i - 1, j) + 1, g(i, j - 1) + 1, g(i - 1, j - 1) + 1.4, g(i + 1, j - 1) + 1.4); }
+    for (j = H - 1; j >= 0; j--) for (i = W - 1; i >= 0; i--) { k = j * W + i; if (D[k]) D[k] = Math.min(D[k], g(i + 1, j) + 1, g(i, j + 1) + 1, g(i + 1, j + 1) + 1.4, g(i - 1, j + 1) + 1.4); }
+    var R = 5; for (j = 0; j < H; j++) for (i = 0; i < W; i++) { v = 0; for (var b = Math.max(0, j - R); b <= Math.min(H - 1, j + R); b++) for (var a = Math.max(0, i - R); a <= Math.min(W - 1, i + R); a++) if (D[b * W + a] > v) v = D[b * W + a]; T[j * W + i] = v; }
+    var ss = function (e0, e1, t) { t = Math.max(0, Math.min(1, (t - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };
+    for (j = 0; j < H; j++) for (i = 0; i < W; i++) { k = j * W + i; var px = i / NX, py = j / NY, far = 9, edge = 1 - ss(1.2, 3.2, Math.min(i, NX - i, j, NY - j)), thin = 1 - ss(2.2, 5.5, T[k]);
+      // 離臉、胸、軀幹多遠（以圖寬為單位）：這些地方不動，越遠動越多
+      prot.forEach(function (e) { var dx = Math.abs(px - e[0]), dy = Math.abs(py - e[1]); if (e[4]) { dy = py > e[1] ? 0 : dy; }   // e[4]：往下延伸到底（軀幹）
+        var n = Math.sqrt(dx * dx / (e[2] * e[2]) + dy * dy / (e[3] * e[3])); far = Math.min(far, (n - 1) * Math.min(e[2], e[3] * asp)); });
+      O[k] = D[k] ? (prot.length ? ss(0.015, 0.2, far) * (0.55 + 0.45 * thin) : thin) * (1 - edge) : 0; }
+    for (var p = 0; p < 2; p++) { T.set(O); for (j = 1; j < H - 1; j++) for (i = 1; i < W - 1; i++) { k = j * W + i; O[k] = (T[k] * 2 + T[k - 1] + T[k + 1] + T[k - W] + T[k + W]) / 6; } }
+    return function (px, py) { return O[Math.round(py * NY) * W + Math.round(px * NX)] || 0; };
+  }
+  function build(gl, cfg, asp, swf) {
     var sh = function (type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); return s; };
     var pr = gl.createProgram(); gl.attachShader(pr, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(pr, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(pr);
     if (!gl.getProgramParameter(pr, gl.LINK_STATUS)) return null;
     var NX = 56, NY = 80, v = [], idx = [], f0 = region(cfg[0], asp), f1 = region(cfg[1], asp);
-    for (var y = 0; y <= NY; y++) for (var x = 0; x <= NX; x++) { var px = x / NX, py = y / NY, a0 = f0(px, py), a1 = f1(px, py); v.push(px, py, a0[0], a1[0], a0[1], a1[1]); }
+    for (var y = 0; y <= NY; y++) for (var x = 0; x <= NX; x++) { var px = x / NX, py = y / NY, a0 = f0(px, py), a1 = f1(px, py); v.push(px, py, a0[0], a1[0], a0[1], a1[1], swf ? swf(px, py) : 0); }
     for (y = 0; y < NY; y++) for (x = 0; x < NX; x++) { var a = y * (NX + 1) + x, b = a + 1, c = a + NX + 1, d = c + 1; idx.push(a, b, c, b, d, c); }
     gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(v), gl.STATIC_DRAW);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(idx), gl.STATIC_DRAW);
-    gl.useProgram(pr); [["p", 0], ["w", 8], ["sq", 16]].forEach(function (t) { var loc = gl.getAttribLocation(pr, t[0]); if (loc < 0) return; gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 24, t[1]); });
+    gl.useProgram(pr); [["p", 0, 2], ["w", 8, 2], ["sq", 16, 2], ["sw", 24, 1]].forEach(function (t) { var loc = gl.getAttribLocation(pr, t[0]); if (loc < 0) return; gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, t[2], gl.FLOAT, false, 28, t[1]); });
     return { pr: pr, n: idx.length };
   }
   function attach(img, id, o) {
@@ -60,13 +79,17 @@
       if (!img.isConnected) return;
       var cv = document.createElement("canvas"); cv.width = img.naturalWidth; cv.height = img.naturalHeight;
       var gl = cv.getContext("webgl", { premultipliedAlpha: true, alpha: true, antialias: true }); if (!gl) return;
-      var m = build(gl, cfg, img.naturalHeight / img.naturalWidth); if (!m) return;
+      var wind = o && o.wind != null ? o.wind : (SG.JIGGLE_WIND || 0), bx = SG.chestBox && SG.chestBox(id), fc = SG.FACE && SG.FACE[id], asp0 = img.naturalHeight / img.naturalWidth, prot = [];
+      if (bx) { prot.push([bx[0], bx[1], bx[2] * 1.05, bx[3] * 1.15], [bx[0], bx[1] + bx[3], bx[2] * 0.8, 0.05, 1]); }
+      if (fc) { var fry = fc[1] * 0.8 / asp0, top = bx ? bx[1] - bx[3] : 0.42; prot.push([fc[0], Math.max(fry * 0.7, top - fry * 0.85), fc[1] * 0.62, fry]); }
+      var m = build(gl, cfg, img.naturalHeight / img.naturalWidth, (wind || (o && o.wind != null)) ? windMap(img, 56, 80, prot, asp0) : null); if (!m) return;
+      cv._wind = wind;
       gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true);
       var tx = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tx);
       try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img); } catch (e) { return; }   // 本機檔案開啟時瀏覽器不給讀圖
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       var U = function (n) { return gl.getUniformLocation(m.pr, n); };
-      var u0 = U("o0"), u1 = U("o1"), us = U("s"), usx = U("sx");
+      var u0 = U("o0"), u1 = U("o1"), us = U("s"), usx = U("sx"), utm = U("tm"), uwa = U("wa");
       cv.className = img.className + " jg"; cv.style.cssText = img.style.cssText; cv.setAttribute("aria-label", img.alt || ""); cv.setAttribute("role", "img");
       img.replaceWith(cv);
       // 兩邊各一個彈簧，軟硬略不同，才不會同步
@@ -111,7 +134,7 @@
         // 往下墜時兩邊微微外擴
         gl.uniform2f(u0, B[0].x + B[0].side * Math.max(0, B[0].y) * 0.08, B[0].y);
         gl.uniform2f(u1, B[1].x + B[1].side * Math.max(0, B[1].y) * 0.08, B[1].y);
-        gl.uniform1f(us, body); gl.uniform1f(usx, sway);
+        gl.uniform1f(us, body * (cv._still ? 0 : 1)); gl.uniform1f(usx, cv._still ? 0 : sway); gl.uniform1f(utm, (now - t0) / 1000); gl.uniform1f(uwa, cv._wind || 0);
         gl.viewport(0, 0, cv.width, cv.height); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
         gl.drawElements(gl.TRIANGLES, m.n, gl.UNSIGNED_SHORT, 0);
         requestAnimationFrame(frame);
