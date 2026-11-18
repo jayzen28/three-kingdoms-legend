@@ -32,7 +32,9 @@
     "vec2 ch(){vec2 dl=(a-e0.xy)/e0.zw,dr=(a-e1.xy)/e1.zw;float sd=smoothstep(e0.x+e0.z*.35,e1.x-e1.z*.35,a.x);vec2 o=mix(o0,o1,sd);vec2 d=mix(dl,dr,sd);" +
     "float top=smoothstep(-1.05,-.15,d.y);float sf=(1.-smoothstep(1.,1.5,-dl.x))*(1.-smoothstep(1.,1.5,dr.x));" +
     // 中間動得多、邊緣動得少（✅ Jay 2026-11-14）：core 在胸部中心是 1、到輪廓降到 0；邊緣只跟 rim 那一點點
-    "float core=1.-smoothstep(.15,1.,length(vec2(mix(dl.x,dr.x,step(.5,sd)),d.y)*vec2(1.,.95)));float w=rim+(1.-rim)*core;" +
+    "float core=1.-smoothstep(.15,1.,length(vec2(mix(dl.x,dr.x,step(.5,sd)),d.y)*vec2(1.,.95)));" +
+    // 輪廓只有「下緣靠中間」那段會跟著動；外側和上緣固定不動（✅ Jay 2026-11-18：一動兩側就露出底下的東西）。這樣會露出來的只剩胸下的肚子，那裡墊的是純膚色
+    "float re=rim*smoothstep(0.,.6,d.y)*(1.-smoothstep(.4,.85,max(-dl.x,dr.x)));float w=re+(1.-re)*core;" +
     // 擠壓：往上推時中間往兩側鼓、往下時收窄
     "vec2 bul=vec2(mix(dl.x*e0.z,dr.x*e1.z,step(.5,sd))*clamp(-o.y*5.,-.12,.2)*core,0.);" +
     "return (o*w+bul)*top*sf;}" +
@@ -86,11 +88,11 @@
       var FE = opt.feather == null ? 6 : opt.feather, soft = FE > 0 ? blur(m, FE, 4) : m;   // 疊 4 次：遮罩內維持全蓋，只有外圍漸淡
       // 胸部下緣往下多帶一段（✅ Jay 2026-11-18：胸部一動，下面會露出留在原地的下緣線）：這一段的原圖跟著胸部層走，底下換成乾淨的平胸版
       var EX = ART ? (R.ext == null ? 20 : R.ext) : 0, ext = soft;
-      var tap = null;
+      var tap = null, hard = null;
       if (EX) { var e0 = cvs(), ec = e0.getContext("2d"); for (var dy = 0; dy <= EX; dy += 2) ec.drawImage(m, 0, dy); ext = blur(e0, FE, 4);
         // 跟著胸部走的那一段要越往下越淡，不然移動時下緣會有一道階梯
-        var t0 = cvs(), tc = t0.getContext("2d"); for (dy = EX + 10; dy >= 0; dy -= 2) { tc.globalCompositeOperation = "destination-out"; tc.globalAlpha = 1; tc.drawImage(m, 0, dy); tc.globalCompositeOperation = "source-over"; tc.globalAlpha = Math.pow(1 - dy / (EX + 12), 1.6); tc.drawImage(m, 0, dy); } tc.globalAlpha = 1; tap = blur(t0, 4, 2); }
-      var u = cvs(), uc = u.getContext("2d"); uc.drawImage(imgs.under, 0, 0); uc.globalCompositeOperation = "destination-in"; uc.drawImage(ext, 0, 0);
+        var t0 = cvs(), tc = t0.getContext("2d"); for (dy = EX + 10; dy >= 0; dy -= 2) { tc.globalCompositeOperation = "destination-out"; tc.globalAlpha = 1; tc.drawImage(m, 0, dy); tc.globalCompositeOperation = "source-over"; tc.globalAlpha = Math.pow(1 - dy / (EX + 12), 1.6); tc.drawImage(m, 0, dy); } tc.globalAlpha = 1; tap = null; hard = e0; }
+      var u = cvs(), uc = u.getContext("2d"); uc.drawImage(imgs.under, 0, 0); uc.globalCompositeOperation = "destination-in"; uc.drawImage(hard || ext, 0, 0);   // 底圖換成膚色的範圍要比胸部層小一圈：靜止時胸部層完全蓋住，邊緣才不會透出膚色的線
       var b = cvs(), bc = b.getContext("2d"); bc.drawImage(imgs.body, 0, 0);
       bc.globalCompositeOperation = "destination-out"; bc.drawImage(m, 0, 0); bc.globalCompositeOperation = "source-over"; bc.drawImage(u, 0, 0);
       // 胸部層：邊緣收一點柔邊
@@ -98,7 +100,7 @@
       else { cc.globalCompositeOperation = "destination-in"; cc.drawImage(m, 0, 0); }
       tex = { base: mkTex(b), chest: mkTex(c), blink: mkTex(imgs.blink) }; if (imgs.acc) tex.acc = mkTex(imgs.acc); if (imgs.hair) tex.hair = mkTex(imgs.hair);
     }
-    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + (R.pre || id + "_") + n + ".webp?v=5"; });   // 改圖要換這個數字，不然手機會用到舊圖
+    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + (R.pre || id + "_") + n + ".webp?v=6"; });   // 改圖要換這個數字，不然手機會用到舊圖
 
     var P = { K: 38, C: 3.0, BREATH: 0.0035, BT: 3.8, LIFT: 0.016, MAX: 0.042, RIM: 0.28, amp: opt.amp == null ? 1 : opt.amp };   // MAX 是胸部中心的最大位移；邊緣只動 RIM 倍（約 0.28）
     var c = [{ x: 0, y: 0, vx: 0, vy: 0 }, { x: 0, y: 0, vx: 0, vy: 0 }], ear = [{ a: 0, v: 0 }, { a: 0, v: 0 }], hair = { x: 0, v: 0 };
