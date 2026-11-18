@@ -95,7 +95,7 @@
       else { cc.globalCompositeOperation = "destination-in"; cc.drawImage(m, 0, 0); }
       tex = { base: mkTex(b), chest: mkTex(c), blink: mkTex(imgs.blink) }; if (imgs.acc) tex.acc = mkTex(imgs.acc); if (imgs.hair) tex.hair = mkTex(imgs.hair);
     }
-    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + (R.pre || id + "_") + n + ".webp?v=3"; });   // 改圖要換這個數字，不然手機會用到舊圖
+    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + (R.pre || id + "_") + n + ".webp?v=4"; });   // 改圖要換這個數字，不然手機會用到舊圖
 
     var P = { K: 38, C: 3.0, BREATH: 0.0035, BT: 3.8, LIFT: 0.016, MAX: 0.042, RIM: 0.28, amp: opt.amp == null ? 1 : opt.amp };   // MAX 是胸部中心的最大位移；邊緣只動 RIM 倍（約 0.28）
     var c = [{ x: 0, y: 0, vx: 0, vy: 0 }, { x: 0, y: 0, vx: 0, vy: 0 }], ear = [{ a: 0, v: 0 }, { a: 0, v: 0 }], hair = { x: 0, v: 0 };
