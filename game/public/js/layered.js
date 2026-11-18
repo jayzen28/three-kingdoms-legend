@@ -84,11 +84,14 @@
         var o = cvs(), oc = o.getContext("2d"); oc.imageSmoothingEnabled = true; for (var i = 0; i < (times || 1); i++) oc.drawImage(sm, 0, 0, R.w, R.h); return o;
       }
       var FE = opt.feather == null ? 6 : opt.feather, soft = FE > 0 ? blur(m, FE, 4) : m;   // 疊 4 次：遮罩內維持全蓋，只有外圍漸淡
-      var u = cvs(), uc = u.getContext("2d"); uc.drawImage(imgs.under, 0, 0); uc.globalCompositeOperation = "destination-in"; uc.drawImage(soft, 0, 0);
+      // 胸部下緣往下多帶一段（✅ Jay 2026-11-18：胸部一動，下面會露出留在原地的下緣線）：這一段的原圖跟著胸部層走，底下換成乾淨的平胸版
+      var EX = ART ? (R.ext == null ? 20 : R.ext) : 0, ext = soft;
+      if (EX) { var e0 = cvs(), ec = e0.getContext("2d"); for (var dy = 0; dy <= EX; dy += 2) ec.drawImage(m, 0, dy); ext = blur(e0, FE, 4); }
+      var u = cvs(), uc = u.getContext("2d"); uc.drawImage(imgs.under, 0, 0); uc.globalCompositeOperation = "destination-in"; uc.drawImage(ext, 0, 0);
       var b = cvs(), bc = b.getContext("2d"); bc.drawImage(imgs.body, 0, 0);
       bc.globalCompositeOperation = "destination-out"; bc.drawImage(m, 0, 0); bc.globalCompositeOperation = "source-over"; bc.drawImage(u, 0, 0);
       // 胸部層：邊緣收一點柔邊
-      var c = cvs(), cc = c.getContext("2d"); cc.drawImage(imgs.body, 0, 0); if (ART) { cc.clearRect(0, 0, R.w, R.h); cc.drawImage(imgs.chest, 0, 0); }
+      var c = cvs(), cc = c.getContext("2d"); cc.drawImage(imgs.body, 0, 0); if (ART) { cc.globalCompositeOperation = "destination-in"; cc.drawImage(ext, 0, 0); cc.globalCompositeOperation = "source-over"; cc.drawImage(imgs.chest, 0, 0); }
       else { cc.globalCompositeOperation = "destination-in"; cc.drawImage(m, 0, 0); }
       tex = { base: mkTex(b), chest: mkTex(c), blink: mkTex(imgs.blink) }; if (imgs.acc) tex.acc = mkTex(imgs.acc); if (imgs.hair) tex.hair = mkTex(imgs.hair);
     }
