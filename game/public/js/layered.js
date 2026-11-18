@@ -86,16 +86,19 @@
       var FE = opt.feather == null ? 6 : opt.feather, soft = FE > 0 ? blur(m, FE, 4) : m;   // 疊 4 次：遮罩內維持全蓋，只有外圍漸淡
       // 胸部下緣往下多帶一段（✅ Jay 2026-11-18：胸部一動，下面會露出留在原地的下緣線）：這一段的原圖跟著胸部層走，底下換成乾淨的平胸版
       var EX = ART ? (R.ext == null ? 20 : R.ext) : 0, ext = soft;
-      if (EX) { var e0 = cvs(), ec = e0.getContext("2d"); for (var dy = 0; dy <= EX; dy += 2) ec.drawImage(m, 0, dy); ext = blur(e0, FE, 4); }
+      var tap = null;
+      if (EX) { var e0 = cvs(), ec = e0.getContext("2d"); for (var dy = 0; dy <= EX; dy += 2) ec.drawImage(m, 0, dy); ext = blur(e0, FE, 4);
+        // 跟著胸部走的那一段要越往下越淡，不然移動時下緣會有一道階梯
+        var t0 = cvs(), tc = t0.getContext("2d"); for (dy = EX + 10; dy >= 0; dy -= 2) { tc.globalCompositeOperation = "destination-out"; tc.globalAlpha = 1; tc.drawImage(m, 0, dy); tc.globalCompositeOperation = "source-over"; tc.globalAlpha = Math.pow(1 - dy / (EX + 12), 1.6); tc.drawImage(m, 0, dy); } tc.globalAlpha = 1; tap = blur(t0, 4, 2); }
       var u = cvs(), uc = u.getContext("2d"); uc.drawImage(imgs.under, 0, 0); uc.globalCompositeOperation = "destination-in"; uc.drawImage(ext, 0, 0);
       var b = cvs(), bc = b.getContext("2d"); bc.drawImage(imgs.body, 0, 0);
       bc.globalCompositeOperation = "destination-out"; bc.drawImage(m, 0, 0); bc.globalCompositeOperation = "source-over"; bc.drawImage(u, 0, 0);
       // 胸部層：邊緣收一點柔邊
-      var c = cvs(), cc = c.getContext("2d"); cc.drawImage(imgs.body, 0, 0); if (ART) { cc.globalCompositeOperation = "destination-in"; cc.drawImage(ext, 0, 0); cc.globalCompositeOperation = "source-over"; cc.drawImage(imgs.chest, 0, 0); }
+      var c = cvs(), cc = c.getContext("2d"); cc.drawImage(imgs.body, 0, 0); if (ART) { cc.globalCompositeOperation = "destination-in"; cc.drawImage(tap || ext, 0, 0); cc.globalCompositeOperation = "source-over"; cc.drawImage(imgs.chest, 0, 0); }
       else { cc.globalCompositeOperation = "destination-in"; cc.drawImage(m, 0, 0); }
       tex = { base: mkTex(b), chest: mkTex(c), blink: mkTex(imgs.blink) }; if (imgs.acc) tex.acc = mkTex(imgs.acc); if (imgs.hair) tex.hair = mkTex(imgs.hair);
     }
-    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + (R.pre || id + "_") + n + ".webp?v=4"; });   // 改圖要換這個數字，不然手機會用到舊圖
+    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + (R.pre || id + "_") + n + ".webp?v=5"; });   // 改圖要換這個數字，不然手機會用到舊圖
 
     var P = { K: 38, C: 3.0, BREATH: 0.0035, BT: 3.8, LIFT: 0.016, MAX: 0.042, RIM: 0.28, amp: opt.amp == null ? 1 : opt.amp };   // MAX 是胸部中心的最大位移；邊緣只動 RIM 倍（約 0.28）
     var c = [{ x: 0, y: 0, vx: 0, vy: 0 }, { x: 0, y: 0, vx: 0, vy: 0 }], ear = [{ a: 0, v: 0 }, { a: 0, v: 0 }], hair = { x: 0, v: 0 };
