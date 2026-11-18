@@ -31,31 +31,46 @@ canvas.pb,canvas.pf{width:100%;height:100%}
 
 /* 1 閃卡反光 */
 .holo,.glit,.glare,.chfoil{opacity:0;transition:opacity .25s}
-#card.holo-on .glare{opacity:1;mix-blend-mode:overlay;background:radial-gradient(circle at var(--px) var(--py),rgba(255,255,255,.5),rgba(255,255,255,.08) 30%,rgba(0,0,0,.18) 75%)}
+#card.holo-on .glare{opacity:1;mix-blend-mode:overlay;background:radial-gradient(circle at var(--px) var(--py),rgba(255,255,255,.3),rgba(255,255,255,.05) 30%,rgba(0,0,0,.12) 75%)}
 /* SR：一道斜的銀藍光帶掃過 */
-#card.holo-on.SR .holo{opacity:.5;mix-blend-mode:color-dodge;
-  background:linear-gradient(115deg,transparent 30%,rgba(120,190,255,.55) 44%,rgba(255,255,255,.9) 50%,rgba(170,140,255,.55) 56%,transparent 70%) var(--px) var(--py)/260% 260% no-repeat}
-/* SSR：整面彩虹箔條紋，偏金 */
+#card.holo-on.SR .holo{opacity:.34;mix-blend-mode:color-dodge;
+  background:linear-gradient(115deg,transparent 34%,rgba(120,190,255,.5) 45%,rgba(255,255,255,.85) 50%,rgba(170,140,255,.5) 55%,transparent 66%) var(--px) var(--py)/260% 260% no-repeat}
+/* SSR：金箔。細斜紋的金色光澤，不帶彩虹 */
 #card.holo-on.SSR .holo{opacity:.3;mix-blend-mode:color-dodge;
-  background:repeating-linear-gradient(115deg,#ff5a5a 0%,#ffd76a 7%,#7dff9a 14%,#62d6ff 21%,#a98bff 28%,#ff7ad8 35%,#ff5a5a 42%) var(--px) var(--py)/320% 320%;filter:brightness(.75) contrast(1.5) saturate(1.2)}
-#card.holo-on.SSR .glit{opacity:.5}
-/* UR：彩虹箔＋交叉紋＋亮片，人物本身另有一層箔光 */
-#card.holo-on.UR .holo{opacity:.36;mix-blend-mode:color-dodge;
-  background:repeating-linear-gradient(0deg,rgba(255,255,255,.14) 0 2px,transparent 2px 6px),
-    repeating-linear-gradient(125deg,#ff4d6d 0%,#ffd166 6%,#6dffb0 12%,#4dd2ff 18%,#b28dff 24%,#ff6fd8 30%,#ff4d6d 36%) var(--px) var(--py)/280% 280%;
-  filter:brightness(.8) contrast(1.7) saturate(1.35)}
-#card.holo-on.UR .glit{opacity:.95}
-#card.holo-on.UR .chfoil{opacity:.4;mix-blend-mode:color-dodge;
-  background:linear-gradient(calc(100deg + var(--tx) * 40deg),transparent 25%,rgba(255,230,160,.9) 45%,rgba(255,255,255,1) 50%,rgba(160,220,255,.9) 55%,transparent 75%) var(--px) var(--py)/240% 240% no-repeat;
+  background:repeating-linear-gradient(115deg,rgba(255,236,170,.0) 0 3px,rgba(255,236,170,.22) 3px 4px),
+    linear-gradient(115deg,transparent 20%,rgba(255,170,60,.55) 38%,rgba(255,236,170,.95) 50%,rgba(255,150,70,.55) 62%,transparent 80%) var(--px) var(--py)/230% 230% no-repeat}
+#card.holo-on.SSR .glit{opacity:.28;filter:sepia(1) saturate(2.2) hue-rotate(-12deg)}
+/* UR：從光點放射出去的彩虹光芒＋亮片，人物身上另有一層流光 */
+#card.holo-on.UR .holo{opacity:.24;mix-blend-mode:color-dodge;
+  background:repeating-conic-gradient(from calc(var(--tx) * 60deg) at var(--px) var(--py),#ff4d6d 0deg,#ffd166 12deg,#6dffb0 24deg,#4dd2ff 36deg,#b28dff 48deg,#ff6fd8 60deg,#ff4d6d 72deg);
+  -webkit-mask:radial-gradient(circle at var(--px) var(--py),transparent 0,#000 22%,#000 60%,rgba(0,0,0,.45) 100%);mask:radial-gradient(circle at var(--px) var(--py),transparent 0,#000 22%,#000 60%,rgba(0,0,0,.45) 100%);
+  filter:brightness(.8) contrast(1.4)}
+#card.holo-on.UR .glit{opacity:.7}
+#card.holo-on.UR .chfoil{opacity:.26;mix-blend-mode:color-dodge;
+  background:linear-gradient(calc(100deg + var(--tx) * 40deg),transparent 30%,rgba(255,230,160,.9) 46%,rgba(255,255,255,1) 50%,rgba(160,220,255,.9) 54%,transparent 70%) var(--px) var(--py)/240% 240% no-repeat;
   -webkit-mask:var(--art) center top/cover no-repeat;mask:var(--art) center top/cover no-repeat}
 #card.d3.holo-on .chfoil{transform:translate(calc(var(--tx) * 7px),calc(var(--ty) * 5px)) scale(1.03)}
+#card.N .holo,#card.R .holo,#card.N .glit,#card.R .glit,#card.N .glare,#card.R .glare{display:none}
 /* 亮片：亮點圖案只在一條會隨傾斜移動的帶子裡顯現，所以一傾斜就一顆顆輪流閃 */
 .glit{mix-blend-mode:color-dodge;background-image:var(--glit);background-size:220px 220px;background-position:calc(var(--tx) * 30px) calc(var(--ty) * 30px);
   -webkit-mask:repeating-linear-gradient(calc(120deg + var(--ty) * 30deg),transparent 0,#000 7%,transparent 14%,transparent 22%) var(--px) var(--py)/300% 300%;
   mask:repeating-linear-gradient(calc(120deg + var(--ty) * 30deg),transparent 0,#000 7%,transparent 14%,transparent 22%) var(--px) var(--py)/300% 300%}
 
-.L.fr{border-radius:14px;box-shadow:inset 0 0 0 3px #d4a853,inset 0 0 0 5px rgba(20,14,8,.85),inset 0 0 0 6px #8a6a2c}
-#card.UR .L.fr{box-shadow:inset 0 0 0 3px #ffe6a6,inset 0 0 0 5px rgba(20,14,8,.85),inset 0 0 0 6px #d4a853,inset 0 0 46px rgba(255,160,90,.4)}
+/* 邊線：每個稀有度一種顏色（★ 配色是開發先填的）。UR 的邊是會流動的彩虹金 */
+#card{--b1:#9aa0a8;--b2:#5d626a}
+#card.R{--b1:#d08a52;--b2:#7a4a24}#card.SR{--b1:#9fd0ff;--b2:#4a78c8}#card.SSR{--b1:#ffe08a;--b2:#c8791e}#card.UR{--b1:#fff0c0;--b2:#d4a853}
+#card.N{box-shadow:0 18px 40px rgba(0,0,0,.7)}#card.R{box-shadow:0 18px 40px rgba(0,0,0,.7),0 0 10px rgba(208,138,82,.35)}
+#card.SR{box-shadow:0 18px 40px rgba(0,0,0,.7),0 0 16px rgba(110,170,255,.55)}#card.SSR{box-shadow:0 18px 40px rgba(0,0,0,.7),0 0 20px rgba(255,190,80,.65)}
+#card.UR{box-shadow:0 18px 40px rgba(0,0,0,.7),0 0 26px rgba(255,150,220,.6),0 0 46px rgba(120,200,255,.35)}
+.L.fr{border-radius:14px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.6),inset 0 0 0 7px rgba(18,12,8,.0)}
+.L.fr::before{content:"";position:absolute;inset:0;border-radius:14px;padding:5px;background:linear-gradient(160deg,var(--b1),var(--b2) 35%,var(--b1) 55%,var(--b2) 80%,var(--b1));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.L.fr::after{content:"";position:absolute;inset:5px;border-radius:10px;box-shadow:inset 0 0 0 1px rgba(20,14,8,.85),inset 0 0 0 2px var(--b2)}
+#card.SSR .L.fr::after{box-shadow:inset 0 0 0 1px rgba(20,14,8,.85),inset 0 0 0 2px var(--b2),inset 0 0 30px rgba(255,180,80,.3)}
+#card.UR .L.fr::before{padding:6px;background:conic-gradient(from var(--ang),#ffe6a6,#ff8fd0,#9fd0ff,#b6ffd0,#ffe6a6,#ffb060,#ffe6a6);animation:urb 5s linear infinite}
+#card.UR .L.fr::after{inset:6px;box-shadow:inset 0 0 0 1px rgba(20,14,8,.85),inset 0 0 0 2px #ffe6a6,inset 0 0 44px rgba(255,160,90,.38)}
+@property --ang{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes urb{to{--ang:360deg}}
 #card.d3 .L.fr{transform:translateZ(24px) scale(.975)}
 .fr .nm{position:absolute;left:16px;top:18px;writing-mode:vertical-rl;font-family:var(--kai);font-weight:700;font-size:40px;line-height:1.05;letter-spacing:.08em;color:#fff4dc;text-shadow:0 2px 0 rgba(0,0,0,.7),0 0 12px rgba(0,0,0,.85)}
 .fr .rk{position:absolute;right:16px;bottom:16px}.fr .rk .rx{font-size:30px}
@@ -70,7 +85,7 @@ canvas.pb,canvas.pf{width:100%;height:100%}
     <div class="L fr"><span class="nm"></span><span class="rk"></span></div>
   </div></div>
   <div id="bot">
-    <div class="row"><select id="gen"></select><select id="rar" style="flex:0 0 76px"><option>SR</option><option>SSR</option><option>UR</option></select><select id="pt" style="flex:0 0 96px"></select></div>
+    <div class="row"><select id="gen"></select><select id="rar" style="flex:0 0 76px"><option>N</option><option>R</option><option>SR</option><option>SSR</option><option>UR</option></select><select id="pt" style="flex:0 0 96px"></select></div>
     <div class="row t">
       <button data-k="holo">1 閃卡反光<small>傾斜或滑動</small></button>
       <button data-k="wind">2 呼吸飄動<small>髮尾披風</small></button>
@@ -103,13 +118,13 @@ canvas.pb,canvas.pf{width:100%;height:100%}
   function autoKind(c) { return c.elem === "火" ? "fire" : c.elem === "冰" ? "ice" : c.male ? "gold" : c.cap[0] === "UR" ? "gold" : "petal"; }
   function show(i, keepRar) {
     cur = list[i]; var c = cur, r = keepRar ? $("#rar").value : c.cap[0]; $("#rar").value = r;
-    card.classList.remove("SR", "SSR", "UR"); card.classList.add(r);
+    card.classList.remove("N", "R", "SR", "SSR", "UR"); card.classList.add(r);
     $(".L.bg").style.backgroundImage = "url(../img/bg_" + FV[c.fac] + (SG.bgv(c.art) ? "_" + SG.bgv(c.art) : "") + ".webp)";
     card.style.setProperty("--art", "url(../img/" + c.art + "_full.webp)");
     var ch = $(".L.ch"); ch.innerHTML = ""; var im = new Image(); im.alt = c.name; im.src = "../img/" + c.art + "_full.webp"; ch.appendChild(im);
     if (!c.male && SG.Jiggle) SG.Jiggle.attach(im, c.art, { noLayer: true, wind: ON.wind ? WIND : 0 });
     $(".fr .nm").textContent = c.gen;
-    $(".fr .rk").innerHTML = '<span class="rx rx-' + r + '"><u data-t="' + r + '"><b>' + r + '</b></u></span>';
+    $(".fr .rk").innerHTML = r === "N" || r === "R" ? '<span style="font-weight:700;font-size:22px;color:#fff1d2;text-shadow:0 0 6px #000">' + r + '</span>' : '<span class="rx rx-' + r + '"><u data-t="' + r + '"><b>' + r + '</b></u></span>';
     kind = $("#pt").value === "auto" ? autoKind(c) : $("#pt").value; parts.length = 0;
     apply();
   }

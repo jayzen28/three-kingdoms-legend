@@ -11,6 +11,7 @@
   // 通用：所有武將都有的含蓄呼吸起伏（✅ Jay 2026-11-14）。不用逐張標範圍：整個上半身一條寬帶輕輕起伏，幅度很小所以不會拉歪
   // 胸口位置：用臉部偵測加膚色重心自動估的 [中心x, 中心y, 半徑x, 半徑y]；偵測不到臉的武將和男將不做胸口起伏，只有全身呼吸
   SG.JIGGLE_AUTO = SG.CHEST || {};
+  Object.keys(SG.JIGGLE).forEach(function (k) { var a = SG.JIGGLE_AUTO[k]; if (a && (a.L || a.R)) delete SG.JIGGLE[k]; });   // 用標範圍工具圈過的，以圈的為準
   var NONE = [[0.5, 0.5, 0.001, 0.001], [0.5, 0.5, 0.001, 0.001]];
   var CFG_ALL = { K: 46, C: 3.2, UPK: 1.2, MAX: 0.015, BREATH: 0.011, BREATH_T: 3.8, LIFT: 0.006, SPREAD: 0, SWAY: 0.003, G: 1, TAP_V: 0.1, GRAB: 0.15, AUTO: 1e9, HOP: 0, HOP_T: 0.7 };
   SG.JIGGLE_ALL = CFG_ALL;
