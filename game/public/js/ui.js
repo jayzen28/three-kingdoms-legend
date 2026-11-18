@@ -137,7 +137,7 @@
       return new Promise(function (res) {
         var sp = document.createElement("div"); sp.className = "rv-spot " + cls;
         sp.innerHTML = '<div class="rays"></div><div class="lab' + (UI.rxc(x.rar) ? ' rxw' : '') + '"><span class="' + UI.rxc(x.rar).trim() + '">' + UI.rxt(x.rar) + '</span></div>' +
-          (x.card.art ? '<div class="pic' + (x.card.artBg ? '' : ' f-' + FV[x.card.fac] + ' v' + SG.bgv(x.card.art)) + '"><img src="img/' + x.card.art + '_full.webp" alt=""></div>' : '<div class="pic txt">' + x.card.gen + '</div>') +
+          (x.card.art ? '<div data-rar="' + x.rar + '" class="pic' + (x.card.artBg ? '' : ' f-' + FV[x.card.fac] + ' v' + SG.bgv(x.card.art)) + '"><img src="img/' + x.card.art + '_full.webp" alt=""></div>' : '<div class="pic txt">' + x.card.gen + '</div>') +
           '<div class="who">' + x.card.name + '</div><div class="tip">點一下繼續</div>';
         el.appendChild(sp);
         var t = setTimeout(end, ms); function end() { clearTimeout(t); sp.remove(); res(); }

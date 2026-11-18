@@ -29,33 +29,8 @@ button.on{background:#d4a853;color:#120f14;border-color:#d4a853}
 canvas.pb,canvas.pf{width:100%;height:100%}
 #card:not(.fx) canvas.pb,#card:not(.fx) canvas.pf{display:none}
 
-/* 1 閃卡反光 */
-.holo,.glit,.glare,.chfoil{opacity:0;transition:opacity .25s}
-#card.holo-on .glare{opacity:1;mix-blend-mode:overlay;background:radial-gradient(circle at var(--px) var(--py),rgba(255,255,255,.3),rgba(255,255,255,.05) 30%,rgba(0,0,0,.12) 75%)}
-/* SR：一道斜的銀藍光帶掃過 */
-#card.holo-on.SR .holo{opacity:.34;mix-blend-mode:color-dodge;
-  background:linear-gradient(115deg,transparent 34%,rgba(120,190,255,.5) 45%,rgba(255,255,255,.85) 50%,rgba(170,140,255,.5) 55%,transparent 66%) var(--px) var(--py)/260% 260% no-repeat}
-/* SSR：金箔。細斜紋的金色光澤，不帶彩虹 */
-#card.holo-on.SSR .holo{opacity:.3;mix-blend-mode:color-dodge;
-  background:repeating-linear-gradient(115deg,rgba(255,236,170,.0) 0 3px,rgba(255,236,170,.22) 3px 4px),
-    linear-gradient(115deg,transparent 20%,rgba(255,170,60,.55) 38%,rgba(255,236,170,.95) 50%,rgba(255,150,70,.55) 62%,transparent 80%) var(--px) var(--py)/230% 230% no-repeat}
-#card.holo-on.SSR .glit{opacity:.28;filter:sepia(1) saturate(2.2) hue-rotate(-12deg)}
-/* UR：從光點放射出去的彩虹光芒＋亮片，人物身上另有一層流光 */
-#card.holo-on.UR .holo{opacity:.24;mix-blend-mode:color-dodge;
-  background:repeating-conic-gradient(from calc(var(--tx) * 60deg) at var(--px) var(--py),#ff4d6d 0deg,#ffd166 12deg,#6dffb0 24deg,#4dd2ff 36deg,#b28dff 48deg,#ff6fd8 60deg,#ff4d6d 72deg);
-  -webkit-mask:radial-gradient(circle at var(--px) var(--py),transparent 0,#000 22%,#000 60%,rgba(0,0,0,.45) 100%);mask:radial-gradient(circle at var(--px) var(--py),transparent 0,#000 22%,#000 60%,rgba(0,0,0,.45) 100%);
-  filter:brightness(.8) contrast(1.4)}
-#card.holo-on.UR .glit{opacity:.7}
-#card.holo-on.UR .chfoil{opacity:.26;mix-blend-mode:color-dodge;
-  background:linear-gradient(calc(100deg + var(--tx) * 40deg),transparent 30%,rgba(255,230,160,.9) 46%,rgba(255,255,255,1) 50%,rgba(160,220,255,.9) 54%,transparent 70%) var(--px) var(--py)/240% 240% no-repeat;
-  -webkit-mask:var(--art) center top/cover no-repeat;mask:var(--art) center top/cover no-repeat}
-#card.d3.holo-on .chfoil{transform:translate(calc(var(--tx) * 7px),calc(var(--ty) * 5px)) scale(1.03)}
-#card.N .holo,#card.R .holo,#card.N .glit,#card.R .glit,#card.N .glare,#card.R .glare{display:none}
-/* 亮片：亮點圖案只在一條會隨傾斜移動的帶子裡顯現，所以一傾斜就一顆顆輪流閃 */
-.glit{mix-blend-mode:color-dodge;background-image:var(--glit);background-size:220px 220px;background-position:calc(var(--tx) * 30px) calc(var(--ty) * 30px);
-  -webkit-mask:repeating-linear-gradient(calc(120deg + var(--ty) * 30deg),transparent 0,#000 7%,transparent 14%,transparent 22%) var(--px) var(--py)/300% 300%;
-  mask:repeating-linear-gradient(calc(120deg + var(--ty) * 30deg),transparent 0,#000 7%,transparent 14%,transparent 22%) var(--px) var(--py)/300% 300%}
-
+#card.cfx>.cfx-foil{-webkit-mask:var(--art) center top/cover no-repeat}
+#card.d3 .cfx-foil{transform:translate(calc(var(--tx) * 7px),calc(var(--ty) * 5px)) scale(1.03)}
 /* 邊線：每個稀有度一種顏色（★ 配色是開發先填的）。UR 的邊是會流動的彩虹金 */
 #card{--b1:#9aa0a8;--b2:#5d626a}
 #card.R{--b1:#d08a52;--b2:#7a4a24}#card.SR{--b1:#9fd0ff;--b2:#4a78c8}#card.SSR{--b1:#ffe08a;--b2:#c8791e}#card.UR{--b1:#fff0c0;--b2:#d4a853}
@@ -76,12 +51,12 @@ canvas.pb,canvas.pf{width:100%;height:100%}
 .fr .rk{position:absolute;right:16px;bottom:16px}.fr .rk .rx{font-size:30px}
 </style></head><body>
 <div id="wrap">
-  <div id="mid"><div id="card">
+  <div id="mid"><div id="card" class="cfx">
     <div class="L bg"></div>
     <canvas class="L pb"></canvas>
     <div class="L ch"></div>
     <canvas class="L pf"></canvas>
-    <div class="L holo"></div><div class="L chfoil"></div><div class="L glit"></div><div class="L glare"></div>
+    <div class="cfx-l cfx-holo"></div><div class="cfx-l cfx-foil"></div><div class="cfx-l cfx-glit"></div><div class="cfx-l cfx-glare"></div>
     <div class="L fr"><span class="nm"></span><span class="rk"></span></div>
   </div></div>
   <div id="bot">
@@ -128,8 +103,8 @@ canvas.pb,canvas.pf{width:100%;height:100%}
     kind = $("#pt").value === "auto" ? autoKind(c) : $("#pt").value; parts.length = 0;
     apply();
   }
-  function apply() {
-    card.classList.toggle("holo-on", !!ON.holo); card.classList.toggle("d3", !!ON.d3); card.classList.toggle("fx", !!ON.fx);
+  function apply() { var r0 = $("#rar").value;
+    card.classList.toggle("h-on", !!ON.holo && r0 !== "N" && r0 !== "R"); card.classList.toggle("d3", !!ON.d3); card.classList.toggle("fx", !!ON.fx);
     var cv = $(".L.ch canvas"); if (cv) { cv._wind = ON.wind ? WIND : 0; cv._still = !ON.wind; }
     document.querySelectorAll(".row.t button").forEach(function (b) { b.classList.toggle("on", !!ON[b.dataset.k]); });
   }

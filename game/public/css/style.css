@@ -693,3 +693,55 @@ p,h2,.dim,.sub,.lead,.t,#modal-body p,#banner{text-wrap:balance}
 .mg-cap{padding:0 14px;text-wrap:balance}.mg-cap b{display:block;font-size:28px;margin-bottom:4px}
 .mg-cap small{font-size:15px;margin-top:8px;color:#e6d6ae}
 #fxl .rv-top span{font-size:16px}
+
+/* ===== 卡面特效（✅ Jay 2026-11-18）：閃卡反光、景深、粒子、稀有度邊線。js/cardfx.js ===== */
+.cfx{--tx:0;--ty:0;--px:50%;--py:50%;--b1:#9aa0a8;--b2:#5d626a}
+.cfx.R{--b1:#d08a52;--b2:#7a4a24}.cfx.SR{--b1:#9fd0ff;--b2:#4a78c8}.cfx.SSR{--b1:#ffe08a;--b2:#c8791e}.cfx.UR{--b1:#fff0c0;--b2:#d4a853}
+.cfx>canvas.cfx-pb,.cfx>canvas.cfx-pf{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;filter:none}
+.cfx:not(.p-on)>canvas.cfx-pb,.cfx:not(.p-on)>canvas.cfx-pf{display:none}
+.cfx-l{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .25s}
+/* 閃光只在光帶經過的地方出現，其餘地方保持立繪原色（不整張變白） */
+.cfx.h-on .cfx-glare{opacity:.4;mix-blend-mode:soft-light;background:radial-gradient(circle at var(--px) var(--py),rgba(255,255,255,.5),rgba(128,128,128,0) 30%,rgba(0,0,0,.4) 100%)}
+.cfx.h-on.SR .cfx-holo{opacity:.3;mix-blend-mode:color-dodge;
+  background:linear-gradient(115deg,transparent 44.5%,rgba(120,190,255,.5) 48%,rgba(255,255,255,.85) 50%,rgba(170,140,255,.5) 52%,transparent 55.5%) var(--px) var(--py)/260% 260% no-repeat}
+.cfx.h-on.SSR .cfx-holo{opacity:.34;mix-blend-mode:color-dodge;
+  background:repeating-linear-gradient(115deg,rgba(0,0,0,.35) 0 3px,rgba(0,0,0,0) 3px 5px),
+    linear-gradient(115deg,transparent 43%,rgba(255,150,50,.5) 47%,rgba(255,232,160,.95) 50%,rgba(255,140,60,.5) 53%,transparent 57%) var(--px) var(--py)/230% 230% no-repeat;background-blend-mode:multiply}
+.cfx.h-on.SSR .cfx-glit{opacity:.25;filter:sepia(1) saturate(2.2) hue-rotate(-12deg)}
+.cfx.h-on.UR .cfx-holo{opacity:.42;mix-blend-mode:soft-light;
+  background:repeating-conic-gradient(from calc(var(--tx) * 60deg) at var(--px) var(--py),#d81e45 0deg,#c79a12 12deg,#17b866 24deg,#1596c8 36deg,#7446d8 48deg,#cf2aa0 60deg,#d81e45 72deg);
+  -webkit-mask:radial-gradient(circle at var(--px) var(--py),transparent 0,#000 24%,#000 62%,rgba(0,0,0,.4) 100%);mask:radial-gradient(circle at var(--px) var(--py),transparent 0,#000 24%,#000 62%,rgba(0,0,0,.4) 100%)}
+.cfx.h-on.UR .cfx-glit{opacity:.5}
+.cfx.h-on.UR .cfx-foil{opacity:.24;mix-blend-mode:color-dodge;
+  background:linear-gradient(calc(100deg + var(--tx) * 40deg),transparent 44%,rgba(255,230,160,.9) 48.5%,rgba(255,255,255,1) 50%,rgba(160,220,255,.9) 51.5%,transparent 56%) var(--px) var(--py)/240% 240% no-repeat;
+  -webkit-mask:var(--art) center top/cover no-repeat;mask:var(--art) center top/cover no-repeat}
+.cfx-glit{mix-blend-mode:color-dodge;background-image:var(--glit);background-size:220px 220px;background-position:calc(var(--tx) * 30px) calc(var(--ty) * 30px);
+  -webkit-mask:repeating-linear-gradient(calc(120deg + var(--ty) * 30deg),transparent 0,#000 7%,transparent 14%,transparent 22%) var(--px) var(--py)/300% 300%;
+  mask:repeating-linear-gradient(calc(120deg + var(--ty) * 30deg),transparent 0,#000 7%,transparent 14%,transparent 22%) var(--px) var(--py)/300% 300%}
+.cfx.d3>canvas.cfx-pb{transform:translate(calc(var(--tx) * -5px),calc(var(--ty) * -4px))}
+.cfx.d3>canvas.cfx-pf{transform:translate(calc(var(--tx) * 18px),calc(var(--ty) * 12px)) scale(1.06)}
+/* 「特效」開關 */
+.cfx-tg{position:absolute;right:8px;top:8px;z-index:6;padding:5px 9px;font-size:12px;line-height:1.2;letter-spacing:.06em;color:#fff1d2;background:rgba(20,15,10,.62);border:1px solid var(--gold);border-radius:14px;min-width:0;box-shadow:none}
+.cfx-tg.off{color:#b9ad96;border-color:#7d705b}
+/* 大卡詳情 */
+.bigart.cfx>.nm,.bigart.cfx>.ver,.bigart.cfx>.rk{z-index:5}
+.bigart.cfx.d3{background-size:112% auto;background-position:calc(50% - var(--tx) * 40%) calc(6% - var(--ty) * 6%)}
+.bigart.cfx.d3>img,.bigart.cfx.d3>canvas.jg{transform:translate(calc(var(--tx) * 7px),calc(var(--ty) * 5px)) scale(1.03)}
+.bigart.cfx.d3>.cfx-foil{transform:translate(calc(var(--tx) * 7px),calc(var(--ty) * 5px)) scale(1.03)}
+.bigart.cfx,.bigart.cfx.SSR,.bigart.cfx.UR{box-shadow:none}
+.bigart.cfx::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;padding:4px;background:linear-gradient(160deg,var(--b1),var(--b2) 35%,var(--b1) 55%,var(--b2) 80%,var(--b1));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+.bigart.cfx.UR::after{padding:5px;background:conic-gradient(from var(--cfxa),#ffe6a6,#ff8fd0,#9fd0ff,#b6ffd0,#ffe6a6,#ffb060,#ffe6a6);animation:cfxa 5s linear infinite}
+.bigart.cfx{border-bottom-color:var(--b1)}
+@property --cfxa{syntax:"<angle>";inherits:false;initial-value:0deg}
+@keyframes cfxa{to{--cfxa:360deg}}
+/* 抽卡揭曉 */
+.rv-spot .pic.cfx{border-color:var(--b1)}
+.rv-spot .pic.cfx.SR{box-shadow:0 0 30px rgba(110,170,255,.75)}
+.rv-spot .pic.cfx.d3{background-size:112% auto;background-position:calc(50% - var(--tx) * 40%) calc(6% - var(--ty) * 6%)}
+.rv-spot .pic.cfx.d3>img,.rv-spot .pic.cfx.d3>canvas.jg{transform:translateX(-50%) translate(calc(var(--tx) * 7px),calc(var(--ty) * 5px))}
+.rv-spot .pic.cfx .cfx-foil{-webkit-mask:none;mask:none;opacity:0!important}
+/* 列表小卡：只換邊線顏色，不做動態 */
+.cc{border-color:#8a9098}.cc.R{border-color:#c08050}.cc.SR{border-color:#7fb4f0}.cc.SSR{border-color:#f0c860}
+.cc.UR{border-image:linear-gradient(135deg,#ffe6a6,#ff8fd0,#9fd0ff,#b6ffd0,#ffe6a6) 1}
+@media (prefers-reduced-motion:reduce){.cfx-l,.cfx>canvas.cfx-pb,.cfx>canvas.cfx-pf{display:none!important}}
