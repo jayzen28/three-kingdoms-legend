@@ -447,15 +447,21 @@
     if (!S.daily.counts.book) { SG.Daily.bump(S, "book", 1); UI.save(); }
     var own = function (c) { return !!SG.best(S, c.id); };
     var total = SG.CARDS.filter(own).length;
-    var list = SG.CARDS.filter(function (c) { return c.fac === UI.bookFac; });
+    // 篩選（✅ Jay 2026-11-18 要放篩選器；★ 篩什麼是開發先定的：兵種、收藏狀態）
+    var fo = UI.bookOwn || "", ft = UI.bookTyp || "";
+    var list = SG.CARDS.filter(function (c) { return c.fac === UI.bookFac && (!ft || c.typ === ft) && (!fo || (fo === "own" ? own(c) : fo === "no" ? !own(c) : SG.canMerge(S, c.id))); });
+    var opt = function (v, t, cur) { return '<option value="' + v + '"' + (v === cur ? ' selected' : '') + '>' + t + '</option>'; };
     $("#s-book").innerHTML = UI.strip("st-book", "群英名冊", "已收 " + total + " / " + SG.CARDS.length + "・點名帖看大圖與數值") +
       '<div class="tabs">' + SG.FACS.map(function (f) {
         var all = SG.CARDS.filter(function (c) { return c.fac === f; });
         return '<button class="' + (f === UI.bookFac ? 'on' : '') + '" data-fac="' + f + '">' + f + '<small>' + all.filter(own).length + '/' + all.length + '</small></button>';
       }).join("") + '</div>' +
-      '<div class="row"><span class="grow"></span><button class="sm" id="bk-help">說明</button><button class="gold" id="bk-merge" ' + (UI.mergeCount() ? '' : 'disabled') + '>一鍵合成（' + UI.mergeCount() + '）</button></div>' +
-      '<div class="cards">' + list.map(function (c) { return UI.cardHtml(c, SG.best(S, c.id), { attr: 'data-card="' + c.id + '"' + (SG.canMerge(S, c.id) ? ' data-mg="1"' : '') }); }).join("") + '</div>';
+      '<div class="row"><select id="bk-typ" class="bkf">' + opt("", "全部兵種", ft) + ["槍", "騎", "弓", "刺", "法"].map(function (t) { return opt(t, ({ "槍": "槍兵", "騎": "騎兵", "弓": "弓兵", "刺": "刺客", "法": "法師" })[t], ft); }).join("") + '</select>' +
+      '<select id="bk-own" class="bkf">' + opt("", "全部", fo) + opt("own", "已收", fo) + opt("no", "未收", fo) + opt("mg", "可合成", fo) + '</select>' +
+      '<span class="grow"></span><button class="sm" id="bk-help">說明</button><button class="gold" id="bk-merge" ' + (UI.mergeCount() ? '' : 'disabled') + '>一鍵合成（' + UI.mergeCount() + '）</button></div>' +
+      '<div class="cards">' + list.map(function (c) { return UI.cardHtml(c, SG.best(S, c.id), { attr: 'data-card="' + c.id + '"' + (SG.canMerge(S, c.id) ? ' data-mg="1"' : '') }); }).join("") + (list.length ? '' : '<p class="dim" style="grid-column:1/-1;text-align:center;padding:24px 0">沒有符合的武將</p>') + '</div>';
     SG.Scene.banner($("#st-book"), 52);
+    $("#bk-typ").onchange = function () { UI.bookTyp = this.value; UI.r_book(); }; $("#bk-own").onchange = function () { UI.bookOwn = this.value; UI.r_book(); };
     $("#bk-merge").onclick = function () { UI.mergeAllFlow(function () { if ($("#s-book").classList.contains("show")) UI.r_book(); }); };
     var bkNote = function (key) { UI.note("合成說明", ["兩張同星合成下一星。", "隊伍裡的卡要先移出才能合。"], key); };
     $("#bk-help").onclick = function () { bkNote(); }; bkNote("book");

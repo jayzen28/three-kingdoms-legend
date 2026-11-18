@@ -745,3 +745,6 @@ p,h2,.dim,.sub,.lead,.t,#modal-body p,#banner{text-wrap:balance}
 .cc{border-color:#8a9098}.cc.R{border-color:#c08050}.cc.SR{border-color:#7fb4f0}.cc.SSR{border-color:#f0c860}
 .cc.UR{border-image:linear-gradient(135deg,#ffe6a6,#ff8fd0,#9fd0ff,#b6ffd0,#ffe6a6) 1}
 @media (prefers-reduced-motion:reduce){.cfx-l,.cfx>canvas.cfx-pb,.cfx>canvas.cfx-pf{display:none!important}}
+
+/* 群英名冊篩選 */
+.bkf{min-width:0;flex:0 1 auto;padding:6px 6px;font-size:14px;font-family:var(--body);color:#fff1d2;background:#2a201a;border:1px solid var(--gold);border-radius:3px}

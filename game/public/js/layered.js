@@ -110,7 +110,8 @@
       if (grab >= 0) { var s = c[grab], lim = P.MAX * P.amp; s.x = Math.max(-lim, Math.min(lim, (p[0] - gx) * 0.6)); s.y = Math.max(-lim * 0.8, Math.min(lim, (p[1] - gy) * 0.6)); s.vx = s.vy = 0; var o = c[1 - grab]; o.vx += (s.x - o.x) * 0.6; }
       else if (e.buttons || e.pointerType === "touch") { hair.v += vx * 0.003; ear[0].v += vx * 0.25; ear[1].v += vx * 0.25; c[0].vx += vx * 0.01 * P.amp; c[1].vx += vx * 0.01 * P.amp; }
     });
-    function up() { grab = -1; } cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
+    // 點一下胸部：兩邊一起晃，另一邊慢半拍（✅ Jay 2026-11-18：要跟其他武將一樣，不是只動一邊）
+    function up(e) { if (grab >= 0 && e && e.type === "pointerup") { var p = uv(e); if (Math.abs(p[0] - gx) + Math.abs(p[1] - gy) < 0.012) { var d = Math.random() < 0.5 ? -1 : 1, o = c[1 - grab], s = c[grab]; s.vx += d * 0.3 * P.amp; s.vy += 0.06 * P.amp; setTimeout(function () { o.vx += d * 0.26 * P.amp; o.vy += 0.05 * P.amp; }, 90); } } grab = -1; } cv.addEventListener("pointerup", up); cv.addEventListener("pointercancel", up);
 
     function frame(now) {
       if (!run) return; requestAnimationFrame(frame);
