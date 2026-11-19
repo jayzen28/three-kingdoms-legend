@@ -16,8 +16,8 @@
     },
     // 貂蟬 v2（2026-11-19 開發用 Colab＋Illustrious-XL 自己生的，Jay 選圖）：只有胸部、平胸底層、閉眼三層
     diaochan_v4: {
-      w: 832, h: 1216,
-      art: [[0.3185, 0.4934, 0.1142, 0.0740], [0.4808, 0.4893, 0.1142, 0.0740]],   // v2 的臉＋舞姬裝，胸部單獨生成（2026-11-19）
+      w: 832, h: 1216, link: 1,
+      art: [[0.3425, 0.5345, 0.1623, 0.0987], [0.5409, 0.5304, 0.1623, 0.0987]],   // v2 的臉＋舞姬裝，胸部單獨生成（2026-11-19 重做：放大、底層整片紫）
     },
     diaochan_v3: {
       w: 832, h: 1216,
@@ -106,7 +106,7 @@
       else { cc.globalCompositeOperation = "destination-in"; cc.drawImage(m, 0, 0); }
       tex = { base: mkTex(b), chest: mkTex(c), blink: mkTex(imgs.blink) }; if (imgs.acc) tex.acc = mkTex(imgs.acc); if (imgs.hair) tex.hair = mkTex(imgs.hair);
     }
-    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + (R.pre || id + "_") + n + ".webp?v=12"; });   // 改圖要換這個數字，不然手機會用到舊圖
+    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + (R.pre || id + "_") + n + ".webp?v=14"; });   // 改圖要換這個數字，不然手機會用到舊圖
 
     var P = { K: 38, C: 3.0, BREATH: 0.0035, BT: 3.8, LIFT: 0.016, MAX: 0.042, RIM: 0.28, amp: opt.amp == null ? 1 : opt.amp };   // MAX 是胸部中心的最大位移；邊緣只動 RIM 倍（約 0.28）
     var c = [{ x: 0, y: 0, vx: 0, vy: 0 }, { x: 0, y: 0, vx: 0, vy: 0 }], ear = [{ a: 0, v: 0 }, { a: 0, v: 0 }], hair = { x: 0, v: 0 };
@@ -143,7 +143,8 @@
       gl.viewport(0, 0, cv.width, cv.height); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT);
       gl.uniform1f(U.br, br); gl.uniform1f(U.asp, R.h / R.w); gl.uniform1f(U.hs, R.hair || 0.24); gl.uniform1f(U.t, t); gl.uniform1f(U.rim, P.RIM);
       gl.uniform4fv(U.e0, E[0]); gl.uniform4fv(U.e1, E[1]); if (R.acc) { gl.uniform2fv(U.p0, R.acc[0]); gl.uniform2fv(U.p1, R.acc[1]); }
-      gl.uniform2f(U.o0, c[0].x, c[0].y); gl.uniform2f(U.o1, c[1].x, c[1].y); gl.uniform2f(U.ang, ear[0].a, ear[1].a);
+      var lk = R.link || 0, mx = (c[0].x + c[1].x) / 2, my = (c[0].y + c[1].y) / 2;   // link：左右胸部一起動的比例（胸衣是一整片時要開，不然中間會被扯開）
+      gl.uniform2f(U.o0, c[0].x + (mx - c[0].x) * lk, c[0].y + (my - c[0].y) * lk); gl.uniform2f(U.o1, c[1].x + (mx - c[1].x) * lk, c[1].y + (my - c[1].y) * lk); gl.uniform2f(U.ang, ear[0].a, ear[1].a);
       function draw(n, m, al) { gl.bindTexture(gl.TEXTURE_2D, tex[n]); gl.uniform1i(U.m, m); gl.uniform1f(U.al, al); gl.drawElements(gl.TRIANGLES, ix.length, gl.UNSIGNED_SHORT, 0); }
       draw("base", 0, 1); if (bl > 0.02) draw("blink", 0, bl); draw("chest", 1, 1);
       if (tex.hair) { gl.uniform2f(U.o0, hair.x, 0.003 * Math.sin(t * 0.8)); draw("hair", 2, 1); }
