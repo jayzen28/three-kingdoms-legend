@@ -15,6 +15,10 @@
       },
     },
     // 貂蟬 v2（2026-11-19 開發用 Colab＋Illustrious-XL 自己生的，Jay 選圖）：只有胸部、平胸底層、閉眼三層
+    diaochan_v4: {
+      w: 832, h: 1216,
+      art: [[0.3185, 0.4934, 0.1142, 0.0740], [0.4808, 0.4893, 0.1142, 0.0740]],   // v2 的臉＋舞姬裝，胸部單獨生成（2026-11-19）
+    },
     diaochan_v3: {
       w: 832, h: 1216,
       art: [[0.5192, 0.5197, 0.1418, 0.0855], [0.7332, 0.5197, 0.1418, 0.0855]],   // 胸部單獨生成（2026-11-19），輪廓就是這兩個橢圓
@@ -102,7 +106,7 @@
       else { cc.globalCompositeOperation = "destination-in"; cc.drawImage(m, 0, 0); }
       tex = { base: mkTex(b), chest: mkTex(c), blink: mkTex(imgs.blink) }; if (imgs.acc) tex.acc = mkTex(imgs.acc); if (imgs.hair) tex.hair = mkTex(imgs.hair);
     }
-    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + (R.pre || id + "_") + n + ".webp?v=11"; });   // 改圖要換這個數字，不然手機會用到舊圖
+    names.forEach(function (n) { var im = new Image(); im.onload = function () { imgs[n] = im; if (--left === 0) compose(); }; im.src = base + (R.pre || id + "_") + n + ".webp?v=12"; });   // 改圖要換這個數字，不然手機會用到舊圖
 
     var P = { K: 38, C: 3.0, BREATH: 0.0035, BT: 3.8, LIFT: 0.016, MAX: 0.042, RIM: 0.28, amp: opt.amp == null ? 1 : opt.amp };   // MAX 是胸部中心的最大位移；邊緣只動 RIM 倍（約 0.28）
     var c = [{ x: 0, y: 0, vx: 0, vy: 0 }, { x: 0, y: 0, vx: 0, vy: 0 }], ear = [{ a: 0, v: 0 }, { a: 0, v: 0 }], hair = { x: 0, v: 0 };
