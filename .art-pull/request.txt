@@ -1,4 +1,13 @@
-https://record-warranty-urw-content.trycloudflare.com/dl
-diaochan_v4_body diaochan_v4_body.png
-diaochan_v4_under diaochan_v4_under.png
-diaochan_v4_chest diaochan_v4_chest.png
+https://shapes-plan-display-gzip.trycloudflare.com/dl
+mateng_a6_body mateng_a6_body.png
+mateng_a6_under mateng_a6_under.png
+mateng_a6_chest mateng_a6_chest.png
+mateng_b1_body mateng_b1_body.png
+mateng_b1_under mateng_b1_under.png
+mateng_b1_chest mateng_b1_chest.png
+mateng_b2_body mateng_b2_body.png
+mateng_b2_under mateng_b2_under.png
+mateng_b2_chest mateng_b2_chest.png
+mateng_b5_body mateng_b5_body.png
+mateng_b5_under mateng_b5_under.png
+mateng_b5_chest mateng_b5_chest.png
