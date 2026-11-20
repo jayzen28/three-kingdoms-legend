@@ -62,8 +62,9 @@
         (st === "l" ? '<div class="dmeta"><span>軍餉 <b>' + d.cost + '</b></span><span>軍令 <b>' + d.ap + '</b></span><span>兵力 <b>' + d.bp + '</b></span><span>產餉 <b>' + d.gen + '</b></span><span>' + SG.TYPES[d.typ].name + '</span></div>' : '') +
         '<p class="dim" style="text-align:center">' + (D.NO_LIMIT.indexOf(d.name) >= 0 ? (n ? '擁有她就能放，張數不限' : '還沒擁有這位武將') : n ? '你最多可以放 ' + n + ' 張（看擁有的最高卡別：N1・R2・SR3・SSR4）' : '還沒擁有這位武將') + '</p>';
     }
-    UI.modal('<div class="dtop">' + (d.item ? '' : '<span class="seg"><button class="chip' + (st === "u" ? ' on' : '') + '" data-fs="u">完整版</button><button class="chip' + (st === "l" ? ' on' : '') + '" data-fs="l">簡潔版</button></span>') + '<span class="grow"></span>' + CLOSE + '</div>' + body);
+    UI.modal('<div class="dtop">' + (opt.card ? '<span class="seg"><button class="chip" id="bc-gen">一般版</button></span>' : '') + (d.item ? '' : '<span class="seg"><button class="chip' + (st === "u" ? ' on' : '') + '" data-fs="u">完整版</button><button class="chip' + (st === "l" ? ' on' : '') + '" data-fs="l">簡潔版</button></span>') + '<span class="grow"></span>' + CLOSE + '</div>' + body);
     UI.back = opt.back || null;   // ✅ Jay：組牌裡看大卡按「收起」要回到組牌
+    if (opt.card) $("#bc-gen").onclick = function () { UI.setBookDuel(false); UI.cardDetail(opt.card); };   // 切回一般版，收集冊一起換
     $$("[data-fs]").forEach(function (b) { b.onclick = function () { try { localStorage.setItem("sgl_duel_face", b.dataset.fs); } catch (e) {} DU.bigCard(d, opt); }; });
   };
   DU.forCard = function (card) { return card.ur && !(card.urOnly && D.UR_OK.indexOf(card.gen) >= 0) ? null : D.CARD[card.gen] || null; };

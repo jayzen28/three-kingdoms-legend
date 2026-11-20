@@ -969,3 +969,62 @@ body.on-duelb::before{background:radial-gradient(ellipse 80% 45% at 50% 50%,rgba
 #s-duelb button.plain{background:rgba(255,240,200,.06);color:#f0e8d8;border-color:rgba(212,168,83,.55)}
 #s-duel .curve,#s-duel .curve *{color:#e8dcc0}
 #s-duelb .dmid{background:radial-gradient(ellipse 70% 100% at 50% 50%,rgba(7,6,10,.88),rgba(7,6,10,.6) 60%,transparent 85%)}
+
+/* ===== 全站黑漆描金（✅ Jay 2026-11-20：招募、收集冊、編隊、戰役、主城、彈出視窗都改華麗版；戰棋對戰畫面不改） ===== */
+body.lux,#modal{--paper:#16110c;--paper-2:#221a12;--ink:#f0e8d8;--ink-2:#bdb096;--frame:none;color-scheme:dark}
+body.lux{background:#07060a;color:#f0e8d8}
+body.lux::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:#07060a}
+body.lux[data-scr=recruit]::before{background:linear-gradient(rgba(7,6,10,.2),rgba(7,6,10,.45) 30%,rgba(7,6,10,.6)),url(../img/bg_recruit.webp) center top/cover no-repeat,#07060a}
+body.lux[data-scr=book]::before{background:linear-gradient(rgba(7,6,10,.2),rgba(7,6,10,.45) 30%,rgba(7,6,10,.6)),url(../img/bg_book.webp) center top/cover no-repeat,#07060a}
+body.lux[data-scr=team]::before{background:linear-gradient(rgba(7,6,10,.2),rgba(7,6,10,.45) 30%,rgba(7,6,10,.6)),url(../img/bg_team.webp) center top/cover no-repeat,#07060a}
+body.lux[data-scr=camp]::before{background:linear-gradient(rgba(7,6,10,.2),rgba(7,6,10,.45) 30%,rgba(7,6,10,.6)),url(../img/bg_camp.webp) center top/cover no-repeat,#07060a}
+/* 標題牌匾 */
+body.lux .strip{border:0;background:none;height:92px;overflow:visible}
+body.lux .strip canvas{display:none}
+body.lux .strip .cap{top:14px;color:#ecd391;text-shadow:0 0 12px rgba(212,168,83,.55),0 2px 0 #000;font-size:34px}
+body.lux .strip .cap small{color:#d8c9a8;text-shadow:0 1px 2px #000;letter-spacing:.2em}
+body.lux .strip::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:2px;background:linear-gradient(90deg,transparent,#d4a853 15%,#f5e1a4 50%,#d4a853 85%,transparent)}
+body.lux h2,#modal h2{color:#ecd391;text-shadow:0 0 10px rgba(212,168,83,.35),0 2px 0 #000}
+body.lux h2::before,#modal h2::before{background:#d4a853;box-shadow:inset 0 0 0 2px #8a6a36,0 0 8px rgba(212,168,83,.6);transform:rotate(45deg)}
+/* 面板 */
+body.lux .paper{position:relative;color:#f0e8d8;border:1px solid #d4a853;border-image:none;padding:14px;
+  background:linear-gradient(160deg,rgba(38,28,18,.88),rgba(10,8,10,.93) 55%,rgba(30,20,14,.9));
+  box-shadow:inset 0 0 0 3px rgba(7,6,10,.9),inset 0 0 0 4px rgba(212,168,83,.45),inset 0 0 24px rgba(212,168,83,.12),0 6px 22px rgba(0,0,0,.65)}
+body.lux .paper.flush{padding:4px 12px}
+body.lux .paper::before,body.lux .paper::after,#modal .scroll::before,#modal .scroll::after{content:"";position:absolute;width:22px;height:22px;pointer-events:none;border:2px solid #ecd391;z-index:1}
+body.lux .paper::before,#modal .scroll::before{left:-1px;top:-1px;border-right:0;border-bottom:0}
+body.lux .paper::after,#modal .scroll::after{right:-1px;bottom:-1px;border-left:0;border-top:0}
+body.lux .li,#modal .li{border-bottom-color:rgba(212,168,83,.22)}
+body.lux .li b,#modal .li b{color:#f5e6c0}
+body.lux button.chip,#modal button.chip{background:rgba(255,240,200,.06);border-color:rgba(212,168,83,.55)}
+body.lux button.chip.on,#modal button.chip.on{background:linear-gradient(#c8372c,#8b1c16);color:#fff1d2;border-color:#ecd391}
+body.lux button.plain,#modal button.plain{background:rgba(255,240,200,.06);border-color:rgba(212,168,83,.55)}
+body.lux select,body.lux input,#modal select,#modal input{background:rgba(0,0,0,.45);color:#f0e8d8;border:1px solid rgba(212,168,83,.6)}
+body.lux .tag,#modal .tag{border-color:rgba(212,168,83,.6)}
+/* 彈出視窗 */
+#modal{background:rgba(4,3,6,.78)}
+#modal .scroll{color:#f0e8d8;border:1px solid #d4a853;
+  background:linear-gradient(160deg,#241a11,#0d0a0c 50%,#1e150e);
+  box-shadow:inset 0 0 0 3px #07060a,inset 0 0 0 4px rgba(212,168,83,.5),inset 0 0 30px rgba(212,168,83,.1),0 10px 40px rgba(0,0,0,.8)}
+#modal .dim,#modal .sub{color:#bdb096}
+#modal .dcode{background:rgba(0,0,0,.5);color:#ecd391}
+#modal .droom{color:#ecd391;text-shadow:0 0 12px rgba(212,168,83,.6)}
+#modal .dc.s-l .tx{background:linear-gradient(#241a11,#120d0b);color:#f0e8d8}
+/* 主城：上方資訊和按鈕加金框 */
+body.lux .res{border-color:#d4a853;background:linear-gradient(rgba(40,30,18,.85),rgba(10,8,8,.85));box-shadow:inset 0 0 0 1px rgba(7,6,10,.9),inset 0 0 0 2px rgba(212,168,83,.35)}
+/* 卡片詳情：一個畫面看完（✅ Jay 2026-11-20） */
+#modal .dtop + .bigart{margin-top:0}
+#modal .bigart.cd{aspect-ratio:auto;height:min(44vh,400px);margin-left:-14px;margin-right:-14px}
+#modal .detail.noart .name{font-size:24px}
+#modal .detail.noart .grow{gap:5px!important}
+#modal .detail.noart .stat{font-size:12px}
+#modal .skill{margin-top:6px}
+#modal .dtop,#modal .dbtop{background:linear-gradient(#2a1f14,#15100c);border-bottom:1px solid rgba(212,168,83,.5)}
+#modal .curve,#modal .curve *{color:#e8dcc0}
+#modal .warn{color:#ff9c88}
+.dc,.dcu{--ink:#22201e;--ink-2:#6a5f50;--paper:#efe6cf;--paper-2:#e2d5b4}
+#modal .bigart.cd{height:min(38vh,340px)}
+#modal .dtop{margin-bottom:0}
+#modal .detail.noart{gap:6px}
+body.lux[data-scr=duel]::before{background:linear-gradient(rgba(7,6,10,.15),rgba(7,6,10,.35) 30%,rgba(7,6,10,.55)),url(../img/duel_hall.webp) center top/cover no-repeat,#07060a}
+body.lux[data-scr=duelb]::before{background:radial-gradient(ellipse 80% 45% at 50% 50%,rgba(212,168,83,.10),transparent 70%),radial-gradient(ellipse 100% 30% at 50% 100%,rgba(140,30,20,.18),transparent 70%),#07060a}
