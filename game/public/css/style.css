@@ -1093,3 +1093,77 @@ body.lux[data-scr=duelb]::before{background:radial-gradient(ellipse 80% 45% at 5
 #s-duelb .dbar b.kai{font-size:16px}
 #s-duelb .dmid b{font-size:16px}
 #s-duelb .dlog{font-size:12.5px}
+
+/* ===== 特技大演出（✅ Jay 2026-11-21） ===== */
+.cutin{position:fixed;inset:0;z-index:200;overflow:hidden;cursor:pointer;transition:opacity .3s,transform .3s}
+.cutin.out{opacity:0;transform:scale(1.05)}
+.ci-dim{position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(0,0,0,.45),rgba(0,0,0,.88));animation:ciFade .15s both}
+.ci-band{position:absolute;left:-40%;right:-40%;top:50%;height:44vh;margin-top:-22vh;overflow:hidden;opacity:.94;
+  background:linear-gradient(90deg,transparent,var(--c2) 14%,var(--c1) 50%,var(--c2) 86%,transparent);box-shadow:0 0 50px var(--c1);
+  transform:rotate(-12deg) translateX(-130%);animation:ciBand .3s cubic-bezier(.2,.9,.2,1) 60ms forwards}
+.s1 .ci-band{transform:rotate(12deg) translateX(130%);animation-name:ciBand1}
+@keyframes ciBand{to{transform:rotate(-12deg) translateX(0)}}
+@keyframes ciBand1{to{transform:rotate(12deg) translateX(0)}}
+.ci-lines{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 46px,rgba(255,255,255,.28) 46px 48px,transparent 48px 97px,rgba(255,255,255,.14) 97px 98px);animation:ciLines .3s linear infinite}
+.s1 .ci-lines{animation-direction:reverse}
+@keyframes ciLines{from{background-position:0 0}to{background-position:-196px 0}}
+.ci-edge{position:absolute;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#f5d98a 20%,#fff 50%,#f5d98a 80%,transparent);box-shadow:0 0 10px #f5d98a}
+.ci-edge.a{top:0}.ci-edge.b{bottom:0}
+.ci-art{position:absolute;z-index:3;top:0;bottom:0;left:-10vw;width:82vw;animation:ciArt .5s cubic-bezier(.15,1.2,.35,1) .18s both}
+.s1 .ci-art{left:auto;right:-10vw;animation-name:ciArt1}
+@keyframes ciArt{from{transform:translateX(-95vw);opacity:0}to{transform:none;opacity:1}}
+@keyframes ciArt1{from{transform:translateX(95vw);opacity:0}to{transform:none;opacity:1}}
+.ci-panel{position:absolute;inset:0;overflow:hidden;transform:skewX(-7deg);background:#0c0907;border-right:4px solid #f5d98a;box-shadow:0 0 0 2px #07060a,0 0 34px var(--c1),inset 0 0 70px rgba(0,0,0,.45)}
+.s1 .ci-panel{transform:skewX(7deg);border-right:0;border-left:4px solid #f5d98a}
+.ci-main,.ci-panel canvas.jg{position:absolute;top:0;left:-10%;width:120%;height:100%;object-fit:cover;object-position:center 25%;transform:skewX(7deg)}
+.s1 .ci-main,.s1 .ci-panel canvas.jg{transform:skewX(-7deg)}
+.ci-sheen{position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.35) 45%,transparent 55%);transform:translateX(-120%);animation:ciSheen .7s ease-out .55s forwards}
+@keyframes ciSheen{to{transform:translateX(120%)}}
+.ci-ghost{position:absolute;inset:0;transform:skewX(-7deg);background:linear-gradient(90deg,transparent,var(--c1));opacity:0;animation:ciGhost .55s ease-out .18s both}
+.ci-ghost.g2{animation-duration:.7s;animation-delay:.24s;background:linear-gradient(90deg,transparent,#f5d98a)}
+.s1 .ci-ghost{transform:skewX(7deg);background:linear-gradient(270deg,transparent,var(--c1));animation-name:ciGhost1}
+@keyframes ciGhost{0%{opacity:.75;transform:skewX(-7deg) translateX(-70vw)}100%{opacity:0;transform:skewX(-7deg) translateX(14vw)}}
+@keyframes ciGhost1{0%{opacity:.75;transform:skewX(7deg) translateX(70vw)}100%{opacity:0;transform:skewX(7deg) translateX(-14vw)}}
+.ci-slash{position:absolute;z-index:4;inset:0;width:100%;height:100%;pointer-events:none}
+.s1 .ci-slash{transform:scaleX(-1)}
+.ci-slash path{fill:none;stroke:url(#cisg);stroke-width:20;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;filter:drop-shadow(0 0 14px var(--c1)) drop-shadow(0 0 4px #fff);animation:ciSlash .45s cubic-bezier(.3,.8,.2,1) .52s forwards}
+.ci-slash path.b{stroke-width:8;animation-delay:.62s}
+@keyframes ciSlash{0%{stroke-dashoffset:1;opacity:1}70%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+.ci-dust{position:absolute;inset:0;z-index:5;pointer-events:none}
+.ci-dust i{position:absolute;width:calc(6px * var(--s));height:calc(6px * var(--s));border-radius:50%;background:radial-gradient(circle,#fff6d0,#f5d98a 40%,transparent 70%);opacity:0;animation:ciDust 1.5s ease-out both}
+.r-N .ci-dust i,.r-R .ci-dust i{background:radial-gradient(circle,#fff,var(--c1) 45%,transparent 70%)}
+@keyframes ciDust{0%{opacity:0;transform:none}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
+.ci-txt{position:absolute;z-index:6;right:3vw;top:8vh;display:flex;flex-direction:row-reverse;gap:8px;align-items:flex-start}
+.s1 .ci-txt{right:auto;left:3vw;flex-direction:row}
+.ci-name{font-family:"Ma Shan Zheng",var(--kai);font-size:min(11vh,15vw,88px);line-height:1.02}
+.ci-txt.v .ci-name{writing-mode:vertical-rl}
+.ci-name span{display:inline-block;color:#fbe7a6;background:linear-gradient(180deg,#fffbe8,#f5d98a 45%,#c08a28);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 3px 0 #1a0f05) drop-shadow(0 0 12px var(--c1));opacity:0;transform:scale(2.2);animation:ciCh .28s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes ciCh{to{opacity:1;transform:none}}
+.r-UR .ci-name span{background:linear-gradient(110deg,#c08a28 20%,#fffbe8 40%,#f5d98a 55%,#c08a28 75%);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;animation:ciCh .28s cubic-bezier(.2,1.5,.4,1) both,ciShine 1.2s linear infinite}
+@keyframes ciShine{from{background-position:100% 0}to{background-position:-200% 0}}
+.ci-who{writing-mode:vertical-rl;font-family:var(--kai);font-size:17px;letter-spacing:.2em;color:#fff;text-shadow:0 1px 3px #000,0 0 8px #000;opacity:0;animation:ciFade .3s .95s both}
+.ci-who em{font-style:normal;color:#f5d98a;margin-top:10px;font-size:13px}
+.ci-seal{position:absolute;z-index:7;right:5vw;bottom:9vh;width:66px;height:66px;display:grid;place-items:center;font-family:"Ma Shan Zheng",var(--kai);font-size:46px;color:#fff3e0;background:#b3261e;border-radius:6px;
+  box-shadow:inset 0 0 0 3px rgba(255,243,224,.7),0 0 0 2px #7f1a15,0 6px 18px rgba(0,0,0,.6);opacity:0;transform:rotate(-8deg) scale(3);animation:ciSeal .22s cubic-bezier(.5,0,.6,1.6) 1.05s forwards}
+.s1 .ci-seal{right:auto;left:5vw}
+@keyframes ciSeal{to{opacity:1;transform:rotate(-8deg) scale(1)}}
+.ci-ring{position:absolute;z-index:2;right:-38vw;top:14vh;width:min(100vw,620px);aspect-ratio:1;border-radius:50%;opacity:0;
+  background:conic-gradient(transparent,#f5d98a 8%,transparent 16%,#fff3c4 28%,transparent 36%,#f5d98a 52%,transparent 60%,#fff3c4 76%,transparent 84%);
+  -webkit-mask:radial-gradient(circle,transparent 58%,#000 59%,#000 65%,transparent 66%);mask:radial-gradient(circle,transparent 58%,#000 59%,#000 65%,transparent 66%);
+  filter:drop-shadow(0 0 12px #f5d98a);animation:ciFade .3s .3s forwards,ciSpin 2.4s linear infinite}
+.s1 .ci-ring{right:auto;left:-38vw}
+@keyframes ciSpin{to{rotate:360deg}}
+.ci-flash{position:absolute;inset:0;z-index:8;background:#fff;opacity:0;pointer-events:none;animation:ciFlash .6s .98s both}
+@keyframes ciFlash{0%{opacity:0}8%{opacity:.85}25%{opacity:0}40%{opacity:.5}55%{opacity:0}}
+.ci-bolt{position:absolute;z-index:8;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;animation:ciBolt .5s 1s both}
+.ci-bolt path{fill:none;stroke:#fff;stroke-width:1.2;filter:drop-shadow(0 0 3px #bfe0ff) drop-shadow(0 0 8px #7cc0ff)}
+.ci-bolt path.b2{stroke-width:.8}
+@keyframes ciBolt{0%{opacity:0}10%{opacity:1}30%{opacity:.2}45%{opacity:1}100%{opacity:0}}
+.ci-skip{position:absolute;z-index:9;bottom:2.5vh;left:0;right:0;text-align:center;font-size:12px;color:rgba(255,255,255,.5);opacity:0;animation:ciFade .3s .6s both}
+@keyframes ciFade{to{opacity:1}}
+body.ci-shake .cutin{animation:ciShake .36s}
+@keyframes ciShake{0%,100%{translate:0 0}20%{translate:-7px 4px}40%{translate:6px -5px}60%{translate:-4px 3px}80%{translate:3px -2px}}
+#ci-demo{position:fixed;z-index:150;left:8px;right:8px;bottom:calc(70px + env(safe-area-inset-bottom));padding:10px 12px;display:flex;flex-direction:column;gap:8px;color:#f0e8d8;
+  background:linear-gradient(160deg,rgba(38,28,18,.95),rgba(10,8,10,.97));border:1px solid #d4a853;box-shadow:inset 0 0 0 3px #07060a,inset 0 0 0 4px rgba(212,168,83,.45)}
+#ci-demo>div{display:flex;gap:6px;flex-wrap:wrap}
