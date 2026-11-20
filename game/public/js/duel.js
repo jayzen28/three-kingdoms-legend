@@ -185,8 +185,10 @@
     var P = G.p[who], O = G.p[1 - who], d = u.d, s = d.skill;
     var say = function (t) { G.log("　" + (d.personal ? d.skillName : s) + "：" + t); };
     if (s === "軍師") { say("抽 1 張"); draw(G, P); }
-    else if (s === "號召") { var g = search(P, function (c) { return c.m < d.m && shareTag(d, c, true); }); if (g.length) { P.hand.push(g[0]); shuffle(P.deck, G.rnd); say("找來 " + g[0].name); } }
-    else if (s === "計謀") { var t = O.front.filter(function (v) { return v.d.z < d.z; }).sort(function (a, b) { return D.hp(O, b) - D.hp(O, a); })[0]; if (t) { t.act = false; t.frozen = true; say(t.d.name + " 休整，下回合不能行動"); } }
+    // ✅ Jay 2026-11-20：號召改成「三軍用命」效果（不再看魅力）
+    else if (s === "號召") { var n = 0; P.front.forEach(function (v) { if (v === u) return; v.buf = (v.buf || 0) + 1000 + (v.d.fac === d.fac ? 500 : 0); n++; }); if (n) say("前陣 " + n + " 位兵力提升"); }
+    // ✅ Jay 2026-11-20：計謀不看智力，改比兵力（雙方當下兵力）
+    else if (s === "計謀") { var my = D.hp(P, u), t = O.front.filter(function (v) { return D.hp(O, v) < my; }).sort(function (a, b) { return D.hp(O, b) - D.hp(O, a); })[0]; if (t) { t.act = false; t.frozen = true; say(t.d.name + " 休整，下回合不能行動"); } }
     else if (s === "曹操") { if (O.hand.length) { var k = Math.floor(G.rnd() * O.hand.length); O.side.push(O.hand.splice(k, 1)[0]); } say("對方丟 1 張手牌，我方抽 1 張"); draw(G, P); }
     else if (s === "劉備") { var b = search(P, function (c) { return c.name === "關羽" || c.name === "張飛"; }); if (b.length) { P.hand.push(b[0]); shuffle(P.deck, G.rnd); say("找來 " + b[0].name); } }
     else if (s === "張飛") { var n = 0; O.front.forEach(function (v) { if (D.hp(O, v) < D.hp(P, u) && v.act) { v.act = false; n++; } }); say("敵方前陣 " + n + " 位休整，這回合不能格擋"); }
