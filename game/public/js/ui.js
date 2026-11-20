@@ -38,8 +38,10 @@
   UI.go = function (name) {
     $$(".screen").forEach(function (s) { s.classList.toggle("show", s.id === "s-" + name); });
     $$("#nav button").forEach(function (b) { b.classList.toggle("act", b.dataset.go === name); });
-    $("#nav").style.display = name === "battle" ? "none" : "";
-    $("#top").style.display = name === "battle" ? "none" : "";
+    var full = name === "battle" || name === "duelb";   // 戰鬥畫面（戰棋、鬥將）不顯示上下列
+    $("#nav").style.display = full ? "none" : "";
+    $("#top").style.display = full ? "none" : "";
+    document.body.classList.toggle("on-duelb", name === "duelb");
     document.body.classList.toggle("on-home", name === "home");
     if (UI["r_" + name]) UI["r_" + name]();
     if (SG.Audio) SG.Audio.scene(name);
@@ -99,7 +101,8 @@
       '<div class="stat hpl"><span>兵力</span><b>' + fmt(u.hp) + '</b></div></div></div>' +
       '<div class="skill"><b>特技</b><span>尚未開放</span></div>' +
       (can && inTeam ? '<p class="dim">她在出戰隊伍裡，要先到「編隊」移出才能合成。</p>' : '') +
-      '<div class="row end">' + (can ? '<button class="gold" id="cd-merge" ' + (inTeam ? 'disabled' : '') + '>合成</button>' : '') + '<button onclick="SG.UI.close()">收起</button></div>');
+      '<div class="row end">' + (SG.DuelUI && SG.DuelUI.forCard(card) ? '<button class="sm" id="cd-duel">卡牌版</button><span class="grow"></span>' : '') + (can ? '<button class="gold" id="cd-merge" ' + (inTeam ? 'disabled' : '') + '>合成</button>' : '') + '<button onclick="SG.UI.close()">收起</button></div>');
+    if ($("#cd-duel")) $("#cd-duel").onclick = function () { SG.DuelUI.bigCard(SG.DuelUI.forCard(card), { art: card.art }); };
     if (can && !inTeam) $("#cd-merge").onclick = function () {
       var r = SG.mergeCard(S, card.id); if (!r) return;
       UI.save(); UI.close();
@@ -458,15 +461,19 @@
       }).join("") + '</div>' +
       '<div class="row"><select id="bk-typ" class="bkf">' + opt("", "全部兵種", ft) + ["槍", "騎", "弓", "刺", "法"].map(function (t) { return opt(t, ({ "槍": "槍兵", "騎": "騎兵", "弓": "弓兵", "刺": "刺客", "法": "法師" })[t], ft); }).join("") + '</select>' +
       '<select id="bk-own" class="bkf">' + opt("", "全部", fo) + opt("own", "已收", fo) + opt("no", "未收", fo) + opt("mg", "可合成", fo) + '</select>' +
-      '<span class="grow"></span><button class="sm" id="bk-help">說明</button><button class="gold" id="bk-merge" ' + (UI.mergeCount() ? '' : 'disabled') + '>一鍵合成（' + UI.mergeCount() + '）</button></div>' +
-      '<div class="cards">' + list.map(function (c) { return UI.cardHtml(c, SG.best(S, c.id), { attr: 'data-card="' + c.id + '"' + (SG.canMerge(S, c.id) ? ' data-mg="1"' : '') }); }).join("") + (list.length ? '' : '<p class="dim" style="grid-column:1/-1;text-align:center;padding:24px 0">沒有符合的武將</p>') + '</div>';
+      '<span class="grow"></span><button class="chip' + (UI.bookDuel ? ' on' : '') + '" id="bk-duel">卡牌版</button><button class="sm" id="bk-help">說明</button><button class="gold" id="bk-merge" ' + (UI.mergeCount() ? '' : 'disabled') + '>一鍵合成（' + UI.mergeCount() + '）</button></div>' +
+      '<div class="cards' + (UI.bookDuel ? ' duel' : '') + '">' + list.map(function (c) {
+        var dd = UI.bookDuel && SG.DuelUI && SG.DuelUI.forCard(c);   // ✅ Jay 2026-11-20：收集冊有卡牌版卡面
+        if (UI.bookDuel) return dd ? SG.DuelUI.face(dd, "m", { art: c.art, cls: SG.best(S, c.id) ? "" : "none", attr: ' data-card="' + c.id + '"' }) : '<div class="dc s-m nouse" data-card="' + c.id + '"><span class="txt">' + c.name + '<small>UR 暫不能用於鬥將</small></span></div>';
+        return UI.cardHtml(c, SG.best(S, c.id), { attr: 'data-card="' + c.id + '"' + (SG.canMerge(S, c.id) ? ' data-mg="1"' : '') }); }).join("") + (list.length ? '' : '<p class="dim" style="grid-column:1/-1;text-align:center;padding:24px 0">沒有符合的武將</p>') + '</div>';
     SG.Scene.banner($("#st-book"), 52);
+    $("#bk-duel").onclick = function () { UI.bookDuel = !UI.bookDuel; UI.r_book(); };
     $("#bk-typ").onchange = function () { UI.bookTyp = this.value; UI.r_book(); }; $("#bk-own").onchange = function () { UI.bookOwn = this.value; UI.r_book(); };
     $("#bk-merge").onclick = function () { UI.mergeAllFlow(function () { if ($("#s-book").classList.contains("show")) UI.r_book(); }); };
     var bkNote = function (key) { UI.note("合成說明", ["兩張同星合成下一星。", "隊伍裡的卡要先移出才能合。"], key); };
     $("#bk-help").onclick = function () { bkNote(); }; bkNote("book");
     $$("[data-fac]").forEach(function (b) { b.onclick = function () { UI.bookFac = b.dataset.fac; UI.r_book(); }; });
-    $$("[data-card]").forEach(function (b) { b.onclick = function () { UI.cardDetail(SG.CARD_BY_ID[b.dataset.card]); }; });
+    $$("[data-card]").forEach(function (b) { b.onclick = function () { var c = SG.CARD_BY_ID[b.dataset.card], dd = UI.bookDuel && SG.DuelUI && SG.DuelUI.forCard(c); if (dd) SG.DuelUI.bigCard(dd, { art: c.art }); else UI.cardDetail(c); }; });
   };
 
   // ===== 編隊 =====

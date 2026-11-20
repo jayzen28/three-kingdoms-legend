@@ -1,7 +1,7 @@
 /* 配樂：依畫面換曲，第一次點擊畫面後才開始播（瀏覽器規定） */
 (function (SG) {
   var TRACKS = { theme: "audio/theme.mp3", council: "audio/council.mp3" };   // 定鼎中原／燭下謀略
-  var SCENE = { home: "theme", recruit: "theme", book: "theme", camp: "council", team: "council", battle: "council" };
+  var SCENE = { home: "theme", recruit: "theme", book: "theme", camp: "council", team: "council", battle: "council", duel: "council", duelb: "council" };
   var els = {}, cur = null, want = "theme", on = true, armed = false;
   try { on = localStorage.getItem("sgl_snd") !== "0"; } catch (e) {}
   function el(k) { if (!els[k]) { var a = new Audio(TRACKS[k]); a.loop = true; a.preload = "none"; a.volume = 0; els[k] = a; } return els[k]; }
