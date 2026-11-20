@@ -15,7 +15,7 @@
     if (size === "u") return DU.faceU(d, opt);
     var art = opt.art || d.art, bp = opt.bp !== undefined ? opt.bp : d.bp, full = opt.full !== undefined ? opt.full : d.bp;
     var h = '<div class="dc s-' + size + ' f-' + FV[d.fac] + (opt.cls ? ' ' + opt.cls : '') + '"' + (opt.attr || '') + '>' +
-      (art ? '<img class="pic" src="img/' + art + '_card.webp" alt="" loading="lazy">' : '<span class="txt">' + d.name + '</span>') +
+      (art ? '<img class="pic" src="img/' + art + (size === "l" ? '_full' : '_card') + '.webp" alt=""' + (size === "l" ? '' : ' loading="lazy"') + '>' : '<span class="txt">' + d.name + '</span>') +   // 大卡用全身圖（有呼吸效果）
       '<span class="cost" title="軍餉">' + d.cost + '</span>' + (d.ap > 1 ? '<span class="ap" title="軍令">令' + d.ap + '</span>' : '') +
       (d.gen > 1 ? '<span class="gen two" title="放後陣產 2 份軍餉">餉2</span>' : '') +
       (d.trig ? '<span class="trg t-' + d.trig + '" title="急報・' + d.trig + '">急</span>' : '') +
@@ -33,7 +33,7 @@
     var art = (opt && opt.art) || d.art, orbs = '';
     for (var i = 0; i < d.gen; i++) orbs += '<i></i>';
     var tags = d.tags.filter(function (t) { return D.NATIONS.indexOf(t) < 0; });
-    return '<div class="dcu f-' + FV[d.fac] + '">' + (art ? '<img class="pic" src="img/' + art + '_card.webp" alt="">' : '') +
+    return '<div class="dcu f-' + FV[d.fac] + '">' + (art ? '<img class="pic" src="img/' + art + '_full.webp" alt="">' : '') +
       '<div class="dhd"><div class="cst"><small>軍餉</small><b>' + d.cost + '</b></div><div class="apl">軍令<b>' + d.ap + '</b></div>' +
       '<div class="ttl"><b>' + d.name + '</b><small>' + d.fac + (tags.length ? '・' + tags.join("・") : '') + '</small></div></div>' +
       '<div class="box"><span class="kind">武將・' + SG.TYPES[d.typ].name + '</span>' +
@@ -62,9 +62,9 @@
         (st === "l" ? '<div class="dmeta"><span>軍餉 <b>' + d.cost + '</b></span><span>軍令 <b>' + d.ap + '</b></span><span>兵力 <b>' + d.bp + '</b></span><span>產餉 <b>' + d.gen + '</b></span><span>' + SG.TYPES[d.typ].name + '</span></div>' : '') +
         '<p class="dim" style="text-align:center">' + (D.NO_LIMIT.indexOf(d.name) >= 0 ? (n ? '擁有她就能放，張數不限' : '還沒擁有這位武將') : n ? '你最多可以放 ' + n + ' 張（看擁有的最高卡別：N1・R2・SR3・SSR4）' : '還沒擁有這位武將') + '</p>';
     }
-    UI.modal('<div class="dtop">' + (opt.card ? '<span class="seg"><button class="chip" id="bc-gen">一般版</button></span>' : '') + (d.item ? '' : '<span class="seg"><button class="chip' + (st === "u" ? ' on' : '') + '" data-fs="u">完整版</button><button class="chip' + (st === "l" ? ' on' : '') + '" data-fs="l">簡潔版</button></span>') + '<span class="grow"></span>' + CLOSE + '</div>' + body);
+    UI.modal('<div class="dtop">' + (d.item ? '' : '<span class="seg">' + (opt.card ? '<button class="chip" id="bc-gen">一般版</button>' : '') + '<button class="chip' + (st === "u" ? ' on' : '') + '" data-fs="u">完整版</button><button class="chip' + (st === "l" ? ' on' : '') + '" data-fs="l">簡潔版</button></span>') + '<span class="grow"></span>' + CLOSE + '</div>' + body);
     UI.back = opt.back || null;   // ✅ Jay：組牌裡看大卡按「收起」要回到組牌
-    if (opt.card) $("#bc-gen").onclick = function () { UI.setBookDuel(false); UI.cardDetail(opt.card); };   // 切回一般版，收集冊一起換
+    if (opt.card && $("#bc-gen")) $("#bc-gen").onclick = function () { UI.setBookDuel(false); UI.cardDetail(opt.card); };   // 切回一般版，收集冊一起換
     $$("[data-fs]").forEach(function (b) { b.onclick = function () { try { localStorage.setItem("sgl_duel_face", b.dataset.fs); } catch (e) {} DU.bigCard(d, opt); }; });
   };
   DU.forCard = function (card) { return card.ur && !(card.urOnly && D.UR_OK.indexOf(card.gen) >= 0) ? null : D.CARD[card.gen] || null; };

@@ -98,7 +98,7 @@
     var inTeam = S.team.indexOf(card.id) >= 0, can = SG.canMerge(S, card.id);
     var dd = SG.DuelUI && SG.DuelUI.forCard(card);
     // ✅ Jay 2026-11-20：詳情裡就能切卡牌版（切了收集冊整頁一起變），而且一個畫面看完不用滑
-    var top = '<div class="dtop">' + (dd ? '<span class="seg"><button class="chip on">一般版</button><button class="chip" id="cd-duel">卡牌版</button></span>' : '') + '<span class="grow"></span><button class="dx" onclick="SG.UI.close()">收起</button></div>';
+    var top = '<div class="dtop">' + (dd ? '<span class="seg"><button class="chip on">一般版</button><button class="chip" data-cdf="u">完整版</button><button class="chip" data-cdf="l">簡潔版</button></span>' : '') + '<span class="grow"></span><button class="dx" onclick="SG.UI.close()">收起</button></div>';
     var art = card.art
       ? '<div class="bigart cd ' + show.rar + (b ? '' : ' none') + (card.artBg ? '' : ' f-' + FV[card.fac] + ' v' + SG.bgv(card.art)) + '"' + (card.artBg ? ' style="background-image:url(img/' + card.art + '_full.webp)"' : '') + '>' +
         (card.artBg ? '' : '<img src="img/' + card.art + '_full.webp" alt="' + card.name + '">') +
@@ -112,7 +112,7 @@
       '<div class="skill"><b>特技</b><span>尚未開放</span></div>' +
       (can && inTeam ? '<p class="dim">她在出戰隊伍裡，要先到「編隊」移出才能合成。</p>' : '') +
       (can ? '<div class="row end"><button class="gold" id="cd-merge" ' + (inTeam ? 'disabled' : '') + '>合成</button></div>' : ''));
-    if ($("#cd-duel")) $("#cd-duel").onclick = function () { UI.setBookDuel(true); SG.DuelUI.bigCard(dd, { art: card.art, card: card }); };
+    $$("[data-cdf]").forEach(function (b) { b.onclick = function () { try { localStorage.setItem("sgl_duel_face", b.dataset.cdf); } catch (e) {} UI.setBookDuel(true); SG.DuelUI.bigCard(dd, { art: card.art, card: card }); }; });
     if (can && !inTeam) $("#cd-merge").onclick = function () {
       var r = SG.mergeCard(S, card.id); if (!r) return;
       UI.save(); UI.close();
