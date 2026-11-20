@@ -176,20 +176,40 @@
   // ===== 對戰 =====
   // NET：線上對戰時的連線（null＝打電腦）。線上時規則由伺服器跑，這裡只送出動作、收到局面再畫。
   var G = null, sel = null, busy = false, opp = null, NET = null, pickRes = null;
-  DU.start = function (o) {
-    var st = S(); opp = o; NET = null;
+  // GHOST：隨機配對 60 秒沒人時改跟電腦打，對外顯示成一般玩家（✅ Jay 2026-11-20：假裝是真人、記在線上戰績、換成電腦後就退出排隊）
+  var GHOST = null;
+  var GHOST_NAMES = ["主公", "主公", "江東小霸王", "子龍迷妹", "孟德吃瓜中", "臥龍不睡", "阿斗加油", "赤壁烤肉", "關二爺", "奉先無雙", "貂蟬護衛隊", "周郎顧我", "黃巾小兵", "許都打工人", "荊州借我", "常山趙子龍", "司馬家", "小喬不哭"];   // ★ 名單開發先填的
+  var ghostWait = function (ms) { return wait(GHOST ? ms * (1.6 + Math.random() * 2.2) : ms); };
+  DU.start = function (o, ghost) {
+    var st = S(); NET = null;
+    if (GHOST) clearInterval(GHOST.timer);
+    GHOST = ghost ? { dl: 0, off: 0, pdl: 0 } : null;
+    opp = ghost ? Object.assign({}, o, { name: GHOST_NAMES[Math.floor(Math.random() * GHOST_NAMES.length)] }) : o;
+    if (GHOST) GHOST.timer = setInterval(ghostTick, 500);
     G = D.newGame(Object.assign({}, DU.deck(st)), D.oppDeck(o), { human: 0 });
     if (D.noZero(G.p[1])) D.mulligan(G, 1);
     sel = null; busy = false;
     UI.go("duelb");
     DU.render();
     var hand = function () { return G.p[0].hand.map(function (d) { return DU.face(d, "s"); }).join(""); };
-    UI.modal('<h2>' + o.name + '</h2><p>' + (G.first === 0 ? '你<b>先攻</b>（第 1 回合 1 道軍令、不抽牌）。' : '你<b>後攻</b>（前兩回合各 2 道軍令）。') + '</p>' +
+    UI.modal('<h2>' + (GHOST ? '對手：' + esc(opp.name) : o.name) + '</h2><p>' + (G.first === 0 ? '你<b>先攻</b>（第 1 回合 1 道軍令、不抽牌）。' : '你<b>後攻</b>（前兩回合各 2 道軍令）。') + '</p>' +
       '<p class="dim">起手 ' + D.HAND + ' 張，可以換一次。</p><p class="warn" id="mul-w"' + (D.noZero(G.p[0]) ? '' : ' hidden') + '>起手沒有 0 費卡，第一回合會出不了卡，建議換手牌。</p><div class="dhandpv" id="mul-pv">' + hand() + '</div>' +
       '<div class="row end"><button id="mul-re">換一次手牌</button><button class="pri" id="mul-go">開戰</button></div>');
     $("#mul-re").onclick = function () { D.mulligan(G, 0); $("#mul-pv").innerHTML = hand(); $("#mul-w").hidden = !D.noZero(G.p[0]); this.disabled = true; };
-    $("#mul-go").onclick = function () { UI.close(); D.startTurn(G); afterAction(); if (G.cur === 1) DU.aiTurn(); };
+    $("#mul-go").onclick = function () { UI.close(); D.startTurn(G); ghostClock(); afterAction(); if (G.cur === 1) DU.aiTurn(); };
   };
+  function ghostClock() { if (GHOST) GHOST.dl = Date.now() + 90000; }
+  // 時間到自動結束回合（跟線上一樣）
+  function ghostTick() {
+    if (!GHOST || !G || G.winner >= 0) return;
+    tick();
+    if (G.cur === 0 && !busy && Date.now() > GHOST.dl) {
+      if (G.pending && G.pending.type === "discard") D.chooseDiscard(G, 0);
+      if (G.pending && G.pending.type === "illusion") D.chooseReturn(G, [0, 1]);
+      UI.close(); sel = null; G.log("我方時間到，自動結束回合");
+      D.endTurn(G); DU.render(); if (G.winner < 0) DU.aiTurn(); else DU.over();
+    }
+  }
   // 所有出手都走這裡：打電腦就直接跑規則，線上就送給伺服器
   var ACT = { play: D.play, move: D.move, extraDraw: D.extraDraw, swap: D.swap, useItem: D.useItem, attack: D.attack, snipe: D.snipe, breakGate: D.breakGate, lubu: D.lubu };
   var FX = { attack: 1, snipe: 1, breakGate: 1, lubu: 1 };
@@ -241,7 +261,7 @@
     }).join("");
     var turnTxt = G.winner >= 0 ? (G.winner === 0 ? '勝利' : '敗北') : (G.cur === 0 ? '我方回合' : '敵方回合') + '・第 ' + G.p[G.cur].t + ' 回合' + (G.cur === 0 && G.phase === "attack" ? '・進攻中（不能再出武將）' : '');
     var logs = G.logs.slice(-3).map(function (t) { return '<div>' + esc(t) + '</div>'; }).join("");
-    $("#s-duelb").innerHTML = '<div class="dfield' + (sel && sel.mode === "tgt" ? ' picking' : '') + '">' + sideHtml(G.p[1], 1) + '<div class="dmid"><b>' + turnTxt + '</b>' + (NET ? '<span class="dtime" id="dtime"></span>' : '') + '<div class="dlog">' + logs + '</div></div>' + sideHtml(me, 0) + '</div>' +
+    $("#s-duelb").innerHTML = '<div class="dfield' + (sel && sel.mode === "tgt" ? ' picking' : '') + '">' + sideHtml(G.p[1], 1) + '<div class="dmid"><b>' + turnTxt + '</b>' + (NET || GHOST ? '<span class="dtime" id="dtime"></span>' : '') + '<div class="dlog">' + logs + '</div></div>' + sideHtml(me, 0) + '</div>' +
       '<div class="dhand">' + (hand || '<span class="dim">沒有手牌</span>') + '</div>' +
       '<div class="dact" id="dact">' + actHtml() + '</div>';
     tick();
@@ -410,19 +430,19 @@
   };
   // 敵方回合（電腦）
   DU.aiTurn = async function () {
-    busy = true; DU.render();
-    await wait(600);
+    busy = true; ghostClock(); DU.render();
+    await ghostWait(600);
     for (var guard = 0; guard < 120 && G && G.winner < 0 && G.cur === 1; guard++) {
       var act = D.aiNext(G);
       if (!act) break;
       if (D.aiDo(G, act) === false) break;
       if (G.pending && G.pending.type === "block") { DU.render(); D.block(G, await askBlock()); }
       DU.render(); flipPop();
-      await wait(/attack|snipe|lubu|break/.test(act.t) ? 700 : 650);
+      await ghostWait(/attack|snipe|lubu|break/.test(act.t) ? 700 : 650);
       if (G.lastFight || G.lastGuard || G.lastSave) await fightFx();
     }
     if (!G || G.winner >= 0) { busy = false; DU.render(); return DU.over(); }
-    D.endTurn(G); busy = false; afterAction();
+    D.endTurn(G); busy = false; ghostClock(); afterAction();
     if (G.winner < 0) UI.banner("我方回合", "#ecd391");
   };
   function askBlock() { return new Promise(function (res) { pickRes = res; showBlock(); }); }
@@ -451,6 +471,7 @@
   };
   DU.over = function () {
     if (!G || G.recorded) return; G.recorded = true;
+    if (GHOST) { clearInterval(GHOST.timer); return netOver({ win: G.winner === 0 }); }
     var st = S(), win = G.winner === 0; st.duel.rec = st.duel.rec || { w: 0, l: 0 }; st.duel.rec[win ? "w" : "l"]++; UI.save();
     setTimeout(function () {
       UI.modal('<h2>' + (win ? '勝利' : '敗北') + '</h2><p>' + (win ? '攻破了' + opp.name + '的城門。' : '我方城門被攻破了。') + '</p>' +
@@ -459,7 +480,7 @@
       $("#do-back").onclick = function () { UI.close(); DU.leave(); };
     }, 700);
   };
-  DU.leave = function () { if (NET) NET.close(); NET = null; G = null; UI.go("duel"); };
+  DU.leave = function () { if (NET) NET.close(); NET = null; if (GHOST) clearInterval(GHOST.timer); GHOST = null; G = null; UI.go("duel"); };
 
   // ===== 線上對戰 =====
   // ✅ Jay 2026-11-20：房間代碼和隨機配對兩種都要；帳號先不管（伺服器只檢查牌組張數規則）
@@ -511,8 +532,13 @@
     waitBox("隨機配對", '<p>正在找對手…</p><p class="dim">找到就會自動開始。</p>');
     var ws, gone = false;
     try { ws = new WebSocket(wsBase() + "/api/match?pid=" + encodeURIComponent(DU.pid())); } catch (e) { return UI.flash("連不上伺服器"); }
-    NET = { close: function () { gone = true; try { ws.close(); } catch (e) {} }, send: function () {} };
-    ws.onmessage = function (e) { var m = JSON.parse(e.data); if (m.t === "matched") { gone = true; ws.close(); DU.connect(m.room); } else if (m.t === "err") UI.flash(m.msg); };
+    var me = NET = { close: function () { gone = true; clearTimeout(me.ai); try { ws.close(); } catch (e) {} }, send: function () {} };
+    me.ai = setTimeout(function () {   // ✅ Jay：等 60 秒沒人就改跟電腦打
+      if (NET !== me || gone) return;
+      me.close(); NET = null; UI.close();
+      DU.start(D.OPPONENTS[Math.floor(Math.random() * D.OPPONENTS.length)], true);
+    }, DU.MATCH_WAIT || 60000);
+    ws.onmessage = function (e) { var m = JSON.parse(e.data); if (m.t === "matched") { gone = true; clearTimeout(me.ai); ws.close(); DU.connect(m.room); } else if (m.t === "err") UI.flash(m.msg); };
     ws.onclose = function () { if (!gone) { NET = null; UI.modal('<h2>配對中斷</h2><p>連線中斷了，請再試一次。</p><div class="row end"><button onclick="SG.UI.close()">好</button></div>'); } };
   };
   // 連進房間（斷線會自動重連）
@@ -556,9 +582,9 @@
   }
   function startClock() { var me = NET; clearInterval(me.timer); me.timer = setInterval(tick, 500); }
   function tick() {
-    if (!NET || !NET.dl) return;
-    var now = Date.now() + NET.off, pick = G && G.pending && NET.pdl;
-    var left = Math.max(0, Math.ceil(((pick ? NET.pdl : NET.dl) - now) / 1000));
+    var T = NET || GHOST; if (!T || !T.dl) return;
+    var now = Date.now() + T.off, pick = G && G.pending && T.pdl;
+    var left = Math.max(0, Math.ceil(((pick ? T.pdl : T.dl) - now) / 1000));
     var t = (pick ? (myPick() ? '你的選擇' : '對手選擇中') : (G && G.cur === 0 ? '你的回合' : '對手回合')) + '・剩 ' + left + ' 秒';
     ["dtime", "dtime2", "mul-time"].forEach(function (id) { var e = document.getElementById(id); if (e) { e.textContent = id === "dtime" ? t : '剩 ' + left + ' 秒'; e.classList.toggle("low", left <= 10); } });
   }
