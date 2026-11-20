@@ -12,8 +12,9 @@
   UI.init = function (state) { S = state; };
   UI.save = function () { SG.Store.save(S); UI.res(); };
   UI.res = function () { $("#r-copper").textContent = fmt(S.copper); $("#r-yb").textContent = fmt(S.yuanbao); $("#r-tk").textContent = fmt(S.tickets); };
-  UI.modal = function (html) { $("#modal-body").innerHTML = html; $("#modal").classList.add("show"); $("#modal-body").scrollTop = 0; };
-  UI.close = function () { $("#modal").classList.remove("show"); };
+  UI.modal = function (html) { UI.back = null; $("#modal-body").innerHTML = html; $("#modal").classList.add("show"); $("#modal-body").scrollTop = 0; };
+  // UI.back：從另一個視窗點開的（例如組牌裡看大卡），收起時回到原本的視窗
+  UI.close = function () { if (UI.back) { var f = UI.back; UI.back = null; return f(); } $("#modal").classList.remove("show"); };
   $("#modal").addEventListener("click", function (e) { if (e.target.id === "modal") UI.close(); });
   UI.banner = function (t, color) {
     var b = $("#banner"); b.textContent = t; b.style.color = color || "#f6ecd6"; b.style.display = "block";
@@ -103,7 +104,7 @@
       '<div class="skill"><b>特技</b><span>尚未開放</span></div>' +
       (can && inTeam ? '<p class="dim">她在出戰隊伍裡，要先到「編隊」移出才能合成。</p>' : '') +
       '<div class="row end">' + (SG.DuelUI && SG.DuelUI.forCard(card) ? '<button class="sm" id="cd-duel">卡牌版</button><span class="grow"></span>' : '') + (can ? '<button class="gold" id="cd-merge" ' + (inTeam ? 'disabled' : '') + '>合成</button>' : '') + '<button onclick="SG.UI.close()">收起</button></div>');
-    if ($("#cd-duel")) $("#cd-duel").onclick = function () { SG.DuelUI.bigCard(SG.DuelUI.forCard(card), { art: card.art }); };
+    if ($("#cd-duel")) $("#cd-duel").onclick = function () { SG.DuelUI.bigCard(SG.DuelUI.forCard(card), { art: card.art, back: function () { UI.cardDetail(card); } }); };
     if (can && !inTeam) $("#cd-merge").onclick = function () {
       var r = SG.mergeCard(S, card.id); if (!r) return;
       UI.save(); UI.close();

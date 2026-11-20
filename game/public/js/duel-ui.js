@@ -63,6 +63,7 @@
         '<p class="dim" style="text-align:center">' + (D.NO_LIMIT.indexOf(d.name) >= 0 ? (n ? '擁有她就能放，張數不限' : '還沒擁有這位武將') : n ? '你最多可以放 ' + n + ' 張（看擁有的最高卡別：N1・R2・SR3・SSR4）' : '還沒擁有這位武將') + '</p>';
     }
     UI.modal('<div class="dtop">' + (d.item ? '' : '<span class="seg"><button class="chip' + (st === "u" ? ' on' : '') + '" data-fs="u">完整版</button><button class="chip' + (st === "l" ? ' on' : '') + '" data-fs="l">簡潔版</button></span>') + '<span class="grow"></span>' + CLOSE + '</div>' + body);
+    UI.back = opt.back || null;   // ✅ Jay：組牌裡看大卡按「收起」要回到組牌
     $$("[data-fs]").forEach(function (b) { b.onclick = function () { try { localStorage.setItem("sgl_duel_face", b.dataset.fs); } catch (e) {} DU.bigCard(d, opt); }; });
   };
   DU.forCard = function (card) { return card.ur && !(card.urOnly && D.UR_OK.indexOf(card.gen) >= 0) ? null : D.CARD[card.gen] || null; };
@@ -166,7 +167,7 @@
     $$("[data-bf]").forEach(function (b) { b.onclick = function () { DU.bf[b.dataset.bf] = b.dataset.v; redo(); }; });
     $("#db-in").onclick = function () { DU.bf.inDeck = !DU.bf.inDeck; redo(); };
     $$("[data-pm]").forEach(function (b) { b.onclick = function () { var k = b.dataset.n; deck[k] = Math.max(0, (deck[k] || 0) + +b.dataset.pm); if (!deck[k]) delete deck[k]; redo(); }; });
-    $$("[data-big]").forEach(function (c) { c.onclick = function () { var k = c.dataset.big; DU.bigCard(D.CARD[k] || D.ITEM[k]); }; });
+    $$("[data-big]").forEach(function (c) { c.onclick = function () { var k = c.dataset.big, y = $("#modal-body").scrollTop; DU.bigCard(D.CARD[k] || D.ITEM[k], { back: function () { DU.builder(); $("#modal-body").scrollTop = y; } }); }; });
     $("#db-auto").onclick = function () { deck = DU.setDeck(st, D.autoDeck(avail, D.DECK)); redo(); if (D.deckCount(deck) < D.DECK) UI.flash("武將不夠湊滿 " + D.DECK + " 張"); };
     $("#db-clr").onclick = function () { deck = DU.setDeck(st, {}); redo(); };
     $("#db-ok").onclick = function () { UI.save(); UI.close(); UI.r_duel(); };
