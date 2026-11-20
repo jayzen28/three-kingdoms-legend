@@ -33,7 +33,8 @@
     var art = (opt && opt.art) || d.art, orbs = '';
     for (var i = 0; i < d.gen; i++) orbs += '<i></i>';
     var tags = d.tags.filter(function (t) { return D.NATIONS.indexOf(t) < 0; });
-    return '<div class="dcu f-' + FV[d.fac] + '">' + (art ? '<img class="pic" src="img/' + art + '_full.webp" alt="">' : '') +
+    var sc = art && SG.CARDS.find(function (c) { return c.art === art; });
+    return '<div class="dcu f-' + FV[d.fac] + (sc && !sc.artBg ? ' bgd v' + SG.bgv(art) : '') + '"' + (sc && sc.artBg ? ' data-artbg="1"' : '') + '>' + (art ? '<img class="pic" src="img/' + art + '_full.webp" alt="">' : '') +
       '<div class="dhd"><div class="cst"><small>軍餉</small><b>' + d.cost + '</b></div><div class="apl">軍令<b>' + d.ap + '</b></div>' +
       '<div class="ttl"><b>' + d.name + '</b><small>' + d.fac + (tags.length ? '・' + tags.join("・") : '') + '</small></div></div>' +
       '<div class="box"><span class="kind">武將・' + SG.TYPES[d.typ].name + '</span>' +
@@ -52,23 +53,36 @@
       '<span class="cost ap0" title="軍令">' + it.ap + '</span><span class="ikind">道具</span><span class="nm">' + it.name + '</span></div>';
   };
   DU.bigStyle = function () { try { return localStorage.getItem("sgl_duel_face") || "u"; } catch (e) { return "u"; } };
+  // 簡潔版（✅ Jay 2026-11-20）：整張全身圖不壓字，圖下面只寫名字、國家、卡等和星等
+  var RK = ["N", "R", "SR", "SSR", "UR"];
+  DU.simple = function (d, opt) {
+    if (opt.card) return UI.simpleHtml(opt.card);
+    var st = S(), cards = SG.CARDS.filter(function (c) { return c.gen === d.name && !c.ur && c.art; }), best = -1, bc = cards[0];
+    cards.forEach(function (c) { var b = SG.best(st, c.id), v = b ? RK.indexOf(b.rar) * 10 + b.star : -1; if (v > best) { best = v; bc = c; } });
+    return bc ? UI.simpleHtml(bc) : DU.face(d, "u", opt);
+  };
   DU.bigCard = function (d, opt) {
     opt = opt || {};
+    if (opt.card && !d.item && DU.bigStyle() === "l") return UI.cardDetail(opt.card, "s");
     var st = DU.bigStyle(), body;
     if (d.item) body = '<div class="dbig">' + DU.itemFace(d, "u") + '</div><p class="dim" style="text-align:center">道具卡：每種一副牌組只能放 1 張。</p>';
     else {
       var n = D.copiesOf(S(), d.name);
-      body = '<div class="dbig">' + DU.face(d, st, { art: opt.art }) + '</div>' +
-        (st === "l" ? '<div class="dmeta"><span>軍餉 <b>' + d.cost + '</b></span><span>軍令 <b>' + d.ap + '</b></span><span>兵力 <b>' + d.bp + '</b></span><span>產餉 <b>' + d.gen + '</b></span><span>' + SG.TYPES[d.typ].name + '</span></div>' : '') +
+      body = '<div class="dbig">' + (st === "l" ? DU.simple(d, opt) : DU.face(d, st, { art: opt.art })) + '</div>' +
+        (false ? '<div class="dmeta"><span>軍餉 <b>' + d.cost + '</b></span><span>軍令 <b>' + d.ap + '</b></span><span>兵力 <b>' + d.bp + '</b></span><span>產餉 <b>' + d.gen + '</b></span><span>' + SG.TYPES[d.typ].name + '</span></div>' : '') +
         (st === "u" ? '<p class="dim" style="text-align:center;margin:2px 0 0">點卡片可以收起文字，看整張圖</p>' : '') +
         '<p class="dim" style="text-align:center">' + (D.NO_LIMIT.indexOf(d.name) >= 0 ? (n ? '擁有她就能放，張數不限' : '還沒擁有這位武將') : n ? '你最多可以放 ' + n + ' 張（看擁有的最高卡別：N1・R2・SR3・SSR4）' : '還沒擁有這位武將') + '</p>';
     }
-    UI.modal('<div class="dtop">' + (d.item ? '' : '<span class="seg">' + (opt.card ? '<button class="chip" id="bc-gen">一般版</button>' : '') + '<button class="chip' + (st === "u" ? ' on' : '') + '" data-fs="u">完整版</button><button class="chip' + (st === "l" ? ' on' : '') + '" data-fs="l">簡潔版</button></span>') + '<span class="grow"></span>' + CLOSE + '</div>' + body);
+    UI.modal('<div class="dtop">' + (d.item ? '' : '<span class="seg">' + (opt.card ? '<button class="chip" id="bc-gen">一般版</button>' : '') + '<button class="chip' + (st === "u" ? ' on' : '') + '" data-fs="u">卡牌版</button><button class="chip' + (st === "l" ? ' on' : '') + '" data-fs="l">簡潔版</button></span>') + '<span class="grow"></span>' + CLOSE + '</div>' + body);
     UI.back = opt.back || null;   // ✅ Jay：組牌裡看大卡按「收起」要回到組牌
     // ✅ Jay 2026-11-20：完整版點卡片可以把文字收起來，看整張全身圖
     var big = $("#modal .dbig .dcu"); if (big) big.onclick = function () { big.classList.toggle("bare"); };
     if (opt.card && $("#bc-gen")) $("#bc-gen").onclick = function () { UI.setBookDuel(false); UI.cardDetail(opt.card); };   // 切回一般版，收集冊一起換
-    $$("[data-fs]").forEach(function (b) { b.onclick = function () { try { localStorage.setItem("sgl_duel_face", b.dataset.fs); } catch (e) {} DU.bigCard(d, opt); }; });
+    $$("[data-fs]").forEach(function (b) { b.onclick = function () {
+      try { localStorage.setItem("sgl_duel_face", b.dataset.fs); } catch (e) {}
+      if (opt.card && b.dataset.fs === "l") { UI.setBookDuel(false); return UI.cardDetail(opt.card, "s"); }   // 從收集冊來的：簡潔版跟一般版一樣，收集冊換回一般卡面
+      DU.bigCard(d, opt);
+    }; });
   };
   DU.forCard = function (card) { return card.ur && !(card.urOnly && D.UR_OK.indexOf(card.gen) >= 0) ? null : D.CARD[card.gen] || null; };
 

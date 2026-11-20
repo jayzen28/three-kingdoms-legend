@@ -89,31 +89,42 @@
   };
   // 收集冊卡面切換（一般版／卡牌版），收集冊開著就整頁一起換
   UI.setBookDuel = function (on) { UI.bookDuel = !!on; if ($("#s-book").classList.contains("show")) { var y = window.scrollY; UI.r_book(); window.scrollTo(0, y); } };
-  UI.cardDetail = function (card) {
-    var b = SG.best(S, card.id), inv = S.inv[card.id] || {};
+  // 卡片詳情：一般版（資訊疊在大圖下方）／簡潔版（mode "s"：只有名字、國家、卡等星等）。卡牌版在 DuelUI.bigCard
+  // ✅ Jay 2026-11-20：三個版本都要大圖、看得到全身、有背景，一個畫面看完
+  // 簡潔版：整張全身圖不壓字，圖下面只有名字、國家、卡等星等（✅ Jay 2026-11-20）
+  UI.simpleHtml = function (card) {
+    var b = SG.best(S, card.id);
+    var bg = card.artBg ? ' style="background-image:url(img/' + card.art + '_full.webp)"' : '';
+    return '<div class="dsimple"><div class="sart' + (card.artBg ? '' : ' f-' + FV[card.fac] + ' v' + SG.bgv(card.art)) + (b ? '' : ' none') + '"' + bg + '>' + (card.artBg ? '' : '<img src="img/' + card.art + '_full.webp" alt="' + card.name + '">') + '</div>' +
+      '<div class="slab"><b class="kai">' + card.name + '</b><span class="tag fill f-' + FV[card.fac] + '">' + card.fac + '</span>' +
+      (b ? '<span class="rk"><span class="' + UI.rxc(b.rar).trim() + '">' + UI.rxt(b.rar) + '</span><i>' + "★".repeat(b.star) + '</i></span>' : '<span class="dim">還沒擁有</span>') + '</div></div>';
+  };
+  UI.cardDetail = function (card, mode) {
+    var b = SG.best(S, card.id);
     var show = b || { rar: card.ur ? "UR" : card.vers[0], star: card.ur ? 6 : 1 };
-    var u = SG.unitStats(card, show.rar, show.star), t = SG.TYPES[card.typ];
-    var held = Object.keys(inv).filter(function (k) { return inv[k]; }).map(function (k) { return k.replace("-", " ") + "★ ×" + inv[k]; }).join("、") || "尚未取得";
-    var bonus = { "武": "武力", "智": "智力", "魅": "魅力" }[card.bk] + " +" + card.bv;
+    var u = SG.unitStats(card, show.rar, show.star);
     var inTeam = S.team.indexOf(card.id) >= 0, can = SG.canMerge(S, card.id);
-    var dd = SG.DuelUI && SG.DuelUI.forCard(card);
-    // ✅ Jay 2026-11-20：詳情裡就能切卡牌版（切了收集冊整頁一起變），而且一個畫面看完不用滑
-    var top = '<div class="dtop">' + (dd ? '<span class="seg"><button class="chip on">一般版</button><button class="chip" data-cdf="u">完整版</button><button class="chip" data-cdf="l">簡潔版</button></span>' : '') + '<span class="grow"></span><button class="dx" onclick="SG.UI.close()">收起</button></div>';
+    var dd = SG.DuelUI && SG.DuelUI.forCard(card), simple = mode === "s" && card.art;
+    var top = '<div class="dtop">' + (card.art ? '<span class="seg"><button class="chip' + (simple ? '' : ' on') + '" id="cd-gen">一般版</button>' + (dd ? '<button class="chip" id="cd-duel">卡牌版</button>' : '') + '<button class="chip' + (simple ? ' on' : '') + '" id="cd-simple">簡潔版</button></span>' : '') + '<span class="grow"></span><button class="dx" onclick="SG.UI.close()">收起</button></div>';
+    var rk = '<span class="rk' + (UI.rxc(show.rar) ? ' rxw' : '') + '"><span class="' + UI.rxc(show.rar).trim() + '">' + UI.rxt(show.rar) + '</span><i>' + "★".repeat(show.star) + '</i></span>';
+    var info = '<div class="cdinfo"><div class="nmrow"><b class="name">' + card.name + '</b>' + UI.tags(card) + '<span class="tag">' + show.rar + ' ' + show.star + '★</span></div>' + UI.statBars(card, u) +
+      '<div class="stat hpl"><span>兵力</span><b>' + fmt(u.hp) + '</b></div><div class="skill"><b>特技</b><span>尚未開放</span></div></div>';
     var art = card.art
-      ? '<div class="bigart cd ' + show.rar + (b ? '' : ' none') + (card.artBg ? '' : ' f-' + FV[card.fac] + ' v' + SG.bgv(card.art)) + '"' + (card.artBg ? ' style="background-image:url(img/' + card.art + '_full.webp)"' : '') + '>' +
+      ? '<div class="bigart cd ' + show.rar + (simple ? ' simple' : '') + (b ? '' : ' none') + (card.artBg ? '' : ' f-' + FV[card.fac] + ' v' + SG.bgv(card.art)) + '"' + (card.artBg ? ' style="background-image:url(img/' + card.art + '_full.webp)"' : '') + '>' +
         (card.artBg ? '' : '<img src="img/' + card.art + '_full.webp" alt="' + card.name + '">') +
         '<span class="nm">' + card.gen + '</span>' + (card.ver && (card.ur || card.male) && card.ver !== "一般" ? '<span class="ver">' + card.ver + '</span>' : '') +
-        '<span class="rk' + (UI.rxc(show.rar) ? ' rxw' : '') + '"><span class="' + UI.rxc(show.rar).trim() + '">' + UI.rxt(show.rar) + '</span><i>' + "★".repeat(show.star) + '</i></span></div>'
+        info + '</div>'
       : '';
-    UI.modal(top + art + '<div class="detail' + (art ? ' noart' : '') + '">' + (art ? '' : UI.cardHtml(card, b)) +
-      '<div class="grow" style="display:flex;flex-direction:column;gap:8px"><div class="name">' + card.name + '</div>' +
+    var old = '<div class="detail"> ' + UI.cardHtml(card, b) + '<div class="grow" style="display:flex;flex-direction:column;gap:8px"><div class="name">' + card.name + '</div>' +
       '<div>' + UI.tags(card) + '<span class="tag">' + show.rar + ' ' + show.star + '★</span></div>' + UI.statBars(card, u) +
-      '<div class="stat hpl"><span>兵力</span><b>' + fmt(u.hp) + '</b></div></div></div>' +
-      '<div class="skill"><b>特技</b><span>尚未開放</span></div>' +
-      (can && inTeam ? '<p class="dim">她在出戰隊伍裡，要先到「編隊」移出才能合成。</p>' : '') +
-      (can ? '<div class="row end"><button class="gold" id="cd-merge" ' + (inTeam ? 'disabled' : '') + '>合成</button></div>' : ''));
-    $$("[data-cdf]").forEach(function (b) { b.onclick = function () { try { localStorage.setItem("sgl_duel_face", b.dataset.cdf); } catch (e) {} UI.setBookDuel(true); SG.DuelUI.bigCard(dd, { art: card.art, card: card }); }; });
-    if (can && !inTeam) $("#cd-merge").onclick = function () {
+      '<div class="stat hpl"><span>兵力</span><b>' + fmt(u.hp) + '</b></div></div></div><div class="skill"><b>特技</b><span>尚未開放</span></div>';
+    UI.modal(top + (simple ? '<div class="dbig">' + UI.simpleHtml(card) + '</div>' : art || old) +
+      (simple ? '' : (can && inTeam ? '<p class="dim">她在出戰隊伍裡，要先到「編隊」移出才能合成。</p>' : '') +
+      (can ? '<div class="row end"><button class="gold" id="cd-merge" ' + (inTeam ? 'disabled' : '') + '>合成</button></div>' : '')));
+    if ($("#cd-gen")) $("#cd-gen").onclick = function () { UI.setBookDuel(false); UI.cardDetail(card); };
+    if ($("#cd-simple")) $("#cd-simple").onclick = function () { UI.setBookDuel(false); UI.cardDetail(card, "s"); };
+    if ($("#cd-duel")) $("#cd-duel").onclick = function () { try { localStorage.setItem("sgl_duel_face", "u"); } catch (e) {} UI.setBookDuel(true); SG.DuelUI.bigCard(dd, { art: card.art, card: card }); };
+    if (can && !inTeam && $("#cd-merge")) $("#cd-merge").onclick = function () {
       var r = SG.mergeCard(S, card.id); if (!r) return;
       UI.save(); UI.close();
       UI.mergeFx([r], function () { if ($("#s-book").classList.contains("show")) UI.r_book(); if ($("#s-team").classList.contains("show")) UI.r_team(); UI.cardDetail(card); });

@@ -1054,3 +1054,25 @@ body.lux[data-scr=duelb]::before{background:radial-gradient(ellipse 80% 45% at 5
 .dcu>*:not(.pic){transition:opacity .25s}
 .dcu.bare>*:not(.pic){opacity:0;pointer-events:none}
 .dc.s-l{width:min(100%,calc((100dvh - 395px) * 832 / 1216));min-width:min(220px,80vw)}
+/* ✅ Jay 2026-11-20（第二輪）：一般版／卡牌版／簡潔版都是大圖、看得到全身、有背景 */
+#modal .bigart.cd{position:relative;width:min(100%,calc((100dvh - 120px) * 832 / 1216));height:auto;min-height:0;max-height:none;aspect-ratio:832/1216;margin:6px auto 6px}
+#modal .bigart.cd .rk{display:none}
+#modal .bigart.cd .nm,#modal .bigart.cd .ver{z-index:3}
+.cdinfo{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:46px 12px 10px;color:#f0e8d8;background:linear-gradient(rgba(7,6,10,0),rgba(7,6,10,.82) 26%,rgba(7,6,10,.94));display:flex;flex-direction:column;gap:4px}
+.cdinfo .nmrow{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.cdinfo .name{font-family:var(--kai);font-size:22px;color:#ecd391;margin-right:6px;text-shadow:0 1px 3px #000}
+.cdinfo .stat{font-size:12px;grid-template-columns:34px 30px 1fr}
+.cdinfo .stat b{font-size:15px}
+.cdinfo .skill{margin-top:2px;padding:4px 10px;min-height:0;border-color:rgba(212,168,83,.45)}
+.dsimple .sart{position:relative;width:min(100%,calc((100dvh - 120px) * 832 / 1216));aspect-ratio:832/1216;margin:6px auto 0;overflow:hidden;background-size:cover;background-position:center;border:2px solid #d4a853;box-shadow:0 0 0 1px #07060a,0 8px 24px rgba(0,0,0,.6)}
+.dsimple .sart.f-wei{background-image:url(../img/bg_wei.webp)}.dsimple .sart.f-shu{background-image:url(../img/bg_shu.webp)}.dsimple .sart.f-wu{background-image:url(../img/bg_wu.webp)}.dsimple .sart.f-qun{background-image:url(../img/bg_qun.webp)}.dsimple .sart.f-yt{background-image:url(../img/bg_yt.webp)}
+.dsimple .sart img,.dsimple .sart canvas.jg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;touch-action:none}
+.dsimple .sart.none{filter:grayscale(1) brightness(.8)}
+.dsimple .slab{display:flex;align-items:center;justify-content:center;gap:8px;margin:8px 0 2px}
+.dsimple .slab b{font-size:24px;color:#ecd391;letter-spacing:.08em}
+.dsimple .slab .rk{padding:2px 10px;font-weight:700;font-size:15px;color:#fff1d2;background:rgba(20,15,10,.78);box-shadow:inset 0 0 0 1px var(--gold)}
+.dsimple .slab .rk i{font-style:normal;margin-left:6px;color:var(--gold-hi)}
+.dcu.bgd{background-size:cover;background-position:center}
+.dcu.bgd.f-wei{background-image:url(../img/bg_wei.webp)}.dcu.bgd.f-shu{background-image:url(../img/bg_shu.webp)}.dcu.bgd.f-wu{background-image:url(../img/bg_wu.webp)}.dcu.bgd.f-qun{background-image:url(../img/bg_qun.webp)}.dcu.bgd.f-yt{background-image:url(../img/bg_yt.webp)}
+.dcu[data-artbg] .pic{object-fit:cover}
+.dbig .dcu{width:min(100%,calc((100dvh - 150px) * 832 / 1216))}
