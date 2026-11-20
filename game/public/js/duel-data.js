@@ -5,7 +5,7 @@
 (function (SG) {
   var D = SG.DUEL = {};
   D.DECK = 40;          // ✅ Jay 2026-11-20：牌組 40 張（原本 30）
-  D.LIFE = 5;           // ★ 城門道數（另一個選項 7）
+  D.LIFE = 7;           // ✅ Jay 2026-11-20：城門 7 道（原本 5）
   D.HAND = 7;           // 起手張數
   D.HAND_MAX = 8;       // 回合結束時手牌上限
   D.FRONT = 4; D.BACK = 4;

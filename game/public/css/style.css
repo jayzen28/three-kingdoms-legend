@@ -1043,3 +1043,14 @@ body.lux[data-scr=duelb]::before{background:radial-gradient(ellipse 80% 45% at 5
 #modal .bigart.cd{height:calc(94dvh - 395px);min-height:220px}
 .dc.s-l{width:min(300px,80vw,calc((94dvh - 420px) * 832 / 1216))}
 .dc.s-l{min-width:min(220px,80vw)}
+/* ✅ Jay 2026-11-20：三個版本都看得到全身、而且畫面要大 → 這幾個視窗改成滿版 */
+#modal:has(.bigart.cd),#modal:has(.dbig){padding:6px 6px calc(6px + env(safe-area-inset-bottom))}
+#modal .scroll:has(.bigart.cd),#modal .scroll:has(.dbig){max-width:540px;max-height:100%;height:auto}
+#modal .bigart.cd{height:auto;min-height:0;max-height:none;width:min(100%,calc((100dvh - 340px) * 832 / 1216));aspect-ratio:832/1216}
+#modal .detail.noart .name{font-size:22px}
+#modal .skill{min-height:0;padding:6px 10px}
+.dbig .dcu{aspect-ratio:832/1216;width:min(100%,calc((100dvh - 150px) * 832 / 1216))}
+.dbig .dcu{cursor:pointer}
+.dcu>*:not(.pic){transition:opacity .25s}
+.dcu.bare>*:not(.pic){opacity:0;pointer-events:none}
+.dc.s-l{width:min(100%,calc((100dvh - 395px) * 832 / 1216));min-width:min(220px,80vw)}
