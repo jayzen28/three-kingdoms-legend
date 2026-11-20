@@ -43,17 +43,28 @@
     "計謀": "出陣時，敵方前陣一位智力比她低的武將休整，下回合不能行動。",
     "號召": "出陣時，從牌組找一位同標籤、魅力比她低的武將加入手牌（國家標籤也算）。",
     "結義": "場上每有一位同標籤的友軍（不算國家標籤），兵力 +500，最多 +1500。",
+    // ✅ Jay 2026-11-20 新增（讓每位武將都有特技）
+    "遠射": "可以改打敵方後陣的武將，對方不能格擋；打贏就把她擊退（遠射不會被反扣）。",
+    "破門": "可行動、兵力 5000 以上（算加成）時，可以犧牲自己破對方 1 道城門，對方不能格擋。",
+    "護主": "己方只剩最後 1 道城門時，每回合可以擋下 1 次會破門的攻擊（破門特技也擋得住），自己不受傷。",
+    "幻術": "被抽到時，再抽 2 張，然後挑 2 張手牌放回牌組底。",
+    "陣前換將": "在手牌時，可以付軍餉和軍令，跟己方前陣一位武將交換（換下來的回手牌）；換下來的武將這回合沒進攻過的話，換上去的可以馬上進攻。",
+  };
+  // ★ 新特技人選（Jay 交給開發挑）
+  D.ASSIGN = {
+    "遠射": "夏侯淵 王平 太史慈 皇甫嵩 程志遠",
+    "破門": "甘寧 鄧艾 關銀屏 凌統",
+    "幻術": "甄姬 孫乾 小喬 木鹿大王 張寶",
+    "護主": "典韋 許褚 周泰 趙雲",
   };
   // ★ 15 位個人特技（草案，Jay 2026-11-20「先用這樣」）
   D.PERSONAL = {
     "曹操": ["挾天子令諸侯", "出陣時，對方隨機丟 1 張手牌，自己抽 1 張。"],
     "司馬懿": ["隱忍", "第一次被擊退時，改成回到後陣休整（後陣要有空位）。"],
     "張遼": ["威震逍遙津", "出陣當回合就能進攻，這回合她進攻時對方不能格擋。只能出在前陣。"],
-    "典韋": ["捨命護主", "己方場上有君主時，典韋休整中也能格擋，每回合 1 次。"],
     "劉備": ["桃園之誓", "出陣時，從牌組找 1 張關羽或張飛加入手牌。"],
     "關羽": ["過五關斬六將", "打贏格擋後重新可行動，每回合最多 2 次。"],
     "張飛": ["長坂一喝", "出陣時，敵方前陣兵力比她低的武將全部休整，這回合不能格擋。"],
-    "趙雲": ["七進七出", "進攻時，對方只能用兵力比她高的武將格擋。"],
     "諸葛亮": ["臥龍", "出陣時，看對方手牌，挑 1 張丟掉。"],
     "孫權": ["江東基業", "己方場上每有一位吳國武將，所有吳國武將兵力 +500，最多 +1500。"],
     "周瑜": ["火燒赤壁", "出陣時，擊退敵方前陣所有兵力 2500 以下的武將。"],
@@ -61,7 +72,10 @@
     "貂蟬": ["連環計", "出陣時，敵方前陣兵力最高的兩位武將互相交戰，兵力低的被擊退。"],
     "董卓": ["暴政", "兵力特別高（+1500），但每回合開始要隨機丟 1 張手牌。"],
     "張角": ["蒼天已死", "出陣時，從牌組找最多 2 張黃巾武將，直接放進後陣（休整中）。"],
+    "呂布": ["神擋殺神", "在前陣可行動時，花 3 道軍令，直接擊退敵方前陣一位武將（不比兵力）。"],   // ✅ Jay：讓呂布可以編進牌組
   };
+  D.UR_OK = ["呂布"];          // ✅ 只有 UR 的武將裡，破例可以用的
+  D.NO_LIMIT = ["呂布"];       // ✅ 張數不限（要擁有她）
   D.TRIGS = {
     "援軍": "城門被破、翻到這張時，把它加入手牌。",
     "伏兵": "城門被破、翻到這張時，直接放進後陣（休整中）。",
@@ -71,7 +85,7 @@
   // ===== 算出每位武將的卡牌版 =====
   D.CARD = {};     // 武將名 → 卡牌版
   D.LIST = [];
-  var ok = function (c) { return !c.ur; };
+  var ok = function (c) { return !c.ur || (c.urOnly && D.UR_OK.indexOf(c.gen) >= 0); };
   var pool = SG.CARDS.filter(function (c) { return ok(c) && SG.GEN[c.gen] === c; });   // 每位武將取一張（男版共用同名）
   var split = function (s) { return s.split(" "); };
   pool.forEach(function (c) {
@@ -92,13 +106,15 @@
   D.LIST.forEach(function (d) {
     d.ap = d.cost >= 6 ? 2 : 1;
     d.gen = d.tags.indexOf("內政") >= 0 ? 2 : 1;
-    var s = null;
-    if (D.PERSONAL[d.name]) s = d.name;
+    var s = null, asg = Object.keys(D.ASSIGN).find(function (k) { return split(D.ASSIGN[k]).indexOf(d.name) >= 0; });
+    if (asg) s = asg;
+    else if (D.PERSONAL[d.name]) s = d.name;
     else if (d.tags.indexOf("君主") >= 0 || (d.m >= 94 && d.typ !== "法")) s = "號召";
     else if (d.typ === "法") s = d.z >= 90 ? "計謀" : "軍師";
     else if (hasSet(d)) s = "結義";
     else if (d.typ === "騎") s = d.w >= 93 ? "連戰" : "突擊";
     else if (d.typ === "槍" && d.w < 93) s = "鐵壁";
+    else s = "陣前換將";
     d.skill = s; d.personal = !!D.PERSONAL[d.name];
     d.skillName = d.personal ? D.PERSONAL[d.name][0] : s;
     d.skillText = d.personal ? D.PERSONAL[d.name][1] : s ? D.SKILLS[s] : "";
@@ -108,6 +124,7 @@
 
   // 玩家能放幾張：看所有版本（女版、男版）擁有的最高卡別，UR 不算
   D.copiesOf = function (S, name) {
+    if (D.NO_LIMIT.indexOf(name) >= 0) return SG.CARDS.some(function (c) { return c.gen === name && S.inv[c.id] && Object.keys(S.inv[c.id]).some(function (k) { return S.inv[c.id][k]; }); }) ? D.DECK : 0;
     var best = -1;
     SG.CARDS.forEach(function (c) {
       if (c.gen !== name || c.ur) return;
@@ -133,6 +150,20 @@
     });
     return deck;
   };
+  // ===== 道具卡（✅ Jay 2026-11-20）：每種一副牌組只能放 1 張；除了「軍令」都要 1 道軍令 =====
+  // ★ 取得方式：Jay 要「牌組抽得到＋茶館酒館抽得到」，掉落機率還沒定 → 試玩期大家都能放
+  D.ITEMS = [
+    { id: "ling", name: "軍令", ap: 0, tgt: null, text: "不用軍令，這回合軍令 +2（可以超過 3 道）。" },
+    { id: "chitu", name: "赤兔馬", ap: 1, tgt: "mine", text: "讓己方前陣或後陣一位武將離開戰場、回到手牌。" },
+    { id: "bao", name: "小籠包", ap: 1, tgt: null, react: true, text: "己方武將被擊退時（手上有這張、還有 1 道軍令就自動使用），改成留在場上、兵力剩 1000。" },
+    { id: "dao", name: "青龍偃月刀", ap: 1, tgt: "mine", text: "這回合，己方一位武將兵力 +1500。" },
+    { id: "wushen", name: "武神上身", ap: 1, tgt: "mine", text: "這回合，己方一位武將兵力 +3000。" },
+    { id: "dou", name: "撒豆成兵", ap: 1, tgt: null, text: "這回合，己方前陣所有武將兵力 +1000。" },
+    { id: "xi", name: "玉璽", ap: 5, tgt: null, text: "要 5 道軍令（先用「軍令」湊到 5 道）。這回合己方前陣所有武將兵力 +3000；下回合只有 2 道軍令。" },
+  ];
+  D.ITEM = {}; D.ITEMS.forEach(function (it) { it.item = true; it.cost = 0; D.ITEM[it.id] = it; D.ITEM["道具:" + it.id] = it; });
+  D.itemKey = function (id) { return "道具:" + id; };
+  D.ownsItem = function (S, id) { return true; };   // ★ 試玩期：大家都有
   D.deckCount = function (deck) { return Object.keys(deck || {}).reduce(function (a, k) { return a + deck[k]; }, 0); };
   // 電腦對手：用全部武將、每位最多張數組牌（★ 試玩用）
   D.OPPONENTS = [
@@ -144,6 +175,8 @@
   D.oppDeck = function (opp, rnd) {
     var avail = D.LIST.filter(function (d) { return d.tags.some(function (t) { return opp.tags.indexOf(t) >= 0; }); })
       .map(function (d) { return { d: d, n: d.strong ? 4 : 3 }; });
-    return D.autoDeck(avail, D.DECK, rnd);
+    var deck = D.autoDeck(avail, D.DECK - 3, rnd);
+    ["ling", "dao", "dou", "bao", "wushen"].sort(function () { return (rnd || Math.random)() - 0.5; }).slice(0, 3).forEach(function (id) { deck[D.itemKey(id)] = 1; });
+    return deck;
   };
 })(window.SG);

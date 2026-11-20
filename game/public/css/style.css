@@ -855,3 +855,49 @@ body.on-duelb{padding-bottom:0}
 .curve{padding-top:14px}
 .curve b{top:-14px}
 p.warn{color:var(--red);font-size:12.5px;margin:6px 0 0!important}
+/* ── 鬥將 v2 ── */
+.dhandpv{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.dhandpv .dc{width:100%}
+.dc .trg{width:auto;padding:0;writing-mode:horizontal-tb;width:20cqw;height:20cqw;border-radius:50%;display:grid;place-items:center;font-size:12cqw;border:1.5px solid var(--gold-hi)}
+.dc .trg.t-伏兵{background:linear-gradient(#3f7a63,#24503f)}.dc .trg.t-反擊{background:linear-gradient(#2f4f7f,#1d3356)}
+.dc.item{background:radial-gradient(ellipse at 50% 35%,#5a3a22,#1c1512 75%);border-color:var(--gold)}
+.dc .cost.ap0{background:radial-gradient(circle at 35% 30%,#ffd2c4,#e05858 50%,#8b1c16);color:#fff1d2}
+.dc .ikind{position:absolute;right:3cqw;top:3cqw;padding:0 3cqw;font:700 10cqw/1.5 var(--kai);color:#2a1c08;background:var(--gold-hi);border-radius:2px}
+.dc.tgt{box-shadow:0 0 0 3px #ff6a3d,0 0 14px rgba(255,106,61,.9);animation:dcan 1s ease-in-out infinite}
+.dfield.picking .dc:not(.tgt){opacity:.55}
+.dc.hurt .bp{color:#ff9c7a;border-color:#ff9c7a}
+h3.dsub{font-family:var(--kai);font-size:17px;margin:12px 0 4px}
+h3.dsub small{font-family:var(--body);font-size:11px;color:var(--ink-2);font-weight:400}
+.curve{grid-template-columns:repeat(8,1fr)}
+.curve .it i{background:linear-gradient(#ecd391,#b98b3c)}
+.dtop{position:sticky;top:-16px;z-index:4;display:flex;align-items:center;gap:6px;margin:-16px -14px 8px;padding:10px 14px;background:linear-gradient(#f6eedb,#efe4c9);border-bottom:1px solid rgba(106,95,80,.5)}
+.dtop .seg{display:flex;gap:4px}
+button.dx{padding:5px 14px;font-size:14px}
+/* 完整版大卡（參考 UA 卡的排法，三國LEGEND 自己的樣式） */
+.dcu{position:relative;width:min(300px,84vw);aspect-ratio:63/88;margin:0 auto;overflow:hidden;border-radius:6px;background:#1c1512;container-type:inline-size;
+  border:2.2cqw solid var(--fc,#8a6a36);box-shadow:0 0 0 1px #0d0907,inset 0 0 0 1px var(--gold-hi),0 8px 22px rgba(0,0,0,.45);color:#f6ecd2}
+.dcu.item{--fc:#8a6a36;background:radial-gradient(ellipse at 50% 35%,#5a3a22,#1c1512 75%)}
+.dcu .pic{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top}
+.dcu .dhd{position:absolute;left:0;right:0;top:0;display:flex;align-items:flex-start;gap:2cqw;padding:2.5cqw}
+.dcu .cst{flex:none;width:17cqw;height:19cqw;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#2a1c08;
+  background:linear-gradient(#fff3c4,#ecd391 50%,#b98b3c);clip-path:polygon(50% 0,100% 18%,100% 82%,50% 100%,0 82%,0 18%);filter:drop-shadow(0 0 1px #000)}
+.dcu .cst small{font:700 4cqw/1 var(--kai);margin-top:1cqw}.dcu .cst b{font:700 11cqw/1 var(--body)}
+.dcu .apl{position:absolute;left:2.5cqw;top:22.5cqw;width:17cqw;text-align:center;font:700 4.2cqw/1.6 var(--kai);color:#fff1d2;background:var(--fc,var(--red));border:1px solid var(--gold-hi);border-radius:2px}
+.dcu .apl b{font-family:var(--body);font-size:5.5cqw;margin-left:1cqw}
+.dcu .ttl{flex:1;min-width:0;padding:1.5cqw 3cqw;background:linear-gradient(90deg,rgba(28,21,18,.92),rgba(28,21,18,.55));border-left:1cqw solid var(--fc,var(--gold));border-radius:1px}
+.dcu .ttl b{display:block;font:700 8.5cqw/1.2 var(--kai);letter-spacing:.08em;color:#fff1d2}
+.dcu .ttl small{display:block;font-size:3.6cqw;line-height:1.4;color:var(--gold-hi)}
+.dcu .box{position:absolute;left:2.5cqw;right:2.5cqw;bottom:17cqw;padding:5.5cqw 3cqw 2.5cqw;background:rgba(246,238,219,.9);color:var(--ink);border:1px solid var(--gold);border-radius:2px;font-size:4.2cqw;line-height:1.55}
+.dcu .kind{position:absolute;left:-1px;top:-4cqw;padding:0 3cqw;font:700 4cqw/1.7 var(--kai);color:#f6ecd2;background:linear-gradient(90deg,#1c1512,#4a3a2a);border:1px solid var(--gold);border-left:1.2cqw solid var(--fc,var(--gold))}
+.dcu .eff b{font-family:var(--kai);margin-right:1.5cqw}
+.dcu .tm{display:inline-block;margin-right:1.5cqw;padding:0 1.5cqw;font-size:3.4cqw;line-height:1.6;color:#fff1d2;background:var(--red);border-radius:1cqw;vertical-align:1px}
+.dcu .tm.g{background:var(--jade)}
+.dcu .trg{margin-top:2cqw;padding:1cqw 2cqw;font-size:3.8cqw;background:rgba(201,164,92,.22);border-radius:1px}
+.dcu .trg span{display:inline-block;margin-right:2cqw;padding:0 2cqw;font:700 3.8cqw/1.6 var(--kai);color:#fff1d2;background:linear-gradient(#c8372c,#8b1c16);border-radius:1cqw}
+.dcu .trt{position:absolute;right:4cqw;bottom:-3.2cqw;padding:0 3cqw;font:normal 700 3.6cqw/1.6 var(--kai);color:#fff1d2;background:var(--red);border-radius:1cqw}
+.dcu .ft{position:absolute;left:0;right:0;bottom:0;height:16cqw;display:flex;align-items:center;justify-content:space-between;padding:0 3cqw;background:linear-gradient(transparent,rgba(20,14,10,.85) 40%)}
+.dcu .bp{font:700 11cqw/1 var(--body);font-variant-numeric:tabular-nums;color:#fff;text-shadow:0 0 3px #000,0 0 6px #000}
+.dcu .bp small{font:700 4.2cqw/1 var(--kai);margin-left:1cqw;color:var(--gold-hi)}
+.dcu .orbs{display:flex;align-items:center;gap:1.5cqw}
+.dcu .orbs i{width:7cqw;height:7cqw;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff3c4,#ecd391 45%,#b98b3c);box-shadow:0 0 0 .6cqw #2a1c08}
+.dcu .orbs small{font:700 3.6cqw/1 var(--kai);color:var(--gold-hi)}
