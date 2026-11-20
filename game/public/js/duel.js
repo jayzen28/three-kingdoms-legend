@@ -377,6 +377,12 @@
         if (dq >= 0 && D.hp(P, top) + 1500 > bestBlk) return { t: "item", i: dq, tid: top.id };
         if (ws >= 0 && D.hp(P, top) + 3000 > bestBlk) return { t: "item", i: ws, tid: top.id };
       }
+      // 破門：快贏的時候，用道具把破門武將補到 5000
+      if (O.life.length <= 2 && P.ap >= 1) {
+        var pb = ready.find(function (u) { return u.d.skill === "破門" && D.hp(P, u) < 5000; });
+        if (pb && dq >= 0 && D.hp(P, pb) + 1500 >= 5000) return { t: "item", i: dq, tid: pb.id };
+        if (pb && ws >= 0 && D.hp(P, pb) + 3000 >= 5000) return { t: "item", i: ws, tid: pb.id };
+      }
       var br = ready.find(function (u) { return D.canBreak(G, who, u); });
       if (br && O.life.length <= 2) return { t: "break", id: br.id };
       var sn = ready.find(function (u) { return D.canSnipe(G, who, u); });
