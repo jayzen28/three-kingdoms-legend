@@ -1079,3 +1079,17 @@ body.lux[data-scr=duelb]::before{background:radial-gradient(ellipse 80% 45% at 5
 #modal.top{z-index:70}
 #modal [data-rh]{cursor:pointer}
 #fxl .rvc.on{cursor:pointer}
+/* ✅ Jay 2026-11-20：對戰畫面卡片和字放大，看得到特技名 */
+#s-duelb .drow{grid-template-columns:16px repeat(4,1fr);gap:5px}
+#s-duelb .drow .slot{max-width:none;width:min(100%,calc((100dvh - 420px) * 3 / 16))}
+#s-duelb .dfield{padding:12px 10px}
+#s-duelb .dc.s-s::after{top:calc(133.33cqw - 56cqw);height:56cqw;background:linear-gradient(transparent,rgba(12,9,7,.9) 40%,rgba(12,9,7,.96))}
+#s-duelb .dc.s-s .nm{top:calc(133.33cqw - 50cqw);font-size:16cqw}
+#s-duelb .dc.s-s .sk1{display:block;top:calc(133.33cqw - 32cqw);font-size:12.5cqw;font-weight:700;letter-spacing:0;color:#f5d98a;text-shadow:0 1px 2px #000}
+#s-duelb .dc.s-s .bp{top:calc(133.33cqw - 17cqw);font-size:13.5cqw}
+#s-duelb .dhand{gap:6px;min-height:0;padding:8px 2px 6px}
+#s-duelb .dhand .dc{width:min(23vw,98px)}
+#s-duelb .dbar{font-size:13px}
+#s-duelb .dbar b.kai{font-size:16px}
+#s-duelb .dmid b{font-size:16px}
+#s-duelb .dlog{font-size:12.5px}
