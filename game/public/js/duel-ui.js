@@ -51,7 +51,7 @@
       }).join("") + '</div>' +
       '<div class="row end"><button class="sm" id="du-rule">規則</button></div>';
     SG.Scene.banner($("#st-duel"), 77);
-    $("#du-deck").onclick = function () { DU.builder(); };
+    $("#du-deck").onclick = function () { DU.bf.inDeck = false; DU.builder(); };   // 從大廳打開時一律顯示全部武將
     $("#du-rule").onclick = DU.rules;
     $$("[data-opp]").forEach(function (b) { b.onclick = function () { DU.start(D.OPPONENTS.find(function (o) { return o.id === b.dataset.opp; })); }; });
     if (!st.duel.seenRule) { st.duel.seenRule = 1; UI.save(); DU.rules(); }
@@ -96,7 +96,7 @@
         var k = deck[x.d.name] || 0;
         return '<div class="dcell' + (k ? ' in' : '') + '">' + DU.face(x.d, "m", { attr: ' data-big="' + esc(x.d.name) + '"' }) +
           '<div class="pm"><button class="sm" data-pm="-1" data-n="' + esc(x.d.name) + '" ' + (k ? '' : 'disabled') + '>－</button><b>' + k + '/' + x.n + '</b><button class="sm" data-pm="1" data-n="' + esc(x.d.name) + '" ' + (k < x.n && n < D.DECK ? '' : 'disabled') + '>＋</button></div></div>';
-      }).join("") + (list.length ? '' : '<p class="dim" style="grid-column:1/-1;text-align:center">沒有符合的武將</p>') + '</div></div>');
+      }).join("") + (list.length ? '' : '<p class="dim" style="grid-column:1/-1;text-align:center">' + (DU.bf.inDeck && !n ? '牌組還是空的。按「一鍵組牌」，或再按一次「只看牌組」看全部武將。' : '沒有符合的武將') + '</p>') + '</div></div>');
     var keep = $("#modal-body").scrollTop;
     var redo = function () { var y = $("#modal-body").scrollTop; UI.save(); DU.builder(); $("#modal-body").scrollTop = y; };
     $$("[data-bf]").forEach(function (b) { b.onclick = function () { DU.bf[b.dataset.bf] = b.dataset.v; redo(); }; });
