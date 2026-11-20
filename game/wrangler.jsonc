@@ -1,6 +1,14 @@
 {
-  // 三國LEGEND 單機版：純靜態檔案，放在 Cloudflare Workers 靜態資源
+  // 三國LEGEND：網頁是 public/ 的靜態檔；/api/ 開頭（鬥將線上對戰）由 src/worker.js 處理
   "name": "sanguo-legend",
   "compatibility_date": "2026-11-01",
-  "assets": { "directory": "./public" }
+  "main": "src/worker.js",
+  "assets": { "directory": "./public", "binding": "ASSETS" },
+  "durable_objects": {
+    "bindings": [
+      { "name": "ROOM", "class_name": "Room" },
+      { "name": "LOBBY", "class_name": "Lobby" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room", "Lobby"] }]
 }

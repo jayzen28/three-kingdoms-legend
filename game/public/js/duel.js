@@ -66,7 +66,7 @@
     if (!quiet && !c.item && c.skill === "幻術" && G.live) {
       G.log("　幻術：" + nm(G, P.who) + "抽到 " + c.name + "，再抽 2 張、放回 2 張");
       draw(G, P, true); draw(G, P, true);
-      if (P.who === G.human) G.queue.push({ type: "illusion", who: P.who });
+      if (P.who === G.human || G.both) G.queue.push({ type: "illusion", who: P.who });
       else aiReturn(G, P, 2);
       settle(G);
     }
@@ -192,7 +192,7 @@
     else if (s === "張飛") { var n = 0; O.front.forEach(function (v) { if (D.hp(O, v) < D.hp(P, u) && v.act) { v.act = false; n++; } }); say("敵方前陣 " + n + " 位休整，這回合不能格擋"); }
     else if (s === "諸葛亮") {
       if (!O.hand.length) return;
-      if (who === G.human) G.queue.push({ type: "discard", who: who });
+      if (who === G.human || G.both) G.queue.push({ type: "discard", who: who });
       else { var best = O.hand.map(function (c, i) { return [(c.item ? 3 : c.cost) * 10000 + (c.bp || 0), i]; }).sort(function (a, b) { return b[0] - a[0]; })[0][1]; say("丟掉我方手牌 " + O.hand[best].name); O.side.push(O.hand.splice(best, 1)[0]); }
     }
     else if (s === "周瑜") { var hit = O.front.filter(function (v) { return D.hp(O, v) <= 2500; }); say("擊退 " + hit.length + " 位"); hit.forEach(function (v) { kill(G, 1 - who, v); }); }
@@ -257,7 +257,7 @@
     var bl = D.blockers(G, who, a);
     G.pending = { type: "block", who: who, a: a, list: bl };
     if (!bl.length) { D.block(G, null); return true; }
-    if (1 - who !== G.human) D.block(G, D.aiBlock(G, who, a, bl));
+    if (1 - who !== G.human && !G.both) D.block(G, D.aiBlock(G, who, a, bl));   // 線上對戰（G.both）兩邊都由真人決定
     return true;
   };
   D.block = function (G, blockerId) {

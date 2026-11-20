@@ -44,6 +44,7 @@
     document.body.classList.toggle("on-duelb", name === "duelb");
     document.body.classList.toggle("on-home", name === "home");
     if (UI["r_" + name]) UI["r_" + name]();
+    if (name === "camp" && S.welcomePending) { delete S.welcomePending; SG.Store.save(S); UI.welcome(); }
     if (SG.Audio) SG.Audio.scene(name);
     window.scrollTo(0, 0);
   };
@@ -439,7 +440,7 @@
     UI.modal('<h2>' + title + '　' + r.n + ' 抽</h2>' +
       '<div>' + RAR.map(function (x) { return '<span class="tag">' + x + ' ' + r.byRar[x] + '</span>'; }).join("") + '</div>' +
       '<p>' + (r.merges ? '已合成 ' + r.merges + ' 次・' : '') + '新武將 ' + r.newCards + ' 名' + (r.surplus ? '・到頂轉出售 ' + r.surplus + ' 張' : '') + '</p>' +
-      (hits ? '<p class="dim">這次的 SR 以上：</p><div class="cards">' + hits + '</div>' : '<p class="dim">這次沒有 SR 以上。</p>') +
+      (hits ? '<p class="dim">這次的 SR 以上：</p><div class="cards big">' + hits + '</div>' : '<p class="dim">這次沒有 SR 以上。</p>') +
       (note ? '<p>' + note + '</p><div class="cards">' + S.team.map(function (id) { return UI.cardHtml(SG.CARD_BY_ID[id], SG.best(S, id)); }).join("") + '</div>' : '') +
       '<div class="row end">' + (note ? '<button class="plain" onclick="SG.UI.close();SG.UI.go(\'team\')">去編隊</button>' : '') + '<button onclick="SG.UI.close()">收下</button></div>');
   };

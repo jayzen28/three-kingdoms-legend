@@ -4,7 +4,7 @@
    ★ 下面的數字（軍餉等級、兵力、急報、湊齊獎勵、牌組 30 張／城門 5 道）都是試玩用的暫定值，Jay 還沒定。改數值只改這支。 */
 (function (SG) {
   var D = SG.DUEL = {};
-  D.DECK = 30;          // ★ 牌組張數（另一個選項 50）
+  D.DECK = 40;          // ✅ Jay 2026-11-20：牌組 40 張（原本 30）
   D.LIFE = 5;           // ★ 城門道數（另一個選項 7）
   D.HAND = 7;           // 起手張數
   D.HAND_MAX = 8;       // 回合結束時手牌上限
@@ -137,10 +137,10 @@
     return D.LIST.map(function (d) { return { d: d, n: D.copiesOf(S, d.name) }; }).filter(function (x) { return x.n > 0; });
   };
   // 一鍵組牌：照費用曲線挑，先挑自己最多張的
-  D.QUOTA = { 30: [7, 6, 6, 5, 3, 2, 1], 50: [11, 9, 9, 8, 6, 4, 3] };   // ★ 0 費建議至少 6 張
+  D.QUOTA = { 30: [7, 6, 6, 5, 3, 2, 1], 37: [8, 7, 7, 6, 4, 3, 2], 40: [9, 8, 7, 7, 4, 3, 2], 50: [11, 9, 9, 8, 6, 4, 3] };   // ★ 0 費建議至少 6 張
   D.autoDeck = function (avail, size, rnd) {
     size = size || D.DECK; rnd = rnd || Math.random;
-    var q = (D.QUOTA[size] || D.QUOTA[30]).slice(), deck = {}, total = 0;
+    var q = (D.QUOTA[size] || D.QUOTA[40]).slice(), deck = {}, total = 0;
     var list = avail.slice().sort(function (a, b) { return (b.n - a.n) || (b.d.score - a.d.score) || (rnd() - 0.5); });
     for (var cost = 0; cost <= 6; cost++) list.filter(function (x) { return x.d.cost === cost; }).forEach(function (x) {
       if (q[cost] <= 0 || total >= size) return; var k = Math.min(x.n, q[cost]); deck[x.d.name] = k; q[cost] -= k; total += k;
