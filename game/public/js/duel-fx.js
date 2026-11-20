@@ -40,9 +40,21 @@
     return '<svg class="ci-bolt' + (e ? ' e' : '') + '" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M62 0 L48 30 L58 32 L40 62 L52 64 L30 100" /><path class="b2" d="M18 0 L28 24 L20 26 L34 52 L26 54 L40 80" /></svg>';
   }
 
+  // 預先載入：卡片一到手牌或場上，就先把全身圖下載並解碼好；書法字也先載入（✅ Jay：試跑時角色出現比較慢）
+  var cache = {}, fontReady = null;
+  DU.preloadFx = function (names) {
+    (names || []).forEach(function (n) {
+      var d = D.CARD[n], art = d && d.art; if (!art || cache[art]) return;
+      var im = new Image(); im.src = "img/" + art + "_full.webp"; cache[art] = im.decode ? im.decode().then(function () { return im; }, function () { return im; }) : Promise.resolve(im);
+    });
+    if (!fontReady && document.fonts && document.fonts.load) fontReady = document.fonts.load('48px "Ma Shan Zheng"', D.LIST.map(function (x) { return x.skillName || ""; }).join("") + "技敵").catch(function () {});
+  };
   DU.cutin = function (d, o) {
     o = o || {};
-    return new Promise(function (res) {
+    DU.preloadFx([d.name]);
+    var art0 = o.art || d.art, wait = function (p, ms) { return Promise.race([p, new Promise(function (r) { setTimeout(r, ms); })]); };
+    // 圖還沒好就最多等 0.6 秒、字最多等 0.3 秒，不讓斜框空著滑進來
+    return wait(cache[art0] || Promise.resolve(), 600).then(function () { return wait(fontReady || Promise.resolve(), 300); }).then(function () { return new Promise(function (res) {
       var side = o.side || 0, rar = o.rar || "R", c = COLOR[d.fac] || COLOR["蜀"], art = o.art || d.art;
       var big = rar === "SSR" || rar === "UR";
       var el = document.createElement("div");
@@ -53,7 +65,7 @@
         (rar === "UR" ? '<div class="ci-flash"></div>' + bolts() : '') +
         '<div class="ci-band"><i class="ci-lines"></i><i class="ci-edge a"></i><i class="ci-edge b"></i></div>' +
         (big ? '<div class="ci-ring"></div>' : '') +
-        '<div class="ci-art"><div class="ci-ghost g1"></div><div class="ci-ghost g2"></div><div class="ci-panel"><img class="ci-main" src="img/' + art + '_full.webp" alt=""><i class="ci-sheen"></i></div></div>' +
+        '<div class="ci-art"><div class="ci-ghost g1"></div><div class="ci-ghost g2"></div><div class="ci-panel"><div class="ci-main" style="background-image:url(img/' + art + '_full.webp)"></div><i class="ci-sheen"></i></div></div>' +
         elem(d.personal ? ELEM_P[d.name] : ELEM_S[d.skill]) + (d.name === "呂布" ? bolts("e") : '') +
         '<div class="ci-dust">' + dust({ N: 14, R: 18, SR: 34, SSR: 46, UR: 60 }[rar] || 18) + '</div>' +
         '<div class="ci-txt' + (vert ? ' v' : '') + '"><div class="ci-name">' + name.split("").map(function (ch, i) { return '<span style="animation-delay:' + (T.name + i * 70) + 'ms">' + ch + '</span>'; }).join("") + '</div>' +
@@ -66,7 +78,7 @@
       timers.push(setTimeout(function () { document.body.classList.add("ci-shake"); setTimeout(function () { document.body.classList.remove("ci-shake"); }, 360); }, T.seal));
       timers.push(setTimeout(finish, T.out));
       el.addEventListener("click", finish);
-    });
+    }); });
   };
 
   // ===== 試看頁：?fx=關羽 =====

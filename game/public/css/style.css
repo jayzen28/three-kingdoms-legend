@@ -1115,7 +1115,7 @@ body.lux[data-scr=duelb]::before{background:radial-gradient(ellipse 80% 45% at 5
 @keyframes ciArt1{from{transform:translateX(95vw);opacity:0}to{transform:none;opacity:1}}
 .ci-panel{position:absolute;inset:0;overflow:hidden;transform:skewX(-7deg);background:#0c0907;border-right:4px solid #f5d98a;box-shadow:0 0 0 2px #07060a,0 0 34px var(--c1),inset 0 0 70px rgba(0,0,0,.45)}
 .s1 .ci-panel{transform:skewX(7deg);border-right:0;border-left:4px solid #f5d98a}
-.ci-main,.ci-panel canvas.jg{position:absolute;top:0;left:-10%;width:120%;height:100%;object-fit:cover;object-position:center 25%;transform:skewX(7deg)}
+.ci-main,.ci-panel canvas.jg{position:absolute;top:0;left:-10%;width:120%;height:100%;object-fit:cover;object-position:center 25%;background:center 25%/cover no-repeat;transform:skewX(7deg)}
 .s1 .ci-main,.s1 .ci-panel canvas.jg{transform:skewX(-7deg)}
 .ci-sheen{position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.35) 45%,transparent 55%);transform:translateX(-120%);animation:ciSheen .7s ease-out .55s forwards}
 @keyframes ciSheen{to{transform:translateX(120%)}}

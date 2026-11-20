@@ -279,6 +279,7 @@
     return who === 1 ? bar + row("back", "後陣") + row("front", "前陣") : row("front", "前陣") + row("back", "後陣") + bar;
   }
   DU.render = function () {
+    if (G && DU.preloadFx && DU.fxOn()) DU.preloadFx(G.p[0].hand.concat(D.field(G.p[0]).map(function (u) { return u.d; }), D.field(G.p[1]).map(function (u) { return u.d; })).filter(function (c) { return c && !c.item; }).map(function (c) { return c.name; }));
     if (!G) { $("#s-duelb").innerHTML = '<div class="dfield"><div class="dmid"><b>準備中…</b></div></div>'; return; }
     var me = G.p[0];
     var hand = me.hand.map(function (d, i) {
