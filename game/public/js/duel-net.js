@@ -31,6 +31,7 @@
       logs: G.logs.slice(-6).map(function (t) { return seat === 0 ? t : flip(t); }) };
     if (G.pending) { v.pending = ser(G.pending); v.pending.who = r(G.pending.who); }
     EVENTS.forEach(function (k) { if (G[k]) { v[k] = ser(G[k]); if (v[k].who !== undefined) v[k].who = r(G[k].who); } });
+    if (G.fxq && G.fxq.length) v.fxq = G.fxq.map(function (x) { return { who: r(x.who), d: ser(x.d) }; });   // 特技演出
     return v;
   };
 
@@ -50,11 +51,11 @@
     if (G.pending) { if (G.pending.a) G.pending.a = link(G.pending.a); if (G.pending.list) G.pending.list = G.pending.list.map(link); }
     if (G.lastFight) { G.lastFight.a = link(G.lastFight.a); G.lastFight.b = link(G.lastFight.b); }
     if (G.lastGuard) G.lastGuard = link(G.lastGuard);
-    G.human = 0; G.queue = []; G.online = true;
+    G.human = 0; G.queue = []; G.online = true; G.fxq = G.fxq || [];
     G.log = function () {};
     return G;
   };
-  D.clearEvents = function (G) { EVENTS.forEach(function (k) { G[k] = null; }); };
+  D.clearEvents = function (G) { EVENTS.forEach(function (k) { G[k] = null; }); G.fxq = []; };
 
   // 牌組檢查（伺服器用；線上對戰先不檢查收藏，✅ Jay 2026-11-20：帳號先不管）
   D.checkDeck = function (deck) {

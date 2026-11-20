@@ -64,7 +64,7 @@
     if (!P.deck.length) { G.winner = 1 - P.who; G.log(nm(G, P.who) + "牌組抽光了"); return false; }
     var c = P.deck.shift(); P.hand.push(c);
     if (!quiet && !c.item && c.skill === "幻術" && G.live) {
-      G.log("　幻術：" + nm(G, P.who) + "抽到 " + c.name + "，再抽 2 張、放回 2 張");
+      fx(G, P.who, c); G.log("　幻術：" + nm(G, P.who) + "抽到 " + c.name + "，再抽 2 張、放回 2 張");
       draw(G, P, true); draw(G, P, true);
       if (P.who === G.human || G.both) G.queue.push({ type: "illusion", who: P.who });
       else aiReturn(G, P, 2);
@@ -97,7 +97,7 @@
     P.ap = P.apMax;
     if (!(G.cur === G.first && P.t === 1)) { if (!draw(G, P)) return; }
     if (D.field(P).some(function (u) { return u.d.name === "董卓"; }) && P.hand.length) {
-      var k = Math.floor(G.rnd() * P.hand.length); G.log("董卓「暴政」：" + nm(G, P.who) + "丟掉 " + P.hand[k].name); P.side.push(P.hand.splice(k, 1)[0]);
+      fx(G, P.who, D.CARD["董卓"]); var k = Math.floor(G.rnd() * P.hand.length); G.log("董卓「暴政」：" + nm(G, P.who) + "丟掉 " + P.hand[k].name); P.side.push(P.hand.splice(k, 1)[0]);
     }
   };
   D.endTurn = function (G) {
@@ -119,7 +119,7 @@
     if (zone === "back" && P.back.length >= D.BACK) zone = "front";
     P.hand.splice(handIdx, 1); P.ap -= d.ap;
     var u = unit(d);
-    if (zone === "front" && (d.skill === "突擊" || d.name === "張遼")) u.act = true;
+    if (zone === "front" && (d.skill === "突擊" || d.name === "張遼")) { u.act = true; fx(G, who, d); }
     if (d.name === "張遼") u.noblock = G.turn;
     P[zone].push(u);
     G.log(nm(G, who) + "出陣 " + d.name + "（" + (zone === "front" ? "前陣" : "後陣") + "）");
@@ -133,7 +133,7 @@
     var u = unit(d), i = P.front.indexOf(old);
     u.act = old.act && !old.atk && !old.frozen;
     P.front[i] = u; P.hand.push(old.d);
-    G.log(nm(G, who) + "陣前換將：" + d.name + " 換下 " + old.d.name + (u.act ? "（可以馬上進攻）" : ""));
+    fx(G, who, d); G.log(nm(G, who) + "陣前換將：" + d.name + " 換下 " + old.d.name + (u.act ? "（可以馬上進攻）" : ""));
     onPlay(G, who, u); settle(G);
     return true;
   };
@@ -181,9 +181,12 @@
     for (var i = 0; i < P.deck.length && got.length < (n || 1); i++) if (!P.deck[i].item && fn(P.deck[i])) { got.push(P.deck.splice(i, 1)[0]); i--; }
     return got;
   }
+  // 特技發動 → 記到 G.fxq，畫面依序播全身大演出（✅ Jay 2026-11-21：所有特技都播、雙方都播）
+  function fx(G, who, d) { if (G.human < 0 && !G.both) return; (G.fxq = G.fxq || []).push({ who: who, d: d }); }
+  D.fx = fx;
   function onPlay(G, who, u) {
-    var P = G.p[who], O = G.p[1 - who], d = u.d, s = d.skill;
-    var say = function (t) { G.log("　" + (d.personal ? d.skillName : s) + "：" + t); };
+    var P = G.p[who], O = G.p[1 - who], d = u.d, s = d.skill, shown = false;
+    var say = function (t) { if (!shown) { shown = true; fx(G, who, d); } G.log("　" + (d.personal ? d.skillName : s) + "：" + t); };
     if (s === "軍師") { say("抽 1 張"); draw(G, P); }
     // ✅ Jay 2026-11-20：號召改成「三軍用命」效果（不再看魅力）
     else if (s === "號召") { var n = 0; P.front.forEach(function (v) { if (v === u) return; v.buf = (v.buf || 0) + 1000 + (v.d.fac === d.fac ? 500 : 0); n++; }); if (n) say("前陣 " + n + " 位兵力提升"); }
@@ -194,7 +197,7 @@
     else if (s === "張飛") { var n = 0; O.front.forEach(function (v) { if (D.hp(O, v) < D.hp(P, u) && v.act) { v.act = false; n++; } }); say("敵方前陣 " + n + " 位休整，這回合不能格擋"); }
     else if (s === "諸葛亮") {
       if (!O.hand.length) return;
-      if (who === G.human || G.both) G.queue.push({ type: "discard", who: who });
+      if (who === G.human || G.both) { fx(G, who, d); G.queue.push({ type: "discard", who: who }); }
       else { var best = O.hand.map(function (c, i) { return [(c.item ? 3 : c.cost) * 10000 + (c.bp || 0), i]; }).sort(function (a, b) { return b[0] - a[0]; })[0][1]; say("丟掉我方手牌 " + O.hand[best].name); O.side.push(O.hand.splice(best, 1)[0]); }
     }
     else if (s === "周瑜") { var hit = O.front.filter(function (v) { return D.hp(O, v) <= 2500; }); say("擊退 " + hit.length + " 位"); hit.forEach(function (v) { kill(G, 1 - who, v); }); }
@@ -224,7 +227,7 @@
       }
       if (u.d.name === "司馬懿" && !u.hid && P.back.length < D.BACK) {
         if (inF >= 0) P.front.splice(inF, 1); else P.back.splice(inB, 1);
-        u.hid = true; u.act = false; u.dmg = 0; P.back.push(u); G.log("　隱忍：司馬懿退回後陣"); return false;
+        u.hid = true; u.act = false; u.dmg = 0; P.back.push(u); fx(G, who, u.d); G.log("　隱忍：司馬懿退回後陣"); return false;
       }
     }
     if (inF >= 0) P.front.splice(inF, 1); else P.back.splice(inB, 1);
@@ -274,9 +277,9 @@
       res.f = f;
       if (!f.deadB && D.field(G.p[1 - who]).indexOf(b) >= 0) G.log("　" + b.d.name + " 擋下，剩兵力 " + D.hp(G.p[1 - who], b));
       if (!f.deadA && P.front.indexOf(a) >= 0) G.log("　" + a.d.name + " 剩兵力 " + D.hp(P, a));
-      if (f.deadB && !f.deadA && a.d.name === "關羽" && a.extra < 2 && P.front.indexOf(a) >= 0) { a.extra++; a.act = true; G.log("　過五關斬六將：關羽再戰"); }
+      if (f.deadB && !f.deadA && a.d.name === "關羽" && a.extra < 2 && P.front.indexOf(a) >= 0) { a.extra++; a.act = true; fx(G, who, a.d); G.log("　過五關斬六將：關羽再戰"); }
     } else damage(G, 1 - who, 1, a);
-    if (a.d.skill === "連戰" && a.atk === 1 && P.front.indexOf(a) >= 0 && G.winner < 0) { a.act = true; G.log("　連戰：" + a.d.name + " 可以再進攻"); }
+    if (a.d.skill === "連戰" && a.atk === 1 && P.front.indexOf(a) >= 0 && G.winner < 0) { a.act = true; fx(G, who, a.d); G.log("　連戰：" + a.d.name + " 可以再進攻"); }
     G.lastFight = res; settle(G);
     return res;
   };
@@ -286,7 +289,7 @@
     var P = G.p[who], O = G.p[1 - who], a = P.front.find(function (x) { return x.id === unitId; }), t = O.back.find(function (x) { return x.id === targetId; });
     if (!t || !D.canSnipe(G, who, a)) return false;
     G.phase = "attack"; a.act = false; a.atk++;
-    G.log(nm(G, who) + " " + a.d.name + " 遠射後陣 " + t.d.name);
+    fx(G, who, a.d); G.log(nm(G, who) + " " + a.d.name + " 遠射後陣 " + t.d.name);
     var f = fight(G, who, a, 1 - who, t, { noCounter: true });
     if (!f.deadB && D.field(O).indexOf(t) >= 0) G.log("　" + t.d.name + " 剩兵力 " + D.hp(O, t));
     G.lastFight = { a: a, b: t, f: f }; return true;
@@ -296,7 +299,7 @@
   D.breakGate = function (G, who, unitId) {
     var P = G.p[who], a = P.front.find(function (x) { return x.id === unitId; });
     if (!D.canBreak(G, who, a)) return false;
-    G.phase = "attack"; G.log(nm(G, who) + " " + a.d.name + " 破門！犧牲自己");
+    G.phase = "attack"; fx(G, who, a.d); G.log(nm(G, who) + " " + a.d.name + " 破門！犧牲自己");
     kill(G, who, a, true); damage(G, 1 - who, 1, null); return true;   // ✅ Jay：護主也擋得住破門
   };
   // 呂布・神擋殺神
@@ -305,7 +308,7 @@
     var P = G.p[who], O = G.p[1 - who], a = P.front.find(function (x) { return x.id === unitId; }), t = O.front.find(function (x) { return x.id === targetId; });
     if (!t || !D.canLubu(G, who, a)) return false;
     P.ap -= 3; a.act = false; G.phase = "attack";
-    G.log(nm(G, who) + " 呂布「神擋殺神」：直取 " + t.d.name);
+    fx(G, who, a.d); G.log(nm(G, who) + " 呂布「神擋殺神」：直取 " + t.d.name);
     kill(G, 1 - who, t); G.lastFight = { a: a, b: t, lubu: true }; return true;
   };
   function damage(G, who, n, attacker, noGuard) {
@@ -314,7 +317,7 @@
       if (!P.life.length) return;
       if (!noGuard && P.life.length === 1) {   // 護主：最後 1 道門
         var g = D.field(P).find(function (u) { return u.d.skill === "護主" && !u.guard; });
-        if (g) { g.guard = true; G.log("　護主：" + g.d.name + " 擋下了這次進攻"); G.lastGuard = g; continue; }
+        if (g) { g.guard = true; fx(G, who, g.d); G.log("　護主：" + g.d.name + " 擋下了這次進攻"); G.lastGuard = g; continue; }
       }
       var c = P.life.shift(); G.stats.hits++;
       G.log(nm(G, who) + "城門被破，剩 " + P.life.length + " 道（翻出 " + c.name + (c.trig ? "・" + c.trig : "") + "）");

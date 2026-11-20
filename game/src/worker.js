@@ -106,7 +106,8 @@ export class Room {
     if (this.seats.length >= 2) return send(ws, { t: "err", msg: "房間已經滿了", fatal: true });
     const bad = D.checkDeck(m.deck);
     if (bad) return send(ws, { t: "err", msg: bad, fatal: true });
-    this.seats.push({ pid, name, ws, deck: m.deck, ready: false, mull: false });
+    const rar = {}; if (m.rar && typeof m.rar === "object") Object.keys(m.rar).slice(0, 80).forEach((k) => { if (["N", "R", "SR", "SSR", "UR"].indexOf(m.rar[k]) >= 0) rar[String(k).slice(0, 8)] = m.rar[k]; });
+    this.seats.push({ pid, name, ws, deck: m.deck, rar, ready: false, mull: false });
     if (this.seats.length === 1) { this.stage = "wait"; return send(ws, { t: "wait" }); }
     this.begin();
   }
@@ -191,7 +192,7 @@ export class Room {
     const opp = this.seats[1 - seat], now = Date.now();
     if (this.stage === "wait") return send(s.ws, { t: "wait" });
     if (!this.G) return;
-    const base = { now, opp: opp ? opp.name : "", oppOnline: !!(opp && opp.ws && !opp.gone) };
+    const base = { now, opp: opp ? opp.name : "", oppOnline: !!(opp && opp.ws && !opp.gone), oppRar: opp ? opp.rar : {} };
     if (this.stage === "mull") return send(s.ws, Object.assign(base, { t: "mull", hand: this.G.p[seat].hand.map((c) => (c.item ? D.itemKey(c.id) : c.name)), first: this.G.first === seat, mulled: s.mull, ready: s.ready, deadline: this.deadline }));
     send(s.ws, Object.assign(base, { t: "state", view: D.view(this.G, seat), deadline: this.deadline, pickDeadline: this.pickDeadline, over: this.stage === "over" }));
   }

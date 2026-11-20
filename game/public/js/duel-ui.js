@@ -353,8 +353,9 @@
     on("da-pick", DU.reopen);
     on("da-cancel", function () { sel = null; DU.render(); });
     on("da-menu", function () {
-      UI.modal('<div class="dtop"><b class="kai" style="font-size:20px">選單</b><span class="grow"></span>' + CLOSE + '</div><div class="row"><button id="dm-rule">規則</button><button class="plain" id="dm-quit">投降</button></div>');
+      UI.modal('<div class="dtop"><b class="kai" style="font-size:20px">選單</b><span class="grow"></span>' + CLOSE + '</div><div class="row"><button id="dm-rule">規則</button><button id="dm-fx">特技演出：' + (DU.fxOn() ? '開' : '關') + '</button><button class="plain" id="dm-quit">投降</button></div>');
       $("#dm-rule").onclick = DU.rules; $("#dm-quit").onclick = DU.confirmQuit;
+      $("#dm-fx").onclick = function () { var on = !DU.fxOn(); try { localStorage.setItem("sgl_fx", on ? "1" : "0"); } catch (e) {} this.textContent = "特技演出：" + (on ? "開" : "關"); };   // ★ 開關是開發加的
     });
     on("da-see", function () { var me = G.p[0]; var d = sel.h !== undefined ? me.hand[sel.h] : D.field(me).find(function (x) { return x.id === sel.u; }).d; DU.bigCard(d); });
     on("da-back", function () { act("play", [sel.h, "back"]); });
@@ -389,7 +390,30 @@
     else if (s.kind === "snipe") act("snipe", [s.u, u.id]);
     else if (s.kind === "lubu") act("lubu", [s.u, u.id]);
   }
+  // ===== 特技大演出（✅ Jay 2026-11-21：全部特技都播、雙方都播；卡等越高越華麗） =====
+  var RKS = ["N", "R", "SR", "SSR", "UR"];
+  DU.myRar = function (gen) {   // 我擁有這位武將的最高卡等（UR 也算）
+    var st = S(), best = -1;
+    SG.CARDS.forEach(function (c) { if (c.gen !== gen) return; var b = SG.best(st, c.id); if (b) best = Math.max(best, RKS.indexOf(b.rar)); });
+    return best < 0 ? "R" : RKS[best];
+  };
+  DU.rarMap = function (deck) { var m = {}; Object.keys(deck || {}).forEach(function (k) { if (D.CARD[k]) m[k] = DU.myRar(k); }); return m; };
+  DU.fxOn = function () { try { return localStorage.getItem("sgl_fx") !== "0"; } catch (e) { return true; } };
+  var fxPlaying = false;
+  async function playFx() {
+    var q = G && G.fxq; if (!q || !q.length || fxPlaying) return;
+    G.fxq = [];
+    if (!DU.fxOn() || !DU.cutin) return;
+    fxPlaying = true;
+    for (var i = 0; i < q.length; i++) {
+      var x = q[i], mine = x.who === 0;
+      var rar = mine ? DU.myRar(x.d.name) : NET ? ((NET.oppRar || {})[x.d.name] || "R") : "SR";   // ★ 電腦對手先當 SR
+      await DU.cutin(x.d, { side: mine ? 0 : 1, rar: rar });
+    }
+    fxPlaying = false;
+  }
   function afterAction() {
+    if (G && G.fxq && G.fxq.length && !fxPlaying) { busy = true; DU.render(); playFx().then(function () { busy = false; afterAction(); }); return; }
     DU.render(); flipPop();
     var pd = G.pending;
     if (pd && pd.who === 0 && pd.type === "discard") return DU.discardPick();
@@ -399,6 +423,7 @@
   async function doAttack(fn) {
     busy = true; DU.render();
     fn();
+    await playFx();
     await fightFx();
     busy = false; afterAction();
   }
@@ -458,11 +483,13 @@
   DU.aiTurn = async function () {
     busy = true; ghostClock(); DU.render();
     await ghostWait(600);
+    await playFx();
     for (var guard = 0; guard < 120 && G && G.winner < 0 && G.cur === 1; guard++) {
       var act = D.aiNext(G);
       if (!act) break;
       if (D.aiDo(G, act) === false) break;
-      if (G.pending && G.pending.type === "block") { DU.render(); D.block(G, await askBlock()); }
+      await playFx();
+      if (G.pending && G.pending.type === "block") { DU.render(); D.block(G, await askBlock()); await playFx(); }
       DU.render(); flipPop();
       await ghostWait(/attack|snipe|lubu|break/.test(act.t) ? 700 : 650);
       if (G.lastFight || G.lastGuard || G.lastSave) await fightFx();
@@ -575,7 +602,7 @@
     LS("sgl_room", JSON.stringify({ room: room, at: Date.now() }));
     var open = function () {
       var ws = me.ws = new WebSocket(wsBase() + "/api/room/" + room);
-      ws.onopen = function () { me.tries = 0; ws.send(JSON.stringify({ t: "join", pid: DU.pid(), name: DU.nick(), deck: DU.deck(S()) })); };
+      ws.onopen = function () { me.tries = 0; ws.send(JSON.stringify({ t: "join", pid: DU.pid(), name: DU.nick(), deck: DU.deck(S()), rar: DU.rarMap(DU.deck(S())) })); };
       ws.onmessage = function (e) { var m = JSON.parse(e.data); me.q = me.q.then(function () { if (NET === me) return onNet(m, hosting); }); };
       ws.onclose = function () {
         if (me.closed || NET !== me) return;
@@ -593,6 +620,7 @@
     if (m.now) me.off = m.now - Date.now();
     if (m.opp !== undefined) { opp = { name: m.opp || "對手" }; }
     if (m.oppOnline !== undefined) me.oppOnline = m.oppOnline;
+    if (m.oppRar) me.oppRar = m.oppRar;
     if (m.t === "err") {
       if (m.fatal) { me.close(); NET = null; LS("sgl_room", null); UI.modal('<h2>無法加入</h2><p>' + esc(m.msg) + '</p><div class="row end"><button onclick="SG.UI.close()">好</button></div>'); if (G === null && $("#s-duelb").offsetParent) DU.leave(); return; }
       busy = false; UI.flash(m.msg); return;
@@ -638,6 +666,7 @@
     G = D.hydrate(m.view); busy = false; sel = null;
     if (wasPick && !myPick()) { pickRes = null; UI.close(); }
     else if (prev < 0 || (!wasPick && $("#mul-time"))) UI.close();
+    if (G.fxq && G.fxq.length) { busy = true; DU.render(); await playFx(); busy = false; }
     if (G.lastFight || G.lastGuard || G.lastSave) { busy = true; DU.render(); flipPop(); await fightFx(); busy = false; }
     afterAction();
     if (G.winner < 0 && G.cur === 0 && prev === 1) UI.banner("我方回合", "#ecd391");
