@@ -43,6 +43,7 @@
     $("#nav").style.display = full ? "none" : "";
     $("#top").style.display = full ? "none" : "";
     document.body.classList.toggle("on-duelb", name === "duelb");
+    document.body.classList.toggle("on-duel", name === "duel");
     document.body.classList.toggle("on-home", name === "home");
     if (UI["r_" + name]) UI["r_" + name]();
     if (name === "camp" && S.welcomePending) { delete S.welcomePending; SG.Store.save(S); UI.welcome(); }

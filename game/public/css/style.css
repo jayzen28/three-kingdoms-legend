@@ -913,3 +913,59 @@ button.dx{padding:5px 14px;font-size:14px}
 /* ✅ Jay 2026-11-20：抽卡結果的卡片放大（卡上的字跟著放大） */
 .cards.big{grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:10px}
 #modal-body .tag{font-size:13px}
+
+/* ===== 鬥將：黑漆描金（✅ Jay 2026-11-20：大廳、對戰底圖改華麗奢華，卡格與面板改金框） ===== */
+body.on-duel,body.on-duelb{background:#07060a;color:#f0e8d8}
+body.on-duel::before,body.on-duelb::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none}
+body.on-duel::before{background:linear-gradient(rgba(7,6,10,.15),rgba(7,6,10,.35) 30%,rgba(7,6,10,.55)),url(../img/duel_hall.webp) center top/cover no-repeat,#07060a}
+body.on-duelb::before{background:radial-gradient(ellipse 80% 45% at 50% 50%,rgba(212,168,83,.10),transparent 70%),radial-gradient(ellipse 100% 30% at 50% 100%,rgba(140,30,20,.18),transparent 70%),#07060a}
+/* 大廳 */
+#s-duel .strip{border:0;background:none;height:92px;overflow:visible}
+#s-duel .strip canvas{display:none}
+#s-duel .strip .cap{top:14px;color:#ecd391;text-shadow:0 0 12px rgba(212,168,83,.55),0 2px 0 #000;font-size:34px}
+#s-duel .strip .cap small{color:#d8c9a8;text-shadow:0 1px 2px #000;letter-spacing:.2em}
+#s-duel .strip::after{content:"";position:absolute;left:0;right:0;bottom:6px;height:2px;background:linear-gradient(90deg,transparent,#d4a853 15%,#f5e1a4 50%,#d4a853 85%,transparent)}
+#s-duel h2{color:#ecd391;text-shadow:0 0 10px rgba(212,168,83,.35),0 2px 0 #000}
+#s-duel h2 small,#s-duel .dim,#s-duel .li .sub,#s-duel p.dim{color:#bdb096}
+#s-duel h2::before{background:#d4a853;box-shadow:inset 0 0 0 2px #8a6a36,0 0 8px rgba(212,168,83,.6);transform:rotate(45deg)}
+#s-duel .paper{position:relative;color:#f0e8d8;border:1px solid #d4a853;border-image:none;padding:14px;
+  background:linear-gradient(160deg,rgba(38,28,18,.86),rgba(10,8,10,.92) 55%,rgba(30,20,14,.9));
+  box-shadow:inset 0 0 0 3px rgba(7,6,10,.9),inset 0 0 0 4px rgba(212,168,83,.45),inset 0 0 24px rgba(212,168,83,.12),0 6px 22px rgba(0,0,0,.65)}
+#s-duel .paper.flush{padding:4px 12px}
+#s-duel .paper::before,#s-duel .paper::after{content:"";position:absolute;width:22px;height:22px;pointer-events:none;border:2px solid #ecd391}
+#s-duel .paper::before{left:-1px;top:-1px;border-right:0;border-bottom:0}
+#s-duel .paper::after{right:-1px;bottom:-1px;border-left:0;border-top:0}
+#s-duel .li{border-bottom:1px solid rgba(212,168,83,.22)}
+#s-duel .li b,#s-duel .paper b.kai{color:#f5e6c0}
+#s-duel button.chip{background:rgba(255,240,200,.06);color:#f0e8d8;border-color:rgba(212,168,83,.55)}
+#s-duel button.chip.on{background:linear-gradient(#c8372c,#8b1c16);color:#fff1d2;border-color:#ecd391}
+#s-duel .curve>div{color:#e8dcc0}
+#s-duel .dnick{background:rgba(0,0,0,.45);color:#f0e8d8;border-color:rgba(212,168,83,.6)}
+#s-duel button.sm:not(.pri):not(.gold){border-color:rgba(212,168,83,.6)}
+/* 對戰 */
+#s-duelb{color:#f0e8d8}
+#s-duelb .dfield{padding:14px 16px;background:url(../img/duel_board.webp) center/100% 100% no-repeat;border-radius:4px;box-shadow:0 0 0 1px rgba(212,168,83,.35),0 8px 30px rgba(0,0,0,.7)}
+#s-duelb .drow .slot{border:1px solid rgba(212,168,83,.55);border-radius:3px;background:linear-gradient(rgba(255,230,170,.05),rgba(0,0,0,.45));
+  box-shadow:inset 0 0 0 2px rgba(7,6,10,.85),inset 0 0 0 3px rgba(212,168,83,.22),inset 0 0 14px rgba(0,0,0,.6)}
+#s-duelb .drow .lab{color:#d4a853;text-shadow:0 1px 2px #000}
+#s-duelb .drow.front .lab{color:#ff8a78}
+#s-duelb .dbar{color:#f0e8d8;border:1px solid rgba(212,168,83,.75);background:linear-gradient(rgba(34,25,16,.92),rgba(10,8,10,.94));box-shadow:inset 0 0 0 2px rgba(7,6,10,.9),inset 0 0 0 3px rgba(212,168,83,.3)}
+#s-duelb .dbar b.kai{color:#ecd391}
+#s-duelb .dbar.now{border-color:#f5e1a4;box-shadow:inset 3px 0 0 #e05858,inset 0 0 0 3px rgba(212,168,83,.35),0 0 12px rgba(236,211,145,.45)}
+#s-duelb .dbar .dim{color:#bdb096}
+#s-duelb .dbar .gate i{background:#3a3128}
+#s-duelb .dbar .gate i.on{background:#e05858;box-shadow:0 0 4px rgba(224,88,88,.7)}
+#s-duelb .dbar .aps i{background:#3a3128}
+#s-duelb .dbar .aps i.on{background:#ecd391;box-shadow:0 0 5px rgba(236,211,145,.8)}
+#s-duelb .dmid{position:relative;padding:4px 0;text-shadow:0 1px 3px #000,0 0 6px #000}
+#s-duelb .dmid b{color:#f5e1a4}
+#s-duelb .dlog{color:#d8cdb6}
+#s-duelb .dtime{color:#d8c79a}#s-duelb .dtime.low{color:#ff8a78}
+#s-duelb .dhand{border-top:1px solid rgba(212,168,83,.4);background:linear-gradient(rgba(212,168,83,.08),transparent)}
+#s-duelb .dhand .dim{color:#bdb096}
+#s-duelb .dact{background:linear-gradient(rgba(7,6,10,0),#07060a 30%)}
+#s-duelb .dact .dim{color:#bdb096}
+#s-duelb .dact b.kai{color:#ecd391}
+#s-duelb button.plain{background:rgba(255,240,200,.06);color:#f0e8d8;border-color:rgba(212,168,83,.55)}
+#s-duel .curve,#s-duel .curve *{color:#e8dcc0}
+#s-duelb .dmid{background:radial-gradient(ellipse 70% 100% at 50% 50%,rgba(7,6,10,.88),rgba(7,6,10,.6) 60%,transparent 85%)}
