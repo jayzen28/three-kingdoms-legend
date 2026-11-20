@@ -97,7 +97,7 @@
     var recHtml = "";
     if (rec) {
       if (!G.fallen.length) recHtml = '<p class="dim">這一戰沒有可招降的敵將。</p>';
-      else if (rec.got.length) recHtml = '<p><b>招降成功：</b>' + rec.got.map(function (c) { return c.name; }).join("、") + ' 歸順（N 卡）</p><div class="cards">' +
+      else if (rec.got.length) recHtml = '<p><b>招降成功：</b>' + rec.got.map(function (c) { return c.name; }).join("、") + ' 歸順（N 卡）</p><div class="cards rec">' +
         rec.got.map(function (c) { return SG.UI.cardHtml(c, { rar: "N", star: 1 }); }).join("") + '</div>';
       else recHtml = '<p class="dim">招降：' + G.fallen.join("、") + ' 不肯歸順（每人 ' + SG.UI.pct(rec.p) + '）。</p>';
     }
@@ -107,9 +107,14 @@
         : '<p class="dim" style="text-align:center">到茶館多招募幾輪，合成升星再來。</p>') +
       (gift ? '<p style="text-align:center"><b>新手禮：一般茶館 ' + SG.STARTER_PULLS + ' 抽</b></p><div class="row mid"><button class="pri" id="f-gift">拆開新手禮</button></div>'
         : '<div class="row mid"><button class="pri" id="f-again">再戰一次</button><button id="f-back">回戰役</button></div>'));
+    var endHtml = $("#modal-body").innerHTML;
+    var bindEnd = function () {
     if (gift) { $("#f-gift").onclick = function () { SG.UI.close(); SG.UI.go("home"); SG.UI.reveal("新手禮・一般茶館", gift, function () { SG.UI.result("新手禮・一般茶館", gift, "這 " + SG.STARTER_PULLS + " 抽已經幫你合成好，並自動編好隊伍，可以到「編隊」調整。"); SG.UI.go("home"); }); }; return; }
-    $("#f-again").onclick = function () { SG.UI.close(); BU.start(stage); };
-    $("#f-back").onclick = function () { SG.UI.close(); SG.UI.go("camp"); };
+    if ($("#f-again")) $("#f-again").onclick = function () { SG.UI.close(); BU.start(stage); };
+    if ($("#f-back")) $("#f-back").onclick = function () { SG.UI.close(); SG.UI.go("camp"); };
+    SG.UI.cardLinks("#modal .cards.rec .cc", (rec && rec.got) || [], function () { SG.UI.modal(endHtml); bindEnd(); });   // ✅ Jay：招降的卡點了放大
+    };
+    bindEnd();
   }
 
   function clickCell(r, c) {

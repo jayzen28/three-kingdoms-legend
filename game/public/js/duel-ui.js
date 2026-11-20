@@ -74,7 +74,7 @@
         '<p class="dim" style="text-align:center">' + (D.NO_LIMIT.indexOf(d.name) >= 0 ? (n ? '擁有她就能放，張數不限' : '還沒擁有這位武將') : n ? '你最多可以放 ' + n + ' 張（看擁有的最高卡別：N1・R2・SR3・SSR4）' : '還沒擁有這位武將') + '</p>';
     }
     UI.modal('<div class="dtop">' + (d.item ? '' : '<span class="seg">' + (opt.card ? '<button class="chip" id="bc-gen">一般版</button>' : '') + '<button class="chip' + (st === "u" ? ' on' : '') + '" data-fs="u">卡牌版</button><button class="chip' + (st === "l" ? ' on' : '') + '" data-fs="l">簡潔版</button></span>') + '<span class="grow"></span>' + CLOSE + '</div>' + body);
-    UI.back = opt.back || null;   // ✅ Jay：組牌裡看大卡按「收起」要回到組牌
+    UI.back = opt.back || UI.detailBack || null;   // ✅ Jay：組牌裡看大卡按「收起」要回到組牌；從抽卡結果來的回到抽卡結果
     // ✅ Jay 2026-11-20：完整版點卡片可以把文字收起來，看整張全身圖
     var big = $("#modal .dbig .dcu"); if (big) big.onclick = function () { big.classList.toggle("bare"); };
     if (opt.card && $("#bc-gen")) $("#bc-gen").onclick = function () { UI.setBookDuel(false); UI.cardDetail(opt.card); };   // 切回一般版，收集冊一起換
@@ -210,12 +210,19 @@
     sel = null; busy = false;
     UI.go("duelb");
     DU.render();
-    var hand = function () { return G.p[0].hand.map(function (d) { return DU.face(d, "s"); }).join(""); };
+    var hand = function () { return G.p[0].hand.map(function (d) { return DU.face(d, "s"); }).join(""); }, mulled = false;
+    // ✅ Jay 2026-11-20：換手牌畫面點卡可以放大，收起回到換手牌
+    var showMul = function () {
     UI.modal('<h2>' + (GHOST ? '對手：' + esc(opp.name) : o.name) + '</h2><p>' + (G.first === 0 ? '你<b>先攻</b>（第 1 回合 1 道軍令、不抽牌）。' : '你<b>後攻</b>（前兩回合各 2 道軍令）。') + '</p>' +
       '<p class="dim">起手 ' + D.HAND + ' 張，可以換一次。</p><p class="warn" id="mul-w"' + (D.noZero(G.p[0]) ? '' : ' hidden') + '>起手沒有 0 費卡，第一回合會出不了卡，建議換手牌。</p><div class="dhandpv" id="mul-pv">' + hand() + '</div>' +
       '<div class="row end"><button id="mul-re">換一次手牌</button><button class="pri" id="mul-go">開戰</button></div>');
-    $("#mul-re").onclick = function () { D.mulligan(G, 0); $("#mul-pv").innerHTML = hand(); $("#mul-w").hidden = !D.noZero(G.p[0]); this.disabled = true; };
+    var bindPv = function () { $$("#mul-pv .dc").forEach(function (c, i) { c.onclick = function () { DU.bigCard(G.p[0].hand[i], { back: showMul }); }; }); };
+    bindPv();
+    $("#mul-re").disabled = mulled;
+    $("#mul-re").onclick = function () { D.mulligan(G, 0); mulled = true; $("#mul-pv").innerHTML = hand(); bindPv(); $("#mul-w").hidden = !D.noZero(G.p[0]); this.disabled = true; };
     $("#mul-go").onclick = function () { UI.close(); D.startTurn(G); ghostClock(); afterAction(); if (G.cur === 1) DU.aiTurn(); };
+    };
+    showMul();
   };
   function ghostClock() { if (GHOST) GHOST.dl = Date.now() + 90000; }
   // 時間到自動結束回合（跟線上一樣）
@@ -608,6 +615,7 @@
     ["dtime", "dtime2", "mul-time"].forEach(function (id) { var e = document.getElementById(id); if (e) { e.textContent = id === "dtime" ? t : '剩 ' + left + ' 秒'; e.classList.toggle("low", left <= 10); } });
   }
   function netMull(m) {
+    NET.lastMull = m;
     if (!$("#s-duelb").offsetParent || G) { G = null; UI.go("duelb"); DU.render(); }
     NET.dl = m.deadline; NET.pdl = 0; startClock();
     var cards = m.hand.map(function (k) { return D.CARD[k] || D.ITEM[k]; });
@@ -617,7 +625,7 @@
       '<div class="dhandpv">' + cards.map(function (d) { return DU.face(d, "s"); }).join("") + '</div>' +
       '<p class="dim" id="mul-st">' + (m.ready ? '等對手準備…' : '') + '</p>' +
       '<div class="row end"><button id="mul-re" ' + (m.mulled || m.ready ? 'disabled' : '') + '>換一次手牌</button><button class="pri" id="mul-go" ' + (m.ready ? 'disabled' : '') + '>開戰</button></div>');
-    var modal = $("#modal");
+    $$("#modal .dhandpv .dc").forEach(function (c, i) { c.onclick = function () { var me = NET; DU.bigCard(cards[i], { back: function () { if (NET === me && me.lastMull) netMull(me.lastMull); } }); }; });   // 點卡放大
     $("#mul-re").onclick = function () { this.disabled = true; NET.send({ t: "mull" }); };
     $("#mul-go").onclick = function () { this.disabled = true; $("#mul-re").disabled = true; $("#mul-st").textContent = "等對手準備…"; NET.send({ t: "ready" }); };
     tick();

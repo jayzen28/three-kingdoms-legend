@@ -1076,3 +1076,6 @@ body.lux[data-scr=duelb]::before{background:radial-gradient(ellipse 80% 45% at 5
 .dcu.bgd.f-wei{background-image:url(../img/bg_wei.webp)}.dcu.bgd.f-shu{background-image:url(../img/bg_shu.webp)}.dcu.bgd.f-wu{background-image:url(../img/bg_wu.webp)}.dcu.bgd.f-qun{background-image:url(../img/bg_qun.webp)}.dcu.bgd.f-yt{background-image:url(../img/bg_yt.webp)}
 .dcu[data-artbg] .pic{object-fit:cover}
 .dbig .dcu{width:min(100%,calc((100dvh - 150px) * 832 / 1216))}
+#modal.top{z-index:70}
+#modal [data-rh]{cursor:pointer}
+#fxl .rvc.on{cursor:pointer}

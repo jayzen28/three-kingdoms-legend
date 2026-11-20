@@ -14,7 +14,16 @@
   UI.res = function () { $("#r-copper").textContent = fmt(S.copper); $("#r-yb").textContent = fmt(S.yuanbao); $("#r-tk").textContent = fmt(S.tickets); };
   UI.modal = function (html) { UI.back = null; $("#modal-body").innerHTML = html; $("#modal").classList.add("show"); $("#modal-body").scrollTop = 0; };
   // UI.back：從另一個視窗點開的（例如組牌裡看大卡），收起時回到原本的視窗
-  UI.close = function () { if (UI.back) { var f = UI.back; UI.back = null; return f(); } $("#modal").classList.remove("show"); };
+  UI.close = function () { if (UI.back) { var f = UI.back; UI.back = null; return f(); } UI.detailBack = null; $("#modal").classList.remove("show", "top"); };
+  // UI.detailBack：從抽卡結果點開卡片詳情時，詳情裡切版本、收起都要回到原本畫面（✅ Jay 2026-11-20）
+  UI.openDetail = function (card, back) { UI.detailBack = back; UI.cardDetail(card); };
+  // 視窗裡的一排卡片：點了放大看詳情，收起後回到原本視窗（✅ Jay 2026-11-20：能點卡牌的地方都要能放大）
+  UI.cardLinks = function (sel, cards, reopen) {
+    $$(sel).forEach(function (el, i) {
+      if (!cards[i]) return; el.style.cursor = "pointer";
+      el.onclick = function () { var y = $("#modal-body").scrollTop; UI.openDetail(cards[i], function () { UI.detailBack = null; reopen(); $("#modal-body").scrollTop = y; }); };
+    });
+  };
   $("#modal").addEventListener("click", function (e) { if (e.target.id === "modal") UI.close(); });
   UI.banner = function (t, color) {
     var b = $("#banner"); b.textContent = t; b.style.color = color || "#f6ecd6"; b.style.display = "block";
@@ -121,12 +130,13 @@
     UI.modal(top + (simple ? '<div class="dbig">' + UI.simpleHtml(card) + '</div>' : art || old) +
       (simple ? '' : (can && inTeam ? '<p class="dim">她在出戰隊伍裡，要先到「編隊」移出才能合成。</p>' : '') +
       (can ? '<div class="row end"><button class="gold" id="cd-merge" ' + (inTeam ? 'disabled' : '') + '>合成</button></div>' : '')));
+    UI.back = UI.detailBack || null;
     if ($("#cd-gen")) $("#cd-gen").onclick = function () { UI.setBookDuel(false); UI.cardDetail(card); };
     if ($("#cd-simple")) $("#cd-simple").onclick = function () { UI.setBookDuel(false); UI.cardDetail(card, "s"); };
     if ($("#cd-duel")) $("#cd-duel").onclick = function () { try { localStorage.setItem("sgl_duel_face", "u"); } catch (e) {} UI.setBookDuel(true); SG.DuelUI.bigCard(dd, { art: card.art, card: card }); };
     if (can && !inTeam && $("#cd-merge")) $("#cd-merge").onclick = function () {
       var r = SG.mergeCard(S, card.id); if (!r) return;
-      UI.save(); UI.close();
+      UI.back = null; UI.detailBack = null; UI.save(); UI.close();
       UI.mergeFx([r], function () { if ($("#s-book").classList.contains("show")) UI.r_book(); if ($("#s-team").classList.contains("show")) UI.r_team(); UI.cardDetail(card); });
     };
   };
@@ -195,7 +205,15 @@
       }
       busy = false; if (cnt) cnt.textContent = n + " / " + n;
     };
-    cards.forEach(function (c, i) { c.onclick = async function () { if (busy || many) return; busy = true; await flip(i, false); busy = false; }; });
+    cards.forEach(function (c, i) { c.onclick = async function () {
+      if (c.classList.contains("on")) {   // ✅ Jay 2026-11-20：翻開的卡點一下放大看
+        if (busy) return;
+        $("#modal").classList.add("top");
+        UI.openDetail(list[i].card, function () { UI.detailBack = null; $("#modal").classList.remove("show", "top"); });
+        return;
+      }
+      if (busy || many) return; busy = true; await flip(i, false); busy = false;
+    }; });
     $("#rv-ok").onclick = finish;
     $("#rv-skip").onclick = function () { if (many) { fast = true; if (!busy) runAll(0); } else runAll(480); };
     // 卡片帶金光從畫面前滑過
@@ -252,10 +270,14 @@
       var r = SG.mergeAll(S, false); UI.save();
       if (!r.merges) { UI.flash("沒有可以合成的卡"); after(); return; }
       UI.mergeFx(r.list, function () {
-        UI.modal('<h2>合成完成</h2><p>合成 ' + r.merges + ' 次，' + r.list.length + ' 位武將升星。</p><div class="cards">' +
+        var show = function () {
+        UI.modal('<h2>合成完成</h2><p>合成 ' + r.merges + ' 次，' + r.list.length + ' 位武將升星。</p><div class="cards mgsum">' +
           r.list.slice(0, 40).map(function (x) { return UI.cardHtml(x.card, x.to); }).join("") + '</div>' +
           (r.blocked.length ? '<p class="dim">隊伍裡還有 ' + r.blocked.length + ' 位沒合：' + r.blocked.map(function (c) { return c.gen; }).join("、") + '。</p>' : '') +
           '<div class="row end"><button onclick="SG.UI.close()">收下</button></div>');
+        UI.cardLinks("#modal .cards.mgsum .cc", r.list.slice(0, 40).map(function (x) { return x.card; }), show);
+        };
+        show();
         after();
       });
     };
@@ -456,13 +478,17 @@
   };
   UI.result = function (title, r, note) {
     var top = r.hits.filter(function (h) { return h.rar === "SSR" || h.rar === "UR"; });
-    var hits = r.hits.slice(0, 24).map(function (h) { return UI.cardHtml(h.card, { rar: h.rar, star: h.card.ur ? 6 : 1 }); }).join("");
+    var hits = r.hits.slice(0, 24).map(function (h, i) { return UI.cardHtml(h.card, { rar: h.rar, star: h.card.ur ? 6 : 1 }, { attr: 'data-rh="' + i + '"' }); }).join("");
     UI.modal('<h2>' + title + '　' + r.n + ' 抽</h2>' +
       '<div>' + RAR.map(function (x) { return '<span class="tag">' + x + ' ' + r.byRar[x] + '</span>'; }).join("") + '</div>' +
       '<p>' + (r.merges ? '已合成 ' + r.merges + ' 次・' : '') + '新武將 ' + r.newCards + ' 名' + (r.surplus ? '・到頂轉出售 ' + r.surplus + ' 張' : '') + '</p>' +
       (hits ? '<p class="dim">這次的 SR 以上：</p><div class="cards big">' + hits + '</div>' : '<p class="dim">這次沒有 SR 以上。</p>') +
-      (note ? '<p>' + note + '</p><div class="cards">' + S.team.map(function (id) { return UI.cardHtml(SG.CARD_BY_ID[id], SG.best(S, id)); }).join("") + '</div>' : '') +
+      (note ? '<p>' + note + '</p><div class="cards rteam">' + S.team.map(function (id) { return UI.cardHtml(SG.CARD_BY_ID[id], SG.best(S, id)); }).join("") + '</div>' : '') +
       '<div class="row end">' + (note ? '<button class="plain" onclick="SG.UI.close();SG.UI.go(\'team\')">去編隊</button>' : '') + '<button onclick="SG.UI.close()">收下</button></div>');
+    $$("#modal [data-rh]").forEach(function (c) {
+      c.onclick = function () { var y = $("#modal-body").scrollTop; UI.openDetail(r.hits[+c.dataset.rh].card, function () { UI.detailBack = null; UI.result(title, r, note); $("#modal-body").scrollTop = y; }); };
+    });
+    if (note) UI.cardLinks("#modal .cards.rteam .cc", S.team.map(function (id) { return SG.CARD_BY_ID[id]; }), function () { UI.result(title, r, note); });
   };
 
   // ===== 收集冊 =====
