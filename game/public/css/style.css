@@ -604,7 +604,7 @@ button.chip.on{background:linear-gradient(#c8372c,#8b1c16);color:#fff1d2;border-
 .b3-fx{position:absolute;left:30px;top:24px;font:700 10px/1 "Noto Serif TC",serif;color:#fff;background:#b3261e;border-radius:3px;padding:1px 2px}.b3-fx:empty{display:none}
 .b3-ban{position:absolute;left:30px;bottom:-12px;width:33px;height:100px;background:url(../img/bf/flag_p.webp) 0 0/300% 100% no-repeat;animation:b3wave .9s step-end infinite}
 .b3-ban.E{background-image:url(../img/bf/flag_e.webp)}
-.b3-ban span{position:absolute;left:5px;top:9px;width:20px;height:24px;display:flex;align-items:center;justify-content:center;font:700 15px/1 "Ma Shan Zheng","Noto Serif TC",serif;color:#f6e7b4;text-shadow:0 0 2px #400,0 1px 1px #000}
+.b3-ban span{position:absolute;left:5px;top:9px;width:20px;height:24px;display:flex;align-items:center;justify-content:center;font:700 15px/1 "SGLBrush","Noto Serif TC",serif;color:#f6e7b4;text-shadow:0 0 2px #400,0 1px 1px #000}
 .b3-ban.E span{color:#4a1c08;text-shadow:0 0 2px #fff6}.b3-ban span.two{font-size:10px;writing-mode:vertical-rl;letter-spacing:-1px}
 .b3-hp{position:absolute;left:-6px;top:38px;width:52px;text-align:center;font:700 11px/1 monospace;color:#fff;text-shadow:0 0 3px #000,0 0 3px #000}
 .b3-bar{position:absolute;left:0;top:50px;width:40px;height:4px;background:#0008;border-radius:2px;overflow:hidden}.b3-bar b{display:block;height:100%;background:var(--c)}
@@ -1135,7 +1135,7 @@ body.lux[data-scr=duelb]::before{background:radial-gradient(ellipse 80% 45% at 5
 @keyframes ciDust{0%{opacity:0;transform:none}20%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy))}}
 .ci-txt{position:absolute;z-index:6;right:3vw;top:8vh;display:flex;flex-direction:row-reverse;gap:8px;align-items:flex-start}
 .s1 .ci-txt{right:auto;left:3vw;flex-direction:row}
-.ci-name{font-family:"Ma Shan Zheng",var(--kai);font-size:min(11vh,15vw,88px);line-height:1.02}
+.ci-name{font-family:"SGLBrush",var(--kai);font-size:min(11vh,15vw,88px);line-height:1.02}
 .ci-txt.v .ci-name{writing-mode:vertical-rl}
 .ci-name span{display:inline-block;color:#fbe7a6;background:linear-gradient(180deg,#fffbe8,#f5d98a 45%,#c08a28);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   filter:drop-shadow(0 3px 0 #1a0f05) drop-shadow(0 0 12px var(--c1));opacity:0;transform:scale(2.2);animation:ciCh .28s cubic-bezier(.2,1.5,.4,1) both}
@@ -1144,7 +1144,7 @@ body.lux[data-scr=duelb]::before{background:radial-gradient(ellipse 80% 45% at 5
 @keyframes ciShine{from{background-position:100% 0}to{background-position:-200% 0}}
 .ci-who{writing-mode:vertical-rl;font-family:var(--kai);font-size:17px;letter-spacing:.2em;color:#fff;text-shadow:0 1px 3px #000,0 0 8px #000;opacity:0;animation:ciFade .3s .95s both}
 .ci-who em{font-style:normal;color:#f5d98a;margin-top:10px;font-size:13px}
-.ci-seal{position:absolute;z-index:7;right:5vw;bottom:9vh;width:66px;height:66px;display:grid;place-items:center;font-family:"Ma Shan Zheng",var(--kai);font-size:46px;color:#fff3e0;background:#b3261e;border-radius:6px;
+.ci-seal{position:absolute;z-index:7;right:5vw;bottom:9vh;width:66px;height:66px;display:grid;place-items:center;font-family:"SGLBrush",var(--kai);font-size:46px;color:#fff3e0;background:#b3261e;border-radius:6px;
   box-shadow:inset 0 0 0 3px rgba(255,243,224,.7),0 0 0 2px #7f1a15,0 6px 18px rgba(0,0,0,.6);opacity:0;transform:rotate(-8deg) scale(3);animation:ciSeal .22s cubic-bezier(.5,0,.6,1.6) 1.05s forwards}
 .s1 .ci-seal{right:auto;left:5vw}
 @keyframes ciSeal{to{opacity:1;transform:rotate(-8deg) scale(1)}}
@@ -1221,7 +1221,7 @@ body.ci-shake .cutin{animation:ciShake .36s}
   background:radial-gradient(circle at 35% 30%,#fff1b8,#e0b04a 35%,#a8741e 70%,#6e4a12);box-shadow:inset 0 0 0 6px #c99a3c,inset 0 0 0 8px #6e4a12,inset 0 0 18px rgba(0,0,0,.45),0 0 26px rgba(236,211,145,.55)}
 .ts-face.b{transform:rotateX(180deg);background:radial-gradient(circle at 35% 30%,#f3dc9a,#c99a3c 35%,#8c6218 70%,#5a3c0d)}
 .ts-face i{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;background:#1a120a;box-shadow:0 0 0 4px #c99a3c,0 0 0 6px #6e4a12}
-.ts-face b{position:absolute;top:50%;font-family:"Ma Shan Zheng",var(--kai);font-size:34px;color:#5a3a0c;transform:translateY(-52%);text-shadow:0 1px 0 #ffe9a8}
+.ts-face b{position:absolute;top:50%;font-family:"SGLBrush",var(--kai);font-size:34px;color:#5a3a0c;transform:translateY(-52%);text-shadow:0 1px 0 #ffe9a8}
 .ts-face b.l{left:16px}.ts-face b.r{right:16px}
 .ts-face em{position:absolute;inset:26px;border:3px solid rgba(90,58,12,.6);border-radius:50%}
 .ts-res{font-size:22px;text-align:center;line-height:1.3;opacity:0;transform:scale(.6);transition:all .35s cubic-bezier(.2,1.5,.4,1)}
@@ -1241,11 +1241,11 @@ body.ci-shake .cutin{animation:ciShake .36s}
   opacity:0;animation:siIn .42s cubic-bezier(.2,1.15,.35,1) both}
 .si-strip:nth-child(odd){--from:-110vh}.si-strip:nth-child(even){--from:110vh}
 @keyframes siIn{from{opacity:0;transform:translateY(var(--from))}to{opacity:1;transform:none}}
-.si-pic{position:absolute;inset:0 -40%;background:center 22%/cover no-repeat;transform:skewX(9deg)}
+.si-pic{position:absolute;inset:0 -18%;background:center 22%/cover no-repeat;transform:skewX(9deg)}
 .s1 .si-pic{transform:skewX(-9deg)}
 .si-strip.off .si-pic{filter:grayscale(1) brightness(.22)}
 .si-strip.off{border-color:rgba(255,255,255,.18);box-shadow:none}
-.si-strip b{position:absolute;left:0;right:0;bottom:7vh;text-align:center;transform:skewX(9deg);font-family:"Ma Shan Zheng",var(--kai);font-size:min(5vh,7vw);color:#fff;text-shadow:0 0 8px var(--c1),0 2px 3px #000;writing-mode:vertical-rl;margin:0 auto;width:1.2em}
+.si-strip b{position:absolute;left:0;right:0;bottom:7vh;text-align:center;transform:skewX(9deg);font-family:"SGLBrush",var(--kai);font-size:min(5vh,7vw);color:#fff;text-shadow:0 0 8px var(--c1),0 2px 3px #000;writing-mode:vertical-rl;margin:0 auto;width:1.2em}
 .si-strip.off b{color:rgba(255,255,255,.35);text-shadow:none}
 .si-bolts{position:absolute;inset:0;z-index:5;width:100%;height:100%;pointer-events:none}
 .si-bolts polyline{fill:none;stroke:#fff;stroke-width:.5;stroke-linejoin:bevel;filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 3px var(--c1)) drop-shadow(0 0 6px var(--c1));opacity:0;animation:siBolt .5s steps(1) both}
@@ -1260,7 +1260,7 @@ body.ci-shake .cutin{animation:ciShake .36s}
 .si-txt{position:absolute;z-index:8;left:0;right:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 0;
   background:linear-gradient(90deg,transparent,rgba(7,6,10,.86) 18%,rgba(7,6,10,.86) 82%,transparent);opacity:0;animation:ciFade .25s .62s forwards}
 .si-tag{font-family:var(--kai);font-size:15px;letter-spacing:.3em;color:var(--c1);text-shadow:0 0 8px var(--c1)}
-.si-name{font-family:"Ma Shan Zheng",var(--kai);font-size:min(13vw,74px);line-height:1;white-space:nowrap}
+.si-name{font-family:"SGLBrush",var(--kai);font-size:min(13vw,74px);line-height:1;white-space:nowrap}
 .si-name span{display:inline-block;color:#fff;-webkit-text-stroke:1px var(--c1);text-shadow:0 0 10px var(--c1),0 0 26px var(--c1),0 3px 0 #000;opacity:0;transform:scale(2.4) rotate(-8deg);animation:ciCh .26s cubic-bezier(.2,1.6,.4,1) both}
 .full .si-name span{animation:ciCh .26s cubic-bezier(.2,1.6,.4,1) both,siBuzz .12s 1.3s 6 linear}
 @keyframes siBuzz{0%,100%{translate:0 0}25%{translate:-2px 1px}50%{translate:2px -1px}75%{translate:-1px -1px}}
@@ -1268,3 +1268,21 @@ body.ci-shake .cutin{animation:ciShake .36s}
 .si-pips i.on{background:var(--c1);box-shadow:0 0 10px var(--c1)}
 .si-bonus{font-family:var(--kai);font-size:18px;color:#f0e8d8;letter-spacing:.1em}.si-bonus b{font-size:26px;color:#fff;text-shadow:0 0 10px var(--c1)}
 .setin .ce{z-index:4}
+
+/* ✅ Jay 2026-11-21：演出字體全部統一（霞鶩文楷 TC 粗，繁體字都有，不會掉回別的字體） */
+@font-face{font-family:"SGLBrush";src:url(../font/brush.woff2) format("woff2");font-display:block}
+.cutin,.cutin *,.setin,.setin *,.toss,.toss *{font-family:"SGLBrush",var(--kai)!important}
+.si-strip b,.ci-name,.si-name{font-weight:700}
+
+/* 閃電改用 canvas；打中時白閃＋裂痕＋鏡頭衝擊 */
+canvas.si-bolts{position:absolute;inset:0;z-index:6;width:100%;height:100%;pointer-events:none}
+.si-crack{position:absolute;inset:0;z-index:5;pointer-events:none;opacity:0;background:
+ radial-gradient(circle at 50% 50%,transparent 0 9vmin,color-mix(in srgb,var(--c1) 70%,#fff) 9.3vmin,transparent 10vmin),
+ radial-gradient(circle at 50% 50%,transparent 0 22vmin,color-mix(in srgb,var(--c1) 50%,transparent) 22.4vmin,transparent 23.5vmin)}
+.setin.hit .si-crack{animation:siShock .7s ease-out both}
+.setin.hit2 .si-crack{animation:siShock2 .7s ease-out both}
+@keyframes siShock{0%{opacity:1;transform:scale(.3)}100%{opacity:0;transform:scale(2.6)}}
+@keyframes siShock2{0%{opacity:1;transform:scale(.3)}100%{opacity:0;transform:scale(3.2)}}
+.setin.hit .si-strips{animation:siPunch .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes siPunch{0%{scale:1.08;filter:brightness(2.2) contrast(1.3)}100%{scale:1;filter:none}}
+.setin .ci-dim{background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(0,0,0,.25),rgba(0,0,0,.8))}

@@ -9,6 +9,55 @@
   var ELEM_P = { "曹操": "rays", "司馬懿": "smoke", "張遼": "slash", "劉備": "petals", "關羽": "slash", "張飛": "rings", "諸葛亮": "stars", "孫權": "rays", "周瑜": "fire", "呂蒙": "waves", "貂蟬": "petals", "董卓": "smoke", "張角": "bolt", "呂布": "slash" };
   var ELEM_S = { "遠射": "arrows", "破門": "rings", "護主": "shield", "幻術": "mist", "計謀": "mist", "號召": "rays", "軍師": "stars", "突擊": "arrows", "連戰": "slash", "陣前換將": "waves", "結義": "rays", "鐵壁": "shield" };
   var ECOL = { "呂布": "#ff4a3a", "董卓": "#ff5a3a", "司馬懿": "#b07cff", "張遼": "#8fd0ff", "周瑜": "#ff8a2a", "張角": "#ffe066", "貂蟬": "#ff9ec8", "劉備": "#ffb3d1", "曹操": "#d9a8ff", "孫權": "#ffd27a" };
+  // 依臉的位置取景：圖等比縮放（cover 再乘 zoom），把臉放到框內 (tx, ty)
+  function frame(el, art, zoom, tx, ty) {
+    var f = (SG.FACEY && SG.FACEY[art]) || [0.5, 0.24, 0.22], W = el.clientWidth, H = el.clientHeight; if (!W || !H) return;
+    var sc = Math.max(W / 832, H / 1216) * (zoom || 1), iw = 832 * sc, ih = 1216 * sc;
+    var x = Math.min(0, Math.max(W - iw, W * tx - f[0] * iw)), y = Math.min(0, Math.max(H - ih, H * ty - f[1] * ih));
+    el.style.backgroundSize = iw.toFixed(0) + "px " + ih.toFixed(0) + "px"; el.style.backgroundPosition = x.toFixed(0) + "px " + y.toFixed(0) + "px";
+  }
+  // ===== 閃電（canvas）：主幹粗、會分岔，每道形狀粗細都不同，會閃爍、留殘光 =====
+  function Lightning(cv, col) {
+    var k = devicePixelRatio > 1 ? 1.5 : 1, g = cv.getContext("2d"), W = cv.width = innerWidth * k, H = cv.height = innerHeight * k, live = [], raf = 0, dead = false;
+    function bolt(x0, y0, x1, y1, w, depth) {
+      var pts = [[x0, y0], [x1, y1]], dis = Math.hypot(x1 - x0, y1 - y0) * 0.28;
+      for (var it = 0; it < 7; it++) {
+        var np = [pts[0]];
+        for (var i = 1; i < pts.length; i++) { var a = pts[i - 1], b = pts[i], mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[1] - a[1], dy = a[0] - b[0], L = Math.hypot(dx, dy) || 1, o = (Math.random() - .5) * dis; np.push([mx + dx / L * o, my + dy / L * o], b); }
+        pts = np; dis *= 0.55;
+      }
+      var segs = [{ p: pts, w: w }];
+      if (depth < 2) for (var n = 0; n < 2 + Math.floor(Math.random() * 3); n++) {
+        var s0 = pts[Math.floor(pts.length * (0.15 + Math.random() * 0.6))], ang = Math.atan2(y1 - y0, x1 - x0) + (Math.random() - .5) * 1.6, len = Math.hypot(x1 - x0, y1 - y0) * (0.18 + Math.random() * 0.32);
+        segs = segs.concat(bolt(s0[0], s0[1], s0[0] + Math.cos(ang) * len, s0[1] + Math.sin(ang) * len, w * (0.35 + Math.random() * 0.25), depth + 1));
+      }
+      return segs;
+    }
+    function draw() {
+      if (dead) return; g.clearRect(0, 0, W, H); var now = performance.now();
+      g.globalCompositeOperation = "lighter"; g.lineCap = "round"; g.lineJoin = "round";
+      live = live.filter(function (b) { return now - b.t < b.life; });
+      live.forEach(function (b) {
+        var age = (now - b.t) / b.life, fl = age < 0.12 ? 1 : age < 0.2 ? 0.25 : age < 0.32 ? 0.95 : Math.max(0, 1 - age) * (Math.random() < 0.15 ? 0.3 : 1);
+        b.segs.forEach(function (sg) {
+          [[sg.w * 5, col, 0.22], [sg.w * 2.2, col, 0.55], [sg.w, "#ffffff", 1]].forEach(function (L) {
+            g.strokeStyle = L[1]; g.globalAlpha = fl * L[2]; g.lineWidth = L[0]; g.shadowColor = col; g.shadowBlur = L[0] * 1.5;
+            g.beginPath(); sg.p.forEach(function (q, i) { if (i) g.lineTo(q[0], q[1]); else g.moveTo(q[0], q[1]); }); g.stroke();
+          });
+        });
+      });
+      g.globalAlpha = 1;
+      if (live.length) raf = requestAnimationFrame(draw); else raf = 0;
+    }
+    return {
+      strike: function (tx, ty, w) {
+        var x0 = (Math.random() * 1.2 - .1) * W, x1 = tx * W + (Math.random() - .5) * W * .1, y1 = ty * H;
+        live.push({ segs: bolt(x0, -20, x1, y1, (w || 7) * (W / 600), 0), t: performance.now(), life: 420 + Math.random() * 260 });
+        if (!raf) raf = requestAnimationFrame(draw);
+      },
+      stop: function () { dead = true; cancelAnimationFrame(raf); }
+    };
+  }
   function rnd(a, b) { return (a + Math.random() * (b - a)).toFixed(1); }
   function many(n, f) { var h = ""; for (var i = 0; i < n; i++) h += f(i); return h; }
   function elem(type) {
@@ -47,7 +96,7 @@
       var d = D.CARD[n], art = d && d.art; if (!art || cache[art]) return;
       var im = new Image(); im.src = "img/" + art + "_full.webp"; cache[art] = im.decode ? im.decode().then(function () { return im; }, function () { return im; }) : Promise.resolve(im);
     });
-    if (!fontReady && document.fonts && document.fonts.load) fontReady = document.fonts.load('48px "Ma Shan Zheng"', D.LIST.map(function (x) { return x.skillName || ""; }).join("") + "技敵").catch(function () {});
+    if (!fontReady && document.fonts && document.fonts.load) fontReady = document.fonts.load('48px "SGLBrush"', "技敵組合").catch(function () {});
   };
   DU.cutin = function (d, o) {
     o = o || {};
@@ -73,6 +122,7 @@
         '<div class="ci-seal">' + (side ? '敵' : '技') + '</div>' +
         '<div class="ci-skip">點一下跳過</div>';
       document.body.appendChild(el);
+      var pm = el.querySelector(".ci-main"); if (pm) frame(pm, art, 1.05, side ? 0.42 : 0.5, 0.3);
       var done = false, timers = [];
       var finish = function () { if (done) return; done = true; timers.forEach(clearTimeout); el.classList.add("out"); setTimeout(function () { el.remove(); res(); }, 320); };
       timers.push(setTimeout(function () { document.body.classList.add("ci-shake"); setTimeout(function () { document.body.classList.remove("ci-shake"); }, 360); }, T.seal));
@@ -104,25 +154,30 @@
       var strips = arts.map(function (a, i) {
         return '<div class="si-strip' + (a.on ? '' : ' off') + '" style="--i:' + i + ';animation-delay:' + (120 + i * 90) + 'ms"><div class="si-pic" style="' + (a.art ? 'background-image:url(img/' + a.art + '_full.webp)' : '') + '"></div><b>' + a.n + '</b></div>';
       }).join("");
-      var bolts = ""; for (var b = 0; b < (full ? 7 : 4); b++) {
-        var x0 = Math.random() * 100, x1 = Math.random() * 100;
-        bolts += '<polyline style="animation-delay:' + (380 + b * 70 + Math.random() * 120).toFixed(0) + 'ms" points="' + zig(x0, -5, x1, 105, 12, 14) + '"/>';
-      }
+
       var sparks = ""; for (var k = 0; k < (full ? 46 : 28); k++) {
         var ang = Math.random() * 360, len = 30 + Math.random() * 60;
         sparks += '<i style="--a:' + ang.toFixed(0) + 'deg;--l:' + len.toFixed(0) + 'vmin;animation-delay:' + (560 + Math.random() * 160).toFixed(0) + 'ms"></i>';
       }
       var pips = ""; for (var q = 1; q <= st.size; q++) pips += '<i class="' + (q <= st.n ? 'on' : '') + '"></i>';
       el.innerHTML = '<div class="ci-dim"></div><div class="si-strips">' + strips + '</div>' + elem(fx[1]) +
-        '<svg class="si-bolts" viewBox="0 0 100 100" preserveAspectRatio="none">' + bolts + '</svg>' +
+        '<canvas class="si-bolts"></canvas><div class="si-crack"></div>' +
         '<div class="si-flash"></div><div class="si-sparks">' + sparks + '</div>' +
         '<div class="si-txt"><div class="si-tag">' + (side ? '敵方・' : '') + '組合' + (full ? '・全員集結' : '') + '</div>' +
         '<div class="si-name">' + st.tag.split("").map(function (ch, i) { return '<span style="animation-delay:' + (700 + i * 80) + 'ms">' + ch + '</span>'; }).join("") + '</div>' +
         '<div class="si-pips">' + pips + '</div><div class="si-bonus">' + NUM[st.n] + '人陣・兵力 <b>+' + st.bonus + '</b></div></div>' +
         '<div class="ci-skip">點一下跳過</div>';
       document.body.appendChild(el);
+      el.querySelectorAll(".si-pic").forEach(function (pc, i) { if (arts[i].art) frame(pc, arts[i].art, 1.15, 0.5, 0.3); });
+      var LG = Lightning(el.querySelector(".si-bolts"), col);
       var done = false, timers = [];
-      var finish = function () { if (done) return; done = true; timers.forEach(clearTimeout); el.classList.add("out"); setTimeout(function () { el.remove(); res(); }, 320); };
+      var finish = function () { if (done) return; done = true; LG.stop(); timers.forEach(clearTimeout); el.classList.add("out"); setTimeout(function () { el.remove(); res(); }, 320); };
+      var at = function (ms, fn) { timers.push(setTimeout(fn, ms)); };
+      // 每條立繪落下各劈一道，接著重擊中央、再連發；全員再補一輪
+      arts.forEach(function (a, i) { at(200 + i * 90, function () { LG.strike((i + 0.5) / arts.length, 0.35 + Math.random() * 0.4, 5 + Math.random() * 3); }); });
+      at(540, function () { LG.strike(0.5, 0.5, 12); LG.strike(0.3 + Math.random() * 0.4, 0.5, 8); el.classList.add("hit"); });
+      for (var z = 0; z < (full ? 9 : 5); z++) at(700 + z * (full ? 120 : 150) + Math.random() * 60, function () { LG.strike(Math.random(), 0.2 + Math.random() * 0.75, 3 + Math.random() * 9); });
+      if (full) at(1150, function () { LG.strike(0.5, 0.5, 16); LG.strike(0.2, 0.55, 10); LG.strike(0.8, 0.45, 10); el.classList.add("hit2"); });
       timers.push(setTimeout(function () { document.body.classList.add("ci-shake"); setTimeout(function () { document.body.classList.remove("ci-shake"); }, 380); }, 560));
       if (full) timers.push(setTimeout(function () { document.body.classList.add("ci-shake"); setTimeout(function () { document.body.classList.remove("ci-shake"); }, 380); }, 1150));
       timers.push(setTimeout(finish, full ? 2900 : 2400));
