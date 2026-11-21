@@ -422,10 +422,15 @@
   async function playFx() {
     var q = G && G.fxq; if (!q || !q.length || fxPlaying) return;
     G.fxq = [];
-    if (!DU.fxOn() || !DU.cutin) return;
+    if (!DU.cutin) return;
     fxPlaying = true;
+    var on = DU.fxOn();   // 「特技演出」關掉時只略過特技和組合演出；交戰、城門翻牌、道具照播（✅ Jay 2026-11-22）
     for (var i = 0; i < q.length; i++) {
       var x = q[i], mine = x.who === 0;
+      if (x.clash) { await DU.clashin(x.clash, mine ? 0 : 1); continue; }
+      if (x.flip) { await DU.flipin(x, mine ? 0 : 1); continue; }
+      if (x.item) { await DU.itemin(x, mine ? 0 : 1); continue; }
+      if (!on || !x.d && !x.set) continue;
       if (x.set) { if (DU.setin) await DU.setin(x.set, mine ? 0 : 1); continue; }
       var rar = mine ? DU.myRar(x.d.name) : NET ? ((NET.oppRar || {})[x.d.name] || "R") : "SR";   // ★ 電腦對手先當 SR
       await DU.cutin(x.d, { side: mine ? 0 : 1, rar: rar });
@@ -450,17 +455,13 @@
   // 戰鬥演出
   async function fightFx() {
     var f = G.lastFight; G.lastFight = null;
-    if (G.lastGuard) { UI.banner("護主！擋下了", "#cfe6ff"); G.lastGuard = null; }
-    else if (G.lastSave) { UI.banner("小籠包！留住了", "#ecd391"); G.lastSave = null; }
-    else if (f && f.lubu) UI.banner("神擋殺神", "#ff9c7a");
-    else if (f && f.f) {
-      var t = f.f.deadA && f.f.deadB ? "同歸於盡" : f.f.deadB ? f.b.d.name + " 被擊退" : f.f.deadA ? f.a.d.name + " 被擊退" : "擋下了";
-      UI.banner(t, f.f.deadB ? "#ff9c7a" : "#cfe6ff");
-    }
+    // 交戰結果、小籠包、城門翻牌都改成大卡演出（playFx），這裡只收尾
+    G.lastGuard = null; G.lastSave = null;
     DU.render(); flipPop();
-    await wait(f && (f.f || f.lubu) ? 900 : 700);
+    await wait(f ? 250 : 150);
   }
-  function flipPop() {
+  function flipPop() {   // 城門翻牌改成 DU.flipin 大卡演出（佇列裡），這裡只清掉舊事件
+    G.lastFlip = null; return;
     var f = G.lastFlip; if (!f) return; G.lastFlip = null;
     var el = document.createElement("div"); el.className = "dflip " + (f.who === 0 ? "mine" : "theirs");
     el.innerHTML = '<div class="t">' + (f.who === 0 ? '我方' : '敵方') + '城門被破</div>' + DU.face(f.d, "m") + (f.d.trig ? '<div class="g">急報・' + f.d.trig + '</div>' : '');
@@ -511,7 +512,7 @@
       await playFx();
       if (G.pending && G.pending.type === "block") { DU.render(); D.block(G, await askBlock()); await playFx(); }
       DU.render(); flipPop();
-      await ghostWait(/attack|snipe|duel|lubu|break/.test(act.t) ? 700 : 650);
+      await ghostWait(/attack|snipe|duel|lubu|break/.test(act.t) ? 300 : 650);
       if (G.lastFight || G.lastGuard || G.lastSave) await fightFx();
     }
     if (!G || G.winner >= 0) { busy = false; DU.render(); return DU.over(); }
@@ -524,9 +525,9 @@
     var rows = pd.list.map(function (v) {
       var hb = D.hp(me, v, true);
       var out = hb > pa ? '擋下並擊退對方（她剩 ' + (hb - pa) + '）' : hb === pa ? '同歸於盡' : '她會被擊退（對方剩 ' + (pa - hb) + '）';
-      return '<div class="li">' + DU.face(v.d, "s", { bp: hb, full: v.d.bp }) + '<div class="grow"><b>' + v.d.name + '</b><div class="sub">兵力 ' + hb + '・' + out + '</div></div><button class="' + (hb > pa ? 'pri' : '') + '" data-blk="' + v.id + '">格擋</button></div>';
+      return '<div class="li blk-row">' + DU.face(v.d, "s", { bp: hb, full: v.d.bp }) + '<div class="grow"><b>' + v.d.name + '</b><div class="sub">兵力 ' + hb + '・' + out + '</div></div><button class="' + (hb > pa ? 'pri' : '') + '" data-blk="' + v.id + '">格擋</button></div>';
     }).join("");
-    UI.modal('<h2>敵軍來攻' + (NET ? ' <small class="dtime" id="dtime2"></small>' : '') + '</h2><div class="li">' + DU.face(a.d, "s", { bp: pa, full: a.d.bp }) + '<div class="grow"><b>' + a.d.name + '</b><div class="sub">兵力 ' + pa + '</div></div></div>' +
+    UI.modal('<h2>敵軍來攻' + (NET ? ' <small class="dtime" id="dtime2"></small>' : '') + '</h2><div class="blk-atk">' + DU.face(a.d, "m", { bp: pa, full: a.d.bp }) + '<div><div class="sub">敵方・進攻</div><b class="kai">' + a.d.name + '</b><div class="bpn">兵力 <b>' + pa + '</b></div>' + (a.d.skill ? '<div class="sub">' + (a.d.personal ? '★' : '') + a.d.skillName + '</div>' : '') + '</div></div>' +
       '<p>要派誰格擋？兩邊會互扣兵力。不擋的話城門會被破 1 道（剩 ' + (me.life.length - 1) + ' 道）。</p><div>' + rows + '</div>' +
       '<div class="row end"><button class="plain" id="blk-no">不擋</button></div>');
     var done = function (id) { UI.close(); var r = pickRes; pickRes = null; if (r) r(id); };

@@ -175,7 +175,7 @@
     var t = targetId ? D.field(P).find(function (u) { return u.id === targetId; }) : null;
     if (it.tgt === "mine" && !t) return false;
     P.hand.splice(handIdx, 1); P.ap -= it.ap; P.side.push(it);
-    var say = function (s) { G.log(nm(G, who) + "使用道具「" + it.name + "」：" + s); };
+    var say = function (s) { G.log(nm(G, who) + "使用道具「" + it.name + "」：" + s); ev(G, { who: who, item: it, msg: s, tgt: t ? t.d : null }); };
     if (it.id === "ling") { P.ap += 2; say("軍令 +2（剩 " + P.ap + " 道）"); }
     else if (it.id === "liang") { P.eb = (P.eb || 0) + 2; say("這回合軍餉 +2（現在 " + D.energy(P) + "）"); }
     else if (it.id === "chitu") { var z = P.front.indexOf(t) >= 0 ? P.front : P.back; z.splice(z.indexOf(t), 1); P.hand.push(t.d); say(t.d.name + " 回到手牌"); }
@@ -195,6 +195,8 @@
   // 特技發動 → 記到 G.fxq，畫面依序播全身大演出（✅ Jay 2026-11-21：所有特技都播、雙方都播）
   function fx(G, who, d) { if (G.human < 0 && !G.both) return; (G.fxq = G.fxq || []).push({ who: who, d: d }); }
   D.fx = fx;
+  // 其他演出事件（✅ Jay 2026-11-22）：交戰大卡、城門翻牌、道具使用。跟特技演出同一條佇列，照發生順序播
+  function ev(G, o) { if (G.human < 0 && !G.both) return o; (G.fxq = G.fxq || []).push(o); return o; }
   function onPlay(G, who, u, tid) {
     var P = G.p[who], O = G.p[1 - who], d = u.d, s = d.skill, shown = false;
     var say = function (t) { if (!shown) { shown = true; fx(G, who, d); } G.log("　" + (d.personal ? d.skillName : s) + "：" + t); };
@@ -240,8 +242,9 @@
     if (!noSave) {
       var bi = P.hand.findIndex(function (c) { return c.item && c.id === "bao"; });
       if (bi >= 0 && P.ap >= 1) {   // ★ 小籠包自動使用
-        P.ap--; P.side.push(P.hand.splice(bi, 1)[0]);
+        var bao = P.hand.splice(bi, 1)[0]; P.ap--; P.side.push(bao);
         u.dmg = Math.max(0, D.bp(P, u) - 1000); u.saved = true;
+        ev(G, { who: who, item: bao, msg: u.d.name + " 免於擊退，留在場上（兵力剩 1000）", tgt: u.d });
         G.log("　小籠包：" + nm(G, who) + " " + u.d.name + " 留在場上，兵力剩 1000"); G.lastSave = { who: who, u: u };
         return false;
       }
@@ -260,10 +263,12 @@
     opt = opt || {};
     var A = G.p[wa], B = G.p[wb];
     var pa = D.hp(A, a), pb = D.hp(B, b, opt.blocking);
+    var e = ev(G, { who: wa, clash: { a: a.d, pa: pa, b: b.d, pb: pb, kind: opt.kind || "block", noCounter: !!opt.noCounter } });
     b.dmg = (b.dmg || 0) + pa;
     if (!opt.noCounter) a.dmg = (a.dmg || 0) + pb;
     var deadB = D.hp(B, b, opt.blocking) <= 0, deadA = !opt.noCounter && D.hp(A, a) <= 0;
     var kb = deadB && kill(G, wb, b), ka = deadA && kill(G, wa, a);
+    e.clash.deadA = !!ka; e.clash.deadB = !!kb; e.clash.leftA = ka ? 0 : Math.max(0, D.hp(A, a)); e.clash.leftB = kb ? 0 : Math.max(0, D.hp(B, b));
     return { pa: pa, pb: pb, deadA: ka, deadB: kb, a: a, b: b };
   }
 
@@ -298,7 +303,10 @@
       if (!f.deadB && D.field(G.p[1 - who]).indexOf(b) >= 0) G.log("　" + b.d.name + " 擋下，剩兵力 " + D.hp(G.p[1 - who], b));
       if (!f.deadA && P.front.indexOf(a) >= 0) G.log("　" + a.d.name + " 剩兵力 " + D.hp(P, a));
       if (f.deadB && !f.deadA && a.d.name === "關羽" && a.extra < 2 && P.front.indexOf(a) >= 0) { a.extra++; a.act = true; fx(G, who, a.d); G.log("　過五關斬六將：關羽再戰"); }
-    } else damage(G, 1 - who, 1, a);
+    } else {
+      var L0 = G.p[1 - who].life.length, eg = ev(G, { who: who, clash: { a: a.d, pa: D.hp(P, a), b: null, kind: "gate" } });
+      damage(G, 1 - who, 1, a); eg.clash.gates = L0 - G.p[1 - who].life.length; eg.clash.left = G.p[1 - who].life.length;
+    }
     if (a.d.skill === "連擊" && a.atk === 1 && P.front.indexOf(a) >= 0 && G.winner < 0) { a.act = true; fx(G, who, a.d); G.log("　連擊：" + a.d.name + " 可以再進攻"); }
     G.lastFight = res; settle(G);
     return res;
@@ -310,7 +318,7 @@
     if (!t || !D.canSnipe(G, who, a)) return false;
     G.phase = "attack"; a.act = false; a.atk++; a.fought = true;
     fx(G, who, a.d); G.log(nm(G, who) + " " + a.d.name + " 遠射後陣 " + t.d.name);
-    var f = fight(G, who, a, 1 - who, t, { noCounter: true });
+    var f = fight(G, who, a, 1 - who, t, { noCounter: true, kind: "snipe" });
     if (!f.deadB && D.field(O).indexOf(t) >= 0) G.log("　" + t.d.name + " 剩兵力 " + D.hp(O, t));
     G.lastFight = { a: a, b: t, f: f }; return true;
   };
@@ -321,7 +329,7 @@
     if (!t || !D.canDuel(G, who, a)) return false;
     G.phase = "attack"; a.act = false; a.atk++; a.fought = true; (P.duels = P.duels || {})[a.d.name] = 1;
     fx(G, who, a.d); G.log(nm(G, who) + " " + a.d.name + " 單挑 " + t.d.name + "（兵力 " + D.hp(P, a) + " 對 " + D.hp(O, t, true) + "）");
-    var f = fight(G, who, a, 1 - who, t, { blocking: true });
+    var f = fight(G, who, a, 1 - who, t, { blocking: true, kind: "duel" });
     if (!f.deadB && D.field(O).indexOf(t) >= 0) G.log("　" + t.d.name + " 剩兵力 " + D.hp(O, t));
     if (!f.deadA && P.front.indexOf(a) >= 0) G.log("　" + a.d.name + " 剩兵力 " + D.hp(P, a));
     G.lastFight = { a: a, b: t, f: f }; settle(G); return true;
@@ -341,7 +349,8 @@
     if (!t || !D.canLubu(G, who, a)) return false;
     P.ap -= 3; a.act = false; a.fought = true; G.phase = "attack";
     fx(G, who, a.d); G.log(nm(G, who) + " 呂布「神擋殺神」：直取 " + t.d.name);
-    kill(G, 1 - who, t); G.lastFight = { a: a, b: t, lubu: true }; return true;
+    var el = ev(G, { who: who, clash: { a: a.d, pa: D.hp(P, a), b: t.d, pb: D.hp(O, t), kind: "lubu" } });
+    el.clash.deadB = !!kill(G, 1 - who, t); el.clash.leftA = D.hp(P, a); el.clash.leftB = el.clash.deadB ? 0 : D.hp(O, t); G.lastFight = { a: a, b: t, lubu: true }; return true;
   };
   function damage(G, who, n, attacker, noGuard) {
     var P = G.p[who];
@@ -354,10 +363,11 @@
       var c = P.life.shift(); G.stats.hits++;
       G.log(nm(G, who) + "城門被破，剩 " + P.life.length + " 道（翻出 " + c.name + (c.trig ? "・" + c.trig : "") + "）");
       G.lastFlip = { who: who, d: c };
-      if (c.trig === "援軍") { P.hand.push(c); G.log("　援軍：" + c.name + " 加入手牌"); }
-      else if (c.trig === "伏兵" && P.back.length < D.BACK) { P.back.push(unit(c)); G.log("　伏兵：" + c.name + " 進入後陣"); }
+      var fe = ev(G, { who: who, flip: c, left: P.life.length, res: "side" });
+      if (c.trig === "援軍") { P.hand.push(c); fe.res = "hand"; G.log("　援軍：" + c.name + " 加入手牌"); }
+      else if (c.trig === "伏兵" && P.back.length < D.BACK) { P.back.push(unit(c)); fe.res = "back"; G.log("　伏兵：" + c.name + " 進入後陣"); }
       else {
-        if (c.trig === "反擊") { var u = P.front.find(function (v) { return !v.act && !v.frozen; }); if (u) { u.act = true; u.buf += 1000; G.log("　反擊：" + u.d.name + " 重新可行動，兵力 +1000"); } }
+        if (c.trig === "反擊") { var u = P.front.find(function (v) { return !v.act && !v.frozen; }); if (u) { u.act = true; u.buf += 1000; fe.res = "counter"; fe.u = u.d; G.log("　反擊：" + u.d.name + " 重新可行動，兵力 +1000"); } }
         P.side.push(c);
       }
       if (!P.life.length) { G.winner = 1 - who; G.log(nm(G, who) + "城門全破"); return; }

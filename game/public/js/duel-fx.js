@@ -200,6 +200,65 @@
       el.addEventListener("click", function () { if (el.classList.contains("show")) { clearTimeout(auto); end(); } });
     });
   };
+  // ===== 交戰大卡、城門翻牌、道具使用（✅ Jay 2026-11-22：進攻防守要有夠大的卡片示意、翻出來的卡要說明、道具要有演出、不要太快帶過） =====
+  // ★ 版面、時間長度是開發定的：左邊固定是我方、右邊是敵方
+  function overlay(cls, html, ms, steps) {
+    return new Promise(function (res) {
+      var el = document.createElement("div"); el.className = "fxo " + cls;
+      el.innerHTML = '<div class="fxo-dim"></div>' + html + '<div class="ci-skip">點一下跳過</div>';
+      document.body.appendChild(el);
+      var done = false, timers = [];
+      var finish = function () { if (done) return; done = true; timers.forEach(clearTimeout); el.classList.add("out"); setTimeout(function () { el.remove(); res(); }, 280); };
+      requestAnimationFrame(function () { requestAnimationFrame(function () { el.classList.add("go"); }); });
+      (steps || []).forEach(function (st) { timers.push(setTimeout(function () { if (!done) st[1](el); }, st[0])); });
+      timers.push(setTimeout(finish, ms));
+      el.addEventListener("click", finish);
+    });
+  }
+  function shake() { document.body.classList.add("ci-shake"); setTimeout(function () { document.body.classList.remove("ci-shake"); }, 360); }
+  var KIND = { block: "進攻", gate: "進攻", snipe: "遠射", duel: "單挑", lubu: "神擋殺神" };
+  DU.clashin = function (c, side) {
+    var W = ["我方", "敵方"], atkW = W[side], defW = W[1 - side];
+    var A = { d: c.a, p: c.pa, dead: c.deadA, left: c.leftA, role: "進攻", atk: true };
+    var B = c.kind === "gate" ? { gate: true } : { d: c.b, p: c.pb, dead: c.deadB, left: c.leftB, role: c.kind === "snipe" ? "後陣" : c.kind === "lubu" ? "目標" : "格擋" };
+    var col = function (x, w) {
+      if (x.gate) return '<div class="cl-col def gate' + (c.gates ? ' broke' : '') + '"><div class="cl-tag">' + w + '・城門</div>' +
+        '<div class="cl-gate"><i class="dl"></i><i class="dr"></i><span class="kai">城門</span></div>' +
+        '<div class="cl-num"><small>城門</small><b>' + (c.gates ? '−' + c.gates : '0') + '</b></div><div class="cl-left">' + (c.gates ? '剩 ' + c.left + ' 道' : '護主擋下') + '</div></div>';
+      var res = x.dead ? '被擊退' : (x.left !== undefined && x.left < x.p ? '剩兵力 ' + x.left : (x.atk ? '' : c.kind === "snipe" ? '' : '擋下了'));
+      if (x.atk && c.noCounter && !x.dead) res = '不會被反扣';
+      return '<div class="cl-col ' + (x.atk ? 'atk' : 'def') + (x.dead ? ' dead' : '') + '"><div class="cl-tag">' + w + '・' + x.role + '</div>' +
+        '<div class="cl-card">' + DU.face(x.d, "m", { bp: x.p }) + '<i class="cl-seal kai">擊退</i></div>' +
+        '<div class="cl-num"><small>兵力</small><b>' + x.p + '</b></div><div class="cl-left">' + res + '</div></div>';
+    };
+    var L = side === 0 ? col(A, atkW) : col(B, defW), R = side === 0 ? col(B, defW) : col(A, atkW);
+    var sub = c.kind === "gate" ? '沒人格擋，直取城門' : c.kind === "snipe" ? '打' + defW + '後陣・對方不能格擋' : c.kind === "duel" ? '指定 ' + c.b.name + ' 交戰' : c.kind === "lubu" ? '直接擊退 ' + c.b.name : defW + ' ' + c.b.name + ' 出來格擋';
+    var resT = c.kind === "gate" ? (c.gates ? defW + '城門被破！' : '護主擋下了這次進攻') : c.deadA && c.deadB ? '同歸於盡' : c.deadB ? c.b.name + ' 被擊退' : c.deadA ? c.a.name + ' 被擊退' : c.kind === "snipe" ? '沒能擊退' : '擋下了';
+    var hurtD = c.kind === "gate" ? c.gates > 0 : c.deadB, hurtA = c.deadA;   // 對我方好就金色、不好就藍灰
+    var good = side === 0 ? hurtD && !hurtA : hurtA && !hurtD, bad = side === 0 ? hurtA && !hurtD : hurtD && !hurtA;
+    var resCls = good ? "win" : bad ? "lose" : "even";
+    var html = '<div class="cl-head"><div class="cl-title kai">' + atkW + ' ' + c.a.name + '・' + KIND[c.kind] + '</div><div class="cl-sub">' + sub + '</div></div>' +
+      '<div class="cl-stage s' + side + '">' + L + '<div class="cl-vs kai">VS</div>' + R + '<i class="cl-flash"></i><i class="cl-slash"></i></div>' +
+      '<div class="cl-res kai ' + resCls + '">' + resT + '</div>';
+    return overlay("clash", html, 2500, [[650, function (el) { el.classList.add("hit"); shake(); }], [950, function (el) { el.classList.add("res"); }]]);
+  };
+  DU.flipin = function (x, side) {
+    var c = x.flip, w = side ? "敵方" : "我方";
+    var R = { hand: ["急報・援軍", "加入" + w + "手牌"], back: ["急報・伏兵", "直接進入" + w + "後陣"], counter: ["急報・反擊", (x.u ? x.u.name : "前陣武將") + " 重新可行動、兵力 +1000"] };
+    var r = R[x.res] || [c.trig === "伏兵" ? "急報・伏兵（後陣滿了）" : c.trig === "反擊" ? "急報・反擊（沒人能用）" : "沒有急報", "放進" + w + "棄牌區"];
+    var html = '<div class="gf-head"><div class="gf-title kai">' + w + '城門被破</div><div class="gf-sub">剩 ' + x.left + ' 道城門・翻開被破的城門牌</div></div>' +
+      '<div class="gf-card"><div class="gf-inner"><div class="gf-back kai">城門</div><div class="gf-front">' + DU.face(c, "m") + '</div></div></div>' +
+      '<div class="gf-res"><b class="kai">' + r[0] + '</b><span>' + c.name + ' → ' + r[1] + '</span></div>';
+    return overlay("gflip " + (side ? "theirs" : "mine"), html, 2600, [[450, function (el) { el.classList.add("flip"); }], [900, function (el) { el.classList.add("res"); }]]);
+  };
+  DU.itemin = function (x, side) {
+    var it = x.item, name = it.name || "";
+    var html = '<div class="it-rays"></div><div class="it-who">' + (side ? '敵方' : '我方') + '使用道具</div>' +
+      '<div class="it-row"><div class="it-card">' + DU.face(it, "m") + '</div>' + (x.tgt ? '<div class="it-arrow">➜</div><div class="it-tgt">' + DU.face(x.tgt, "m") + '</div>' : '') + '</div>' +
+      '<div class="it-name kai">' + name.split("").map(function (ch, i) { return '<span style="animation-delay:' + (350 + i * 90) + 'ms">' + ch + '</span>'; }).join("") + '</div>' +
+      '<div class="it-msg">' + esc(x.msg || it.text || "") + '</div><div class="it-spark">' + many(16, function () { return '<i style="left:' + rnd(10, 90) + '%;top:' + rnd(20, 75) + '%;animation-delay:' + rnd(.2, 1.2) + 's"></i>'; }) + '</div>';
+    return overlay("itemin s" + side, html, 2400, [[300, shake]]);
+  };
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
   // ===== 試看頁：?fx=關羽 =====
@@ -220,6 +279,17 @@
         p.querySelector("#ci-play").onclick = play;
         var sp = document.createElement("div"); sp.innerHTML = '<select id="ci-set">' + Object.keys(D.SET_TAGS).map(function (t) { return '<option>' + t + '</option>'; }).join("") + '</select><button class="chip" data-sn="part">湊到門檻</button><button class="chip" data-sn="full">全員</button>';
         p.appendChild(sp);
+        var dp = document.createElement("div"); dp.innerHTML = '<button class="chip" data-dm="clash">交戰</button><button class="chip" data-dm="gate">破城門</button><button class="chip" data-dm="flip">翻牌</button><button class="chip" data-dm="item">道具</button><button class="chip" data-dm="bao">小籠包</button>';
+        p.appendChild(dp);
+        dp.querySelectorAll("[data-dm]").forEach(function (b) { b.onclick = function () {
+          if (busy) return; busy = true; var k = b.dataset.dm, e = D.CARD["張郃"], pr;
+          if (k === "clash") pr = DU.clashin({ a: d, pa: d.bp + 500, b: e, pb: e.bp, kind: "block", deadB: true, leftA: 500, leftB: 0 }, st.side);
+          else if (k === "gate") pr = DU.clashin({ a: d, pa: d.bp, b: null, kind: "gate", gates: 1, left: 5 }, st.side);
+          else if (k === "flip") pr = DU.flipin({ flip: D.CARD["王異"], left: 4, res: "hand" }, st.side);
+          else if (k === "item") pr = DU.itemin({ item: D.ITEMS.find(function (x) { return x.id === "dao"; }), msg: d.name + " 兵力 +1500", tgt: d }, st.side);
+          else pr = DU.itemin({ item: D.ITEMS.find(function (x) { return x.id === "bao"; }), msg: d.name + " 免於擊退，留在場上（兵力剩 1000）", tgt: d }, st.side);
+          pr.then(function () { busy = false; });
+        }; });
         sp.querySelectorAll("[data-sn]").forEach(function (b) { b.onclick = function () {
           var t = p.querySelector("#ci-set").value, names = D.SET_TAGS[t].split(" ").filter(function (n) { return D.CARD[n]; }), tier = D.SET_TIER[names.length];
           var n = b.dataset.sn === "full" ? names.length : +Object.keys(tier)[0];

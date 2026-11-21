@@ -1291,3 +1291,94 @@ canvas.si-bolts{position:absolute;inset:0;z-index:6;width:100%;height:100%;point
 .f-mix{--fc:#d4a853}
 #s-duel .li.dsec{min-height:0;padding:8px 14px 4px;color:var(--gold,#d4a853);font-size:15px;letter-spacing:.2em}
 #s-duel .li button+button{margin-left:6px}
+
+/* ===== 交戰大卡／城門翻牌／道具使用（2026-11-22） ===== */
+.fxo{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.2vh;overflow:hidden;cursor:pointer;color:#f6ecd2;opacity:0;transition:opacity .25s}
+.fxo.go{opacity:1}.fxo.out{opacity:0}
+.fxo *{font-family:"SGLBrush",var(--kai)!important}
+.fxo-dim{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 48%,rgba(34,20,8,.95),rgba(4,3,6,.98) 70%);z-index:0}
+.fxo>:not(.fxo-dim):not(.it-rays):not(.it-spark):not(.ci-skip){position:relative;z-index:2}
+body.ci-shake .fxo{animation:ciShake .36s}
+.fxo .dc{width:100%;cursor:pointer}
+/* 交戰 */
+.cl-head,.gf-head{text-align:center;transform:translateY(-14px);opacity:0;transition:all .35s .1s}
+.fxo.go .cl-head,.fxo.go .gf-head{transform:none;opacity:1}
+.cl-title,.gf-title{font-size:clamp(24px,7.4vw,40px);letter-spacing:.12em;color:#ffe2a0;text-shadow:0 0 14px rgba(255,170,60,.55),0 2px 0 #000}
+.cl-sub,.gf-sub{font-size:clamp(14px,3.9vw,19px);color:#e6d6b4;margin-top:4px}
+.cl-stage{position:relative;display:flex;align-items:center;justify-content:center;gap:3vw;width:100%}
+.cl-col{display:flex;flex-direction:column;align-items:center;gap:6px;width:min(38vw,200px);transition:transform .45s cubic-bezier(.2,1.3,.4,1),opacity .3s,filter .4s}
+.cl-stage .cl-col:first-child{transform:translateX(-60vw)}.cl-stage .cl-col:last-of-type{transform:translateX(60vw)}
+.fxo.go .cl-col{transform:none!important}
+.fxo.hit .s0 .cl-col.atk{animation:clLungeR .35s ease-out}.fxo.hit .s1 .cl-col.atk{animation:clLungeL .35s ease-out}
+@keyframes clLungeR{0%{transform:none}45%{transform:translateX(18vw) scale(1.06)}100%{transform:none}}
+@keyframes clLungeL{0%{transform:none}45%{transform:translateX(-18vw) scale(1.06)}100%{transform:none}}
+.cl-tag{font-size:clamp(14px,3.8vw,18px);padding:2px 12px;border:1px solid rgba(212,168,83,.6);background:rgba(0,0,0,.45);border-radius:999px}
+.cl-col.atk .cl-tag{color:#ffb79a;border-color:#ff8a5a}.cl-col.def .cl-tag{color:#bfe0ff;border-color:#7cb6ff}
+.cl-card{position:relative;width:100%;box-shadow:0 0 0 2px #d4a853,0 10px 30px rgba(0,0,0,.7);border-radius:4px}
+.cl-col.atk .cl-card{box-shadow:0 0 0 2px #ff8a5a,0 0 26px rgba(255,110,60,.55),0 10px 30px rgba(0,0,0,.7)}
+.cl-seal{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%) rotate(-14deg) scale(2.4);opacity:0;padding:4px 12px;font-style:normal;font-size:clamp(22px,7vw,36px);color:#fff;background:#b0231a;border:3px double #ffd9a0;box-shadow:0 0 18px rgba(255,60,30,.8);transition:all .3s cubic-bezier(.2,1.5,.4,1);z-index:5}
+.fxo.res .cl-col.dead .cl-seal{opacity:1;transform:translate(-50%,-50%) rotate(-14deg) scale(1)}
+.fxo.res .cl-col.dead{filter:grayscale(.9) brightness(.6)}
+.cl-num{display:flex;align-items:baseline;gap:6px}.cl-num small{font-size:13px;color:#cdbb95}
+.cl-num b{font-size:clamp(26px,8vw,42px);color:#fff4d6;text-shadow:0 0 10px rgba(255,200,90,.6);font-family:ui-monospace,monospace!important}
+.cl-col.atk .cl-num b{color:#ffd2b8}
+.cl-left{min-height:1.4em;font-size:clamp(14px,3.8vw,18px);color:#ffcf8a;opacity:0;transition:opacity .3s}
+.fxo.res .cl-left{opacity:1}
+.cl-vs{font-size:clamp(28px,9vw,48px);color:#ffd27a;text-shadow:0 0 16px rgba(255,140,40,.9);transform:scale(0);transition:transform .35s .3s cubic-bezier(.2,1.6,.4,1)}
+.fxo.go .cl-vs{transform:scale(1)}.fxo.hit .cl-vs{animation:clVs .4s}
+@keyframes clVs{50%{transform:scale(1.6)}}
+.cl-flash{position:absolute;inset:-20vh -10vw;background:radial-gradient(circle,rgba(255,240,200,.95),rgba(255,160,60,.35) 30%,transparent 60%);opacity:0;pointer-events:none}
+.fxo.hit .cl-flash{animation:clFlash .45s ease-out}
+@keyframes clFlash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+.cl-slash{position:absolute;left:50%;top:50%;width:90vw;height:8px;background:linear-gradient(90deg,transparent,#fff 40%,#ffd27a 60%,transparent);transform:translate(-50%,-50%) rotate(-24deg) scaleX(0);box-shadow:0 0 20px #ffb14a;opacity:0;pointer-events:none}
+.fxo.hit .cl-slash{animation:clSlash .4s ease-out}
+@keyframes clSlash{0%{opacity:1;transform:translate(-50%,-50%) rotate(-24deg) scaleX(0)}60%{opacity:1;transform:translate(-50%,-50%) rotate(-24deg) scaleX(1)}100%{opacity:0;transform:translate(-50%,-50%) rotate(-24deg) scaleX(1)}}
+.cl-res{font-size:clamp(26px,8vw,44px);letter-spacing:.1em;opacity:0;transform:scale(1.8);transition:all .3s cubic-bezier(.2,1.4,.4,1);text-shadow:0 2px 0 #000,0 0 18px currentColor}
+.fxo.res .cl-res{opacity:1;transform:none}
+.cl-res.win{color:#ff9c7a}.cl-res.lose{color:#9fd0ff}.cl-res.even{color:#ffe2a0}
+/* 城門 */
+.cl-gate{position:relative;width:100%;aspect-ratio:3/4;border:3px solid #d4a853;border-radius:4px 4px 0 0;background:linear-gradient(#3a2414,#1b0f08);overflow:hidden;box-shadow:0 10px 30px rgba(0,0,0,.7)}
+.cl-gate::before{content:"";position:absolute;left:8%;right:8%;top:6%;height:14%;background:linear-gradient(#7a1e14,#4a100a);border:2px solid #d4a853;border-radius:40% 40% 4px 4px}
+.cl-gate i{position:absolute;bottom:0;top:26%;width:42%;background:repeating-linear-gradient(90deg,#8a2a18 0 10px,#6e1f12 10px 12px);border:2px solid #c48a3a;transition:transform .5s cubic-bezier(.3,1.4,.5,1)}
+.cl-gate i::after{content:"";position:absolute;inset:12% 18%;background:radial-gradient(circle,#e8c36a 2.5px,transparent 3px) 0 0/14px 14px}
+.cl-gate .dl{left:8%;transform-origin:left center}.cl-gate .dr{right:8%;transform-origin:right center}
+.cl-gate span{position:absolute;left:0;right:0;top:9%;text-align:center;font-size:clamp(14px,4vw,20px);color:#ffd27a;z-index:2}
+.fxo.hit .cl-col.gate.broke .dl{transform:perspective(300px) rotateY(68deg)}.fxo.hit .cl-col.gate.broke .dr{transform:perspective(300px) rotateY(-68deg)}
+.fxo.hit .cl-col.gate.broke .cl-gate{box-shadow:0 0 30px rgba(255,80,40,.8),0 10px 30px rgba(0,0,0,.7)}
+/* 城門翻牌 */
+.gflip.theirs .gf-title{color:#ff9c7a}.gflip.mine .gf-title{color:#9fd0ff}
+.gf-card{width:min(46vw,230px);perspective:900px}
+.gf-inner{position:relative;transform-style:preserve-3d;transform:rotateY(180deg);transition:transform .6s cubic-bezier(.3,1.2,.5,1)}
+.fxo.flip .gf-inner{transform:none}
+.gf-back,.gf-front{backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.gf-back{position:absolute;inset:0;transform:rotateY(180deg);display:flex;align-items:center;justify-content:center;font-size:clamp(26px,8vw,40px);color:#ffd27a;background:repeating-linear-gradient(90deg,#8a2a18 0 12px,#6e1f12 12px 14px);border:3px solid #d4a853;border-radius:4px}
+.gf-front{box-shadow:0 0 0 2px #d4a853,0 0 30px rgba(255,200,90,.45)}
+.gf-res{display:flex;flex-direction:column;align-items:center;gap:4px;opacity:0;transform:translateY(10px);transition:all .3s}
+.fxo.res .gf-res{opacity:1;transform:none}
+.gf-res b{font-size:clamp(22px,6.6vw,34px);color:#ffd27a;text-shadow:0 0 12px rgba(255,170,60,.6)}
+.gf-res span{font-size:clamp(15px,4.2vw,20px);color:#f0e8d8;padding:3px 14px;background:rgba(0,0,0,.45);border:1px solid rgba(212,168,83,.5);border-radius:999px}
+/* 道具 */
+.it-rays{position:absolute;left:50%;top:44%;width:150vmax;height:150vmax;transform:translate(-50%,-50%);background:repeating-conic-gradient(rgba(255,210,120,.16) 0 6deg,transparent 6deg 18deg);mask:radial-gradient(circle,#000 10%,transparent 55%);-webkit-mask:radial-gradient(circle,#000 10%,transparent 55%);animation:itSpin 6s linear infinite;z-index:1}
+@keyframes itSpin{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.it-who{font-size:clamp(18px,5vw,24px);color:#ffe2a0;letter-spacing:.2em}
+.itemin.s1 .it-who{color:#ff9c7a}
+.it-row{display:flex;align-items:center;gap:4vw}
+.it-card{width:min(44vw,220px);transform:scale(.3) rotate(-12deg);opacity:0;transition:all .45s cubic-bezier(.2,1.5,.4,1);box-shadow:0 0 0 2px #ffd27a,0 0 40px rgba(255,200,90,.7);border-radius:4px}
+.fxo.go .it-card{transform:none;opacity:1}
+.it-tgt{width:min(28vw,140px);opacity:0;transform:translateX(20px);transition:all .4s .5s;box-shadow:0 0 0 2px #7cb6ff,0 0 20px rgba(120,180,255,.6);border-radius:4px}
+.fxo.go .it-tgt{opacity:1;transform:none}
+.it-arrow{font-size:clamp(22px,7vw,34px);color:#ffd27a;opacity:0;transition:opacity .3s .45s}.fxo.go .it-arrow{opacity:1}
+.it-name{font-size:clamp(34px,11vw,58px);color:#fff1c8;text-shadow:0 0 18px rgba(255,180,60,.9),0 3px 0 #000;letter-spacing:.12em}
+.it-name span{display:inline-block;opacity:0;animation:itCh .4s both}
+@keyframes itCh{0%{opacity:0;transform:scale(2.2)}100%{opacity:1;transform:none}}
+.it-msg{font-size:clamp(16px,4.4vw,21px);padding:5px 16px;background:rgba(0,0,0,.5);border:1px solid rgba(212,168,83,.6);border-radius:999px;max-width:90vw;text-align:center;opacity:0;animation:ciFade .3s .8s both}
+.it-spark{position:absolute;inset:0;pointer-events:none;z-index:3}
+.it-spark i{position:absolute;width:6px;height:6px;border-radius:50%;background:#ffe9a8;box-shadow:0 0 10px #ffc860;opacity:0;animation:itSp 1.2s ease-out both}
+@keyframes itSp{0%{opacity:0;transform:scale(.2)}30%{opacity:1}100%{opacity:0;transform:translateY(-40px) scale(1.4)}}
+/* 格擋視窗：進攻的敵將放大 */
+.blk-atk{display:flex;align-items:center;gap:14px;padding:8px 10px;margin:6px 0 4px;border:1px solid rgba(255,138,90,.6);background:linear-gradient(90deg,rgba(120,30,16,.35),transparent);border-radius:6px}
+.blk-atk .dc{width:min(34vw,150px);flex:none;box-shadow:0 0 0 2px #ff8a5a,0 0 18px rgba(255,110,60,.45)}
+.blk-atk b.kai{display:block;font-size:24px;margin:2px 0}
+.blk-atk .bpn b{font-size:26px;color:#ffd2b8;font-family:ui-monospace,monospace}
+.blk-row .dc{width:64px}
+.cl-res.win{color:#ffd27a}.cl-res.lose{color:#9fb8d0}.cl-res.even{color:#ffe2a0}
