@@ -39,7 +39,7 @@
   // ===== 特技 =====
   D.SKILLS = {
     "突擊": "出陣當回合就能進攻。",
-    "連戰": "每回合第一次進攻後，可以再進攻一次。",
+    "連擊": "每回合第一次進攻後，可以再進攻一次。",   // ✅ Jay 2026-11-21：原本的「連戰」改名連擊，只給兵力 1000、1500 的武將
     "鐵壁": "格擋時兵力 +1000。",
     "軍師": "出陣時抽 1 張。",
     "計謀": "出陣時，敵方前陣一位兵力比她低的武將休整，下回合不能行動。",
@@ -50,7 +50,10 @@
     "破門": "可行動、兵力 5000 以上（算加成）時，可以犧牲自己破對方 1 道城門，對方不能格擋。",
     "護主": "己方只剩最後 1 道城門時，每回合可以擋下 1 次會破門的攻擊（破門特技也擋得住），自己不受傷。",
     "幻術": "被抽到時，再抽 2 張，然後挑 2 張手牌放回牌組底。",
-    "陣前換將": "在手牌時，可以付軍餉和軍令，跟己方前陣一位武將交換（換下來的回手牌）；換下來的武將這回合沒進攻過的話，換上去的可以馬上進攻。",
+    // ✅ Jay 2026-11-21：陣前換將拿掉，原本 20 位改成下面三個新特技＋連擊
+    "單挑": "每次出陣後的第一次進攻，可以指定敵方前陣一位武將（休整中的也可以）跟她交戰，對方不能換人、也不能不擋；被指定的算格擋。",
+    "屯糧": "她在場上（前陣或後陣）時，軍餉 +1。",
+    "策反": "出陣時，指定敵方前陣一位武將，放回對方牌組最底下；她自己也放回己方牌組最底下。敵方前陣沒人時不發動、她留在場上。",
   };
   // ★ 新特技人選（Jay 交給開發挑）
   D.ASSIGN = {
@@ -59,6 +62,11 @@
     "幻術": "甄姬 孫乾 小喬 木鹿大王 張寶",
     "護主": "典韋 許褚 周泰 趙雲",
     "突擊": "王濬 董白 李儒 關索 關銀屏 鄧艾",   // ✅ Jay 2026-11-21：陣前換將效果不大，6 位改突擊（1000×2、1500、2500、3000、4000）
+    // ✅ Jay 2026-11-21「照你改」：剩下 20 位陣前換將改成新特技（人選開發排、Jay 同意）
+    "連擊": "鮑三娘 徐盛 潘璋 裴元紹 嚴政 滿寵",
+    "屯糧": "李典 糜竺 呂岱 李恆",
+    "策反": "賈詡 馬謖 唐周 孫魯班",
+    "單挑": "孫尚香 凌統 朱然 賀齊 馬秀英 鍾會",
   };
   // ★ 15 位個人特技（草案，Jay 2026-11-20「先用這樣」）
   D.PERSONAL = {
@@ -115,9 +123,9 @@
     else if (d.tags.indexOf("君主") >= 0 || (d.m >= 94 && d.typ !== "法")) s = "號召";
     else if (d.typ === "法") s = d.z >= 90 ? "計謀" : "軍師";
     else if (hasSet(d)) s = "結義";
-    else if (d.typ === "騎") s = d.w >= 93 ? "連戰" : "突擊";
+    else if (d.typ === "騎") s = "突擊";   // 連擊只給 1000、1500 的武將，騎兵一律突擊
     else if (d.typ === "槍" && d.w < 93) s = "鐵壁";
-    else s = "陣前換將";
+    else s = "突擊";   // （目前沒有人走到這行；原本是陣前換將）
     d.skill = s; d.personal = !!D.PERSONAL[d.name];
     d.skillName = d.personal ? D.PERSONAL[d.name][0] : s;
     d.skillText = d.personal ? D.PERSONAL[d.name][1] : s ? D.SKILLS[s] : "";
@@ -169,18 +177,31 @@
   D.itemKey = function (id) { return "道具:" + id; };
   D.ownsItem = function (S, id) { return true; };   // ★ 試玩期：大家都有
   D.deckCount = function (deck) { return Object.keys(deck || {}).reduce(function (a, k) { return a + deck[k]; }, 0); };
-  // 電腦對手：用全部武將、每位最多張數組牌（★ 試玩用）
-  D.OPPONENTS = [
-    { id: "shu", name: "桃園義軍", tags: ["蜀"], desc: "蜀國・五虎將" },
-    { id: "wei", name: "魏武之師", tags: ["魏"], desc: "魏國・五子良將" },
-    { id: "wu", name: "江東水師", tags: ["吳"], desc: "吳國・大都督" },
-    { id: "qun", name: "群雄割據", tags: ["群雄", "黃巾"], desc: "群雄＋黃巾" },
-  ];
+  // ===== 電腦對手（✅ Jay 2026-11-21：各國分初級／高級，另加 3 關混合陣營） =====
+  // 初級：每位最多 2 張、不放個人特技武將、不放道具（不夠 40 張才補第 3 張）
+  //       另外電腦會放水（duel.js 的 D.EASY）：每回合只出 1 位武將、城門剩 3 道以上不格擋
+  // 高級：該國全部武將每位 3～4 張＋3 張道具（＝原本的強度）
+  // 混合：用標籤組牌、強度同高級。★ 主題（謀士／巾幗／猛將）是開發提的，Jay「照你改」
+  var NAT = [["wei", "魏", "魏武之師"], ["shu", "蜀", "桃園義軍"], ["wu", "吳", "江東水師"], ["qun", "群雄", "群雄割據"], ["hj", "黃巾", "黃天太平道"]];
+  D.OPPONENTS = [];
+  NAT.forEach(function (x) {
+    D.OPPONENTS.push({ id: x[0] + "1", nat: x[0], name: x[2], tags: [x[1]], lv: 1, desc: x[1] + "・初級" });
+    D.OPPONENTS.push({ id: x[0] + "2", nat: x[0], name: x[2], tags: [x[1]], lv: 2, desc: x[1] + "・高級" });
+  });
+  D.OPPONENTS.push({ id: "mix1", name: "運籌帷幄", tags: ["謀士"], lv: 2, mix: true, desc: "混合陣營・謀士" });
+  D.OPPONENTS.push({ id: "mix2", name: "巾幗英雌", tags: ["巾幗"], lv: 2, mix: true, desc: "混合陣營・巾幗" });
+  D.OPPONENTS.push({ id: "mix3", name: "萬夫莫敵", tags: ["猛將"], lv: 2, mix: true, desc: "混合陣營・猛將" });
   D.oppDeck = function (opp, rnd) {
-    var avail = D.LIST.filter(function (d) { return d.tags.some(function (t) { return opp.tags.indexOf(t) >= 0; }); })
-      .map(function (d) { return { d: d, n: d.strong ? 4 : 3 }; });
-    var deck = D.autoDeck(avail, D.DECK - 3, rnd);
-    ["ling", "liang", "dao", "dou", "bao", "wushen"].sort(function () { return (rnd || Math.random)() - 0.5; }).slice(0, 3).forEach(function (id) { deck[D.itemKey(id)] = 1; });
-    return deck;
+    rnd = rnd || Math.random;
+    var pool = D.LIST.filter(function (d) { return d.tags.some(function (t) { return opp.tags.indexOf(t) >= 0; }); });
+    if (opp.lv === 1) {
+      pool = pool.filter(function (d) { return !d.personal; });
+      var deck = D.autoDeck(pool.map(function (d) { return { d: d, n: 2 }; }), D.DECK, rnd);
+      if (D.deckCount(deck) < D.DECK) deck = D.autoDeck(pool.map(function (d) { return { d: d, n: 3 }; }), D.DECK, rnd);
+      return deck;
+    }
+    var deck2 = D.autoDeck(pool.map(function (d) { return { d: d, n: d.strong ? 4 : 3 }; }), D.DECK - 3, rnd);
+    ["ling", "liang", "dao", "dou", "bao", "wushen"].sort(function () { return rnd() - 0.5; }).slice(0, 3).forEach(function (id) { deck2[D.itemKey(id)] = 1; });
+    return deck2;
   };
 })(window.SG);

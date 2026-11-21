@@ -27,7 +27,9 @@
   var nm = function (G, who) { return who === G.human ? "我方" : "敵方"; };
 
   // ===== 數值 =====
-  D.energy = function (P) { return P.back.reduce(function (a, u) { return a + u.d.gen; }, 0) + (P.eb || 0); };   // eb：軍糧這回合多的軍餉
+  D.energy = function (P) {   // eb：軍糧這回合多的軍餉；屯糧：在場上每位 +1（✅ Jay 2026-11-21 選 B，不累積）
+    return P.back.reduce(function (a, u) { return a + u.d.gen; }, 0) + (P.eb || 0) + D.field(P).filter(function (u) { return u.d.skill === "屯糧"; }).length;
+  };
   D.field = function (P) { return P.front.concat(P.back); };
   D.setDone = function (P, tag) { var s = D.setInfo(P, tag); return s.n === s.size; };
   // 湊齊：場上（前後陣都算）有幾位不同的成員、現在的加成
@@ -97,7 +99,7 @@
 
   // ===== 回合 =====
   D.startTurn = function (G) {
-    var P = G.p[G.cur]; P.t++; G.turn++; G.phase = "main"; G.live = true; G.p[0].eb = 0; G.p[1].eb = 0;
+    var P = G.p[G.cur]; P.t++; G.turn++; G.phase = "main"; G.live = true; G.p[0].eb = 0; G.p[1].eb = 0; P.nplay = 0;
     D.field(P).forEach(function (u) { if (u.frozen) u.frozen = false; else u.act = true; u.atk = 0; u.extra = 0; u.moved = false; u.fresh = false; });
     D.field(G.p[1 - G.cur]).forEach(function (u) { u.guard = false; });
     P.apMax = G.cur === G.first ? Math.min(3, P.t) : (P.t <= 2 ? 2 : 3);
@@ -119,19 +121,19 @@
   };
 
   // ===== 出牌、移動、多抽、陣前換將 =====
-  D.play = function (G, who, handIdx, zone) {
+  D.play = function (G, who, handIdx, zone, tid) {   // tid：策反指定的敵方前陣武將（沒給就自動挑兵力最高的）
     var P = G.p[who], d = P.hand[handIdx];
     if (!d || d.item || !D.canPlay(G, who, d)) return false;
     if (d.name === "張遼") zone = "front";
     if (zone === "front" && P.front.length >= D.FRONT) zone = "back";
     if (zone === "back" && P.back.length >= D.BACK) zone = "front";
-    P.hand.splice(handIdx, 1); P.ap -= d.ap;
+    P.hand.splice(handIdx, 1); P.ap -= d.ap; P.nplay = (P.nplay || 0) + 1;
     var u = unit(d);
     if (zone === "front" && (d.skill === "突擊" || d.name === "張遼")) { u.act = true; fx(G, who, d); }
     if (d.name === "張遼") u.noblock = G.turn;
     P[zone].push(u);
     G.log(nm(G, who) + "出陣 " + d.name + "（" + (zone === "front" ? "前陣" : "後陣") + "）");
-    onPlay(G, who, u); settle(G);
+    onPlay(G, who, u, tid); settle(G);
     return true;
   };
   D.swap = function (G, who, handIdx, frontId) {
@@ -193,10 +195,19 @@
   // 特技發動 → 記到 G.fxq，畫面依序播全身大演出（✅ Jay 2026-11-21：所有特技都播、雙方都播）
   function fx(G, who, d) { if (G.human < 0 && !G.both) return; (G.fxq = G.fxq || []).push({ who: who, d: d }); }
   D.fx = fx;
-  function onPlay(G, who, u) {
+  function onPlay(G, who, u, tid) {
     var P = G.p[who], O = G.p[1 - who], d = u.d, s = d.skill, shown = false;
     var say = function (t) { if (!shown) { shown = true; fx(G, who, d); } G.log("　" + (d.personal ? d.skillName : s) + "：" + t); };
     if (s === "軍師") { say("抽 1 張"); draw(G, P); }
+    else if (s === "屯糧") say("她在場上時軍餉 +1（現在 " + D.energy(P) + "）");
+    else if (s === "策反") {
+      var tg = O.front.find(function (v) { return v.id === tid; }) || O.front.slice().sort(function (a, b) { return D.hp(O, b) - D.hp(O, a); })[0];
+      if (tg) {
+        O.front.splice(O.front.indexOf(tg), 1); O.deck.push(tg.d);
+        var z = P.front.indexOf(u) >= 0 ? P.front : P.back; z.splice(z.indexOf(u), 1); P.deck.push(u.d);
+        say(tg.d.name + " 回到對方牌組底，" + d.name + " 也回到己方牌組底");
+      }
+    }
     // ✅ Jay 2026-11-20：號召改成「三軍用命」效果（不再看魅力）
     else if (s === "號召") { var n = 0; P.front.forEach(function (v) { if (v === u) return; v.buf = (v.buf || 0) + 1000 + (v.d.fac === d.fac ? 500 : 0); n++; }); if (n) say("前陣 " + n + " 位兵力提升"); }
     // ✅ Jay 2026-11-20：計謀不看智力，改比兵力（雙方當下兵力）
@@ -266,7 +277,7 @@
   D.attack = function (G, who, unitId) {
     var P = G.p[who], a = P.front.find(function (x) { return x.id === unitId; });
     if (!D.canAttack(G, who, a)) return false;
-    G.phase = "attack"; a.act = false; a.atk++;
+    G.phase = "attack"; a.act = false; a.atk++; a.fought = true;
     G.log(nm(G, who) + " " + a.d.name + " 進攻（兵力 " + D.hp(P, a) + "）");
     var bl = D.blockers(G, who, a);
     G.pending = { type: "block", who: who, a: a, list: bl };
@@ -288,7 +299,7 @@
       if (!f.deadA && P.front.indexOf(a) >= 0) G.log("　" + a.d.name + " 剩兵力 " + D.hp(P, a));
       if (f.deadB && !f.deadA && a.d.name === "關羽" && a.extra < 2 && P.front.indexOf(a) >= 0) { a.extra++; a.act = true; fx(G, who, a.d); G.log("　過五關斬六將：關羽再戰"); }
     } else damage(G, 1 - who, 1, a);
-    if (a.d.skill === "連戰" && a.atk === 1 && P.front.indexOf(a) >= 0 && G.winner < 0) { a.act = true; fx(G, who, a.d); G.log("　連戰：" + a.d.name + " 可以再進攻"); }
+    if (a.d.skill === "連擊" && a.atk === 1 && P.front.indexOf(a) >= 0 && G.winner < 0) { a.act = true; fx(G, who, a.d); G.log("　連擊：" + a.d.name + " 可以再進攻"); }
     G.lastFight = res; settle(G);
     return res;
   };
@@ -297,11 +308,23 @@
   D.snipe = function (G, who, unitId, targetId) {
     var P = G.p[who], O = G.p[1 - who], a = P.front.find(function (x) { return x.id === unitId; }), t = O.back.find(function (x) { return x.id === targetId; });
     if (!t || !D.canSnipe(G, who, a)) return false;
-    G.phase = "attack"; a.act = false; a.atk++;
+    G.phase = "attack"; a.act = false; a.atk++; a.fought = true;
     fx(G, who, a.d); G.log(nm(G, who) + " " + a.d.name + " 遠射後陣 " + t.d.name);
     var f = fight(G, who, a, 1 - who, t, { noCounter: true });
     if (!f.deadB && D.field(O).indexOf(t) >= 0) G.log("　" + t.d.name + " 剩兵力 " + D.hp(O, t));
     G.lastFight = { a: a, b: t, f: f }; return true;
+  };
+  // 單挑：每次出陣後的第一次進攻，指定敵方前陣一位（休整中的也可以）交戰，算格擋（★ 休整中可指定、算格擋：開發解讀，Jay「照你改」）
+  D.canDuel = function (G, who, u) { return D.canAttack(G, who, u) && u.d.skill === "單挑" && !u.fought && G.p[1 - who].front.length > 0; };
+  D.duel = function (G, who, unitId, targetId) {
+    var P = G.p[who], O = G.p[1 - who], a = P.front.find(function (x) { return x.id === unitId; }), t = O.front.find(function (x) { return x.id === targetId; });
+    if (!t || !D.canDuel(G, who, a)) return false;
+    G.phase = "attack"; a.act = false; a.atk++; a.fought = true;
+    fx(G, who, a.d); G.log(nm(G, who) + " " + a.d.name + " 單挑 " + t.d.name + "（兵力 " + D.hp(P, a) + " 對 " + D.hp(O, t, true) + "）");
+    var f = fight(G, who, a, 1 - who, t, { blocking: true });
+    if (!f.deadB && D.field(O).indexOf(t) >= 0) G.log("　" + t.d.name + " 剩兵力 " + D.hp(O, t));
+    if (!f.deadA && P.front.indexOf(a) >= 0) G.log("　" + a.d.name + " 剩兵力 " + D.hp(P, a));
+    G.lastFight = { a: a, b: t, f: f }; settle(G); return true;
   };
   // 破門：犧牲自己破 1 道門
   D.canBreak = function (G, who, u) { return D.canAttack(G, who, u) && u.d.skill === "破門" && D.hp(G.p[who], u) >= 5000; };
@@ -316,7 +339,7 @@
   D.lubu = function (G, who, unitId, targetId) {
     var P = G.p[who], O = G.p[1 - who], a = P.front.find(function (x) { return x.id === unitId; }), t = O.front.find(function (x) { return x.id === targetId; });
     if (!t || !D.canLubu(G, who, a)) return false;
-    P.ap -= 3; a.act = false; G.phase = "attack";
+    P.ap -= 3; a.act = false; a.fought = true; G.phase = "attack";
     fx(G, who, a.d); G.log(nm(G, who) + " 呂布「神擋殺神」：直取 " + t.d.name);
     kill(G, 1 - who, t); G.lastFight = { a: a, b: t, lubu: true }; return true;
   };
@@ -344,6 +367,7 @@
   // ===== 電腦對手 =====
   D.aiBlock = function (G, atkWho, a, list) {
     var P = G.p[atkWho], O = G.p[1 - atkWho], pa = D.hp(P, a);
+    if (O.easy && O.life.length > D.EASY.blockAt) return null;   // 初級電腦：城門還多時不格擋
     var opts = list.map(function (v) { return { v: v, hp: D.hp(O, v, true) }; });
     var good = opts.filter(function (x) { return x.hp > pa; }).sort(function (x, y) { return x.hp - y.hp; })[0];   // 擋得住又不會死
     if (good) return good.v.id;
@@ -352,6 +376,8 @@
     if (O.life.length <= 2 && opts.length) return opts.sort(function (x, y) { return x.v.d.cost - y.v.d.cost || x.hp - y.hp; })[0].v.id;
     return null;
   };
+  // 初級電腦的放水程度（★ 開發先定，用模擬調）：城門剩幾道以下才格擋、每回合最多出幾位武將
+  D.EASY = { blockAt: 3, plays: 1 };
   D.aiNext = function (G) {
     var who = G.cur, P = G.p[who], O = G.p[1 - who];
     if (G.winner >= 0 || G.pending) return null;
@@ -366,7 +392,7 @@
       if (mv) return { t: "move", id: mv.id };
       var opts = P.hand.map(function (c, i) { return { c: c, i: i }; }).filter(function (x) { return !x.c.item && D.canPlay(G, who, x.c); })
         .sort(function (a, b) { return b.c.cost - a.c.cost || b.c.bp - a.c.bp; });
-      if (opts.length) {
+      if (opts.length && !(P.easy && P.nplay >= D.EASY.plays)) {
         var c = opts[0].c, zone, wantE = D.energy(P) < need || D.energy(P) < 4;
         if ((c.skill === "突擊" || c.name === "張遼") && P.front.length < D.FRONT) zone = "front";
         else if (P.back.length < D.BACK && wantE) zone = "back";
@@ -402,6 +428,9 @@
       }
       var br = ready.find(function (u) { return D.canBreak(G, who, u); });
       if (br && O.life.length <= 2) return { t: "break", id: br.id };
+      // 單挑：挑一位打得贏的（兵力最高的優先）
+      var dl = ready.find(function (u) { return D.canDuel(G, who, u); });
+      if (dl) { var dt = O.front.filter(function (v) { return D.hp(O, v, true) < D.hp(P, dl); }).sort(function (a, b) { return D.hp(O, b) - D.hp(O, a); })[0]; if (dt) return { t: "duel", id: dl.id, tid: dt.id }; }
       var sn = ready.find(function (u) { return D.canSnipe(G, who, u); });
       if (sn) { var tg = O.back.filter(function (v) { return D.hp(O, v) <= D.hp(P, sn); }).sort(function (a, b) { return b.d.gen - a.d.gen || D.hp(O, b) - D.hp(O, a); })[0]; if (tg) return { t: "snipe", id: sn.id, tid: tg.id }; }
       return { t: "attack", id: top.id };
@@ -418,6 +447,7 @@
     if (act.t === "snipe") return D.snipe(G, who, act.id, act.tid);
     if (act.t === "break") return D.breakGate(G, who, act.id);
     if (act.t === "lubu") return D.lubu(G, who, act.id, act.tid);
+    if (act.t === "duel") return D.duel(G, who, act.id, act.tid);
   };
   // 湊齊升級時記一筆演出（人數變多、加成變高才播；人被擊退降級後再湊回來會再播）
   function checkSets(G) {
@@ -432,7 +462,7 @@
     });
   }
   D.checkSets = checkSets;
-  ["play", "swap", "move", "useItem", "attack", "block", "snipe", "breakGate", "lubu", "endTurn", "chooseReturn", "chooseDiscard"].forEach(function (k) {
+  ["play", "swap", "move", "useItem", "attack", "block", "snipe", "duel", "breakGate", "lubu", "endTurn", "chooseReturn", "chooseDiscard"].forEach(function (k) {
     var f = D[k]; D[k] = function (G) { var r = f.apply(this, arguments); checkSets(G); return r; };
   });
   // 不需要畫面的整局自動對打（測試用）

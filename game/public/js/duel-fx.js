@@ -7,7 +7,7 @@
   var COLOR = { "魏": ["#7cc0ff", "#173a6b"], "蜀": ["#5ee08e", "#14492e"], "吳": ["#ff6b5e", "#6b1610"], "群雄": ["#c49bff", "#38215a"], "黃巾": ["#ffd45e", "#6b4f0f"] };
   // ★ 專屬元素（開發先配的）：個人特技看武將，其他看特技
   var ELEM_P = { "曹操": "rays", "司馬懿": "smoke", "張遼": "slash", "劉備": "petals", "關羽": "slash", "張飛": "rings", "諸葛亮": "stars", "孫權": "rays", "周瑜": "fire", "呂蒙": "waves", "貂蟬": "petals", "董卓": "smoke", "張角": "bolt", "呂布": "slash" };
-  var ELEM_S = { "遠射": "arrows", "破門": "rings", "護主": "shield", "幻術": "mist", "計謀": "mist", "號召": "rays", "軍師": "stars", "突擊": "arrows", "連戰": "slash", "陣前換將": "waves", "結義": "rays", "鐵壁": "shield" };
+  var ELEM_S = { "遠射": "arrows", "破門": "rings", "護主": "shield", "幻術": "mist", "計謀": "mist", "號召": "rays", "軍師": "stars", "突擊": "arrows", "連擊": "slash", "單挑": "slash", "屯糧": "rays", "策反": "mist", "結義": "rays", "鐵壁": "shield" };
   var ECOL = { "呂布": "#ff4a3a", "董卓": "#ff5a3a", "司馬懿": "#b07cff", "張遼": "#8fd0ff", "周瑜": "#ff8a2a", "張角": "#ffe066", "貂蟬": "#ff9ec8", "劉備": "#ffb3d1", "曹操": "#d9a8ff", "孫權": "#ffd27a" };
   // 依臉的位置取景：圖等比縮放（cover 再乘 zoom），把臉放到框內 (tx, ty)
   function frame(el, art, zoom, tx, ty) {

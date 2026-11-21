@@ -144,7 +144,7 @@ export class Room {
     const P = G.p[seat];
     if (a === "end") { D.endTurn(G); return this.afterAct(true); }
     let ok = true;
-    if (a === "play") ok = P.hand[num(args[0])] && D.canPlay(G, seat, P.hand[num(args[0])]) && (args[1] === "front" || args[1] === "back") && D.play(G, seat, num(args[0]), args[1]);
+    if (a === "play") ok = P.hand[num(args[0])] && D.canPlay(G, seat, P.hand[num(args[0])]) && (args[1] === "front" || args[1] === "back") && D.play(G, seat, num(args[0]), args[1], args[2] == null ? undefined : num(args[2]));
     else if (a === "move") ok = D.move(G, seat, num(args[0]));
     else if (a === "extraDraw") ok = D.extraDraw(G, seat);
     else if (a === "swap") ok = P.hand[num(args[0])] && D.canSwap(G, seat, P.hand[num(args[0])]) && D.swap(G, seat, num(args[0]), num(args[1]));
@@ -153,6 +153,7 @@ export class Room {
     else if (a === "snipe") ok = D.snipe(G, seat, num(args[0]), num(args[1]));
     else if (a === "breakGate") ok = D.breakGate(G, seat, num(args[0]));
     else if (a === "lubu") ok = D.lubu(G, seat, num(args[0]), num(args[1]));
+    else if (a === "duel") ok = D.duel(G, seat, num(args[0]), num(args[1]));
     else return;
     if (ok === false) { send(this.seats[seat].ws, { t: "err", msg: "現在不能這樣做" }); return this.sync(seat); }
     this.afterAct(false);

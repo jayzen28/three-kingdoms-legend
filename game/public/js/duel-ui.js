@@ -107,10 +107,7 @@
       '<div class="row"><div class="grow"><b class="kai" style="font-size:19px">' + esc(du.decks[du.cur].name) + '</b><div class="dim">' + n + ' / ' + D.DECK + ' 張・' + (okDeck ? '可以出戰' : '要剛好 ' + D.DECK + ' 張才能出戰') + '</div></div>' +
       '<button class="gold" id="du-deck">組牌</button></div>' + (n ? '<div class="curve">' + DU.curve(deck) + '</div>' : '') + '</div>' +
       '<h2>挑戰 <small>戰績 ' + rec.w + ' 勝 ' + rec.l + ' 敗</small></h2><div class="paper flush">' +
-      D.OPPONENTS.map(function (o) {
-        return '<div class="li"><span class="hd f-' + FV[o.tags[0]] + '"><b style="font-size:16px">' + o.tags[0][0] + '</b></span><div class="grow"><b>' + o.name + '</b><div class="sub">' + o.desc + '・電腦對手</div></div>' +
-          '<button class="pri" data-opp="' + o.id + '" ' + (okDeck ? '' : 'disabled') + '>出戰</button></div>';
-      }).join("") + '</div>' + DU.netLobby() +
+      DU.oppRows(st, okDeck) + '</div>' + DU.netLobby() +
       '<div class="row end"><button class="sm" id="du-rule">規則</button></div>';
     SG.Scene.banner($("#st-duel"), 77);
     $("#du-deck").onclick = function () { DU.bf.inDeck = false; DU.builder(); };   // 從大廳打開時一律顯示全部武將
@@ -129,6 +126,20 @@
     DU.bindNetLobby(okDeck);
     $$("[data-opp]").forEach(function (b) { b.onclick = function () { DU.start(D.OPPONENTS.find(function (o) { return o.id === b.dataset.opp; })); }; });
     if (!st.duel.seenRule2) { st.duel.seenRule2 = 1; UI.save(); DU.rules(); }
+  };
+  // ✅ Jay 2026-11-21：各國初級／高級各一關＋3 關混合陣營（★ 全部一開始就開放、打贏打勾：開發先定）
+  DU.oppRows = function (st, okDeck) {
+    var beat = st.duel.beat || {}, dis = okDeck ? '' : ' disabled';
+    var btn = function (o, t, cls) { return '<button class="' + cls + '" data-opp="' + o.id + '"' + dis + '>' + (beat[o.id] ? '✓ ' : '') + t + '</button>'; };
+    var nat = D.OPPONENTS.filter(function (o) { return o.lv === 1; }).map(function (o1) {
+      var o2 = D.OPPONENTS.find(function (o) { return o.nat === o1.nat && o.lv === 2; });
+      return '<div class="li"><span class="hd f-' + FV[o1.tags[0]] + '"><b style="font-size:16px">' + o1.tags[0][0] + '</b></span><div class="grow"><b>' + o1.name + '</b><div class="sub">' + o1.tags[0] + '・電腦對手</div></div>' +
+        btn(o1, "初級", "") + btn(o2, "高級", "pri") + '</div>';
+    }).join("");
+    var mix = D.OPPONENTS.filter(function (o) { return o.mix; }).map(function (o) {
+      return '<div class="li"><span class="hd f-mix"><b style="font-size:16px">' + o.tags[0][0] + '</b></span><div class="grow"><b>' + o.name + '</b><div class="sub">' + o.desc + '・電腦對手</div></div>' + btn(o, "出戰", "pri") + '</div>';
+    }).join("");
+    return nat + '<div class="li dsec"><b class="kai">混合陣營</b></div>' + mix;
   };
   DU.curve = function (deck) {
     var c = [0, 0, 0, 0, 0, 0, 0], items = 0;
@@ -206,6 +217,7 @@
     opp = ghost ? Object.assign({}, o, { name: GHOST_NAMES[Math.floor(Math.random() * GHOST_NAMES.length)] }) : o;
     if (GHOST) GHOST.timer = setInterval(ghostTick, 500);
     G = D.newGame(Object.assign({}, DU.deck(st)), D.oppDeck(o), { human: 0 });
+    G.p[1].easy = !ghost && o.lv === 1;   // 初級：電腦放水（每回合只出 1 位、城門多時不格擋）
     if (D.noZero(G.p[1])) D.mulligan(G, 1);
     sel = null; busy = false;
     UI.go("duelb");
@@ -213,7 +225,7 @@
     var hand = function () { return G.p[0].hand.map(function (d) { return DU.face(d, "s"); }).join(""); }, mulled = false;
     // ✅ Jay 2026-11-20：換手牌畫面點卡可以放大，收起回到換手牌
     var showMul = function () {
-    UI.modal('<h2>' + (GHOST ? '對手：' + esc(opp.name) : o.name) + '</h2><p>' + (G.first === 0 ? '你<b>先攻</b>（第 1 回合 1 道軍令、不抽牌）。' : '你<b>後攻</b>（前兩回合各 2 道軍令）。') + '</p>' +
+    UI.modal('<h2>' + (GHOST ? '對手：' + esc(opp.name) : o.name + ' <small>' + o.desc + '</small>') + '</h2><p>' + (G.first === 0 ? '你<b>先攻</b>（第 1 回合 1 道軍令、不抽牌）。' : '你<b>後攻</b>（前兩回合各 2 道軍令）。') + '</p>' +
       '<p class="dim">起手 ' + D.HAND + ' 張，可以換一次。</p><p class="warn" id="mul-w"' + (D.noZero(G.p[0]) ? '' : ' hidden') + '>起手沒有 0 費卡，第一回合會出不了卡，建議換手牌。</p><div class="dhandpv" id="mul-pv">' + hand() + '</div>' +
       '<div class="row end"><button id="mul-re">換一次手牌</button><button class="pri" id="mul-go">開戰</button></div>');
     var bindPv = function () { $$("#mul-pv .dc").forEach(function (c, i) { c.onclick = function () { DU.bigCard(G.p[0].hand[i], { back: showMul }); }; }); };
@@ -237,8 +249,8 @@
     }
   }
   // 所有出手都走這裡：打電腦就直接跑規則，線上就送給伺服器
-  var ACT = { play: D.play, move: D.move, extraDraw: D.extraDraw, swap: D.swap, useItem: D.useItem, attack: D.attack, snipe: D.snipe, breakGate: D.breakGate, lubu: D.lubu };
-  var FX = { attack: 1, snipe: 1, breakGate: 1, lubu: 1 };
+  var ACT = { play: D.play, move: D.move, extraDraw: D.extraDraw, swap: D.swap, useItem: D.useItem, attack: D.attack, snipe: D.snipe, duel: D.duel, breakGate: D.breakGate, lubu: D.lubu };
+  var FX = { attack: 1, snipe: 1, duel: 1, breakGate: 1, lubu: 1 };
   function act(a, args) {
     sel = null; args = args || [];
     if (NET) { busy = true; NET.send({ t: "act", a: a, args: args }); DU.render(); return; }
@@ -254,7 +266,7 @@
     var me = G.p[0], O = G.p[1];
     if (sel.kind === "swap") return who === 0 && me.front.indexOf(u) >= 0;
     if (sel.kind === "snipe") return who === 1 && O.back.indexOf(u) >= 0;
-    if (sel.kind === "lubu") return who === 1 && O.front.indexOf(u) >= 0;
+    if (sel.kind === "lubu" || sel.kind === "duel" || sel.kind === "betray") return who === 1 && O.front.indexOf(u) >= 0;
     if (sel.kind === "item") return who === 0;
     return false;
   }
@@ -309,7 +321,7 @@
     });
     bindAct();
   };
-  var TGT_TIP = { swap: "點己方前陣要換下的武將", snipe: "點敵方後陣要遠射的武將", lubu: "點敵方前陣要擊退的武將", item: "點己方要使用的武將" };
+  var TGT_TIP = { swap: "點己方前陣要換下的武將", snipe: "點敵方後陣要遠射的武將", lubu: "點敵方前陣要擊退的武將", duel: "點敵方前陣要單挑的武將", betray: "策反：點敵方前陣要送回牌組底的武將", item: "點己方要使用的武將" };
   var PICK_TXT = { block: "選擇格擋", discard: "臥龍：選對方手牌", illusion: "幻術：選要放回的牌" };
   function actHtml() {
     if (!G || G.winner >= 0) return '<button class="pri" id="da-leave">離開</button>';
@@ -337,6 +349,7 @@
         h = '<b class="kai">' + u.d.name + '</b>' + (inBack ? '<button id="da-move" ' + (G.phase === "main" && me.front.length < D.FRONT ? '' : 'disabled') + '>移上前陣</button>'
           : '<button class="pri" id="da-atk" ' + (D.canAttack(G, 0, u) ? '' : 'disabled') + '>進攻</button>' +
             (u.d.skill === "遠射" ? '<button id="da-snipe" ' + (D.canSnipe(G, 0, u) ? '' : 'disabled') + '>遠射後陣</button>' : '') +
+            (u.d.skill === "單挑" ? '<button class="gold" id="da-duel" ' + (D.canDuel(G, 0, u) ? '' : 'disabled') + ' title="每次出陣後第一次進攻才能用">單挑</button>' : '') +
             (u.d.skill === "破門" ? '<button id="da-break" ' + (D.canBreak(G, 0, u) ? '' : 'disabled') + ' title="兵力要 5000 以上">破門</button>' : '') +
             (u.d.name === "呂布" ? '<button class="gold" id="da-lubu" ' + (D.canLubu(G, 0, u) ? '' : 'disabled') + '>神擋殺神（3令）</button>' : '') +
             (u.act ? '' : '<span class="dim">休整中</span>')) + '<button class="sm plain" id="da-see">看卡</button>';
@@ -359,8 +372,10 @@
       $("#dm-fx").onclick = function () { var on = !DU.fxOn(); try { localStorage.setItem("sgl_fx", on ? "1" : "0"); } catch (e) {} this.textContent = "特技演出：" + (on ? "開" : "關"); };   // ★ 開關是開發加的
     });
     on("da-see", function () { var me = G.p[0]; var d = sel.h !== undefined ? me.hand[sel.h] : D.field(me).find(function (x) { return x.id === sel.u; }).d; DU.bigCard(d); });
-    on("da-back", function () { act("play", [sel.h, "back"]); });
-    on("da-front", function () { act("play", [sel.h, "front"]); });
+    // 策反：敵方前陣有人時先指定目標
+    var playTo = function (zone) { var d = G.p[0].hand[sel.h]; if (d && d.skill === "策反" && G.p[1].front.length) { sel = { mode: "tgt", kind: "betray", h: sel.h, zone: zone }; DU.render(); return; } act("play", [sel.h, zone]); };
+    on("da-back", function () { playTo("back"); });
+    on("da-front", function () { playTo("front"); });
     on("da-swap", function () { sel = { mode: "tgt", kind: "swap", h: sel.h }; DU.render(); });
     on("da-item", function () {
       var it = G.p[0].hand[sel.h];
@@ -371,6 +386,7 @@
     on("da-atk", function () { act("attack", [sel.u]); });
     on("da-snipe", function () { sel = { mode: "tgt", kind: "snipe", u: sel.u }; DU.render(); });
     on("da-lubu", function () { sel = { mode: "tgt", kind: "lubu", u: sel.u }; DU.render(); });
+    on("da-duel", function () { sel = { mode: "tgt", kind: "duel", u: sel.u }; DU.render(); });
     on("da-break", function () { act("breakGate", [sel.u]); });
     on("da-draw", function () { act("extraDraw", []); });
     on("da-end", function () {
@@ -390,6 +406,8 @@
     else if (s.kind === "item") act("useItem", [s.h, u.id]);
     else if (s.kind === "snipe") act("snipe", [s.u, u.id]);
     else if (s.kind === "lubu") act("lubu", [s.u, u.id]);
+    else if (s.kind === "duel") act("duel", [s.u, u.id]);
+    else if (s.kind === "betray") act("play", [s.h, s.zone, u.id]);
   }
   // ===== 特技大演出（✅ Jay 2026-11-21：全部特技都播、雙方都播；卡等越高越華麗） =====
   var RKS = ["N", "R", "SR", "SSR", "UR"];
@@ -493,7 +511,7 @@
       await playFx();
       if (G.pending && G.pending.type === "block") { DU.render(); D.block(G, await askBlock()); await playFx(); }
       DU.render(); flipPop();
-      await ghostWait(/attack|snipe|lubu|break/.test(act.t) ? 700 : 650);
+      await ghostWait(/attack|snipe|duel|lubu|break/.test(act.t) ? 700 : 650);
       if (G.lastFight || G.lastGuard || G.lastSave) await fightFx();
     }
     if (!G || G.winner >= 0) { busy = false; DU.render(); return DU.over(); }
@@ -527,7 +545,9 @@
   DU.over = function () {
     if (!G || G.recorded) return; G.recorded = true;
     if (GHOST) { clearInterval(GHOST.timer); return netOver({ win: G.winner === 0 }); }
-    var st = S(), win = G.winner === 0; st.duel.rec = st.duel.rec || { w: 0, l: 0 }; st.duel.rec[win ? "w" : "l"]++; UI.save();
+    var st = S(), win = G.winner === 0; st.duel.rec = st.duel.rec || { w: 0, l: 0 }; st.duel.rec[win ? "w" : "l"]++;
+    if (win && opp && opp.id) { st.duel.beat = st.duel.beat || {}; st.duel.beat[opp.id] = 1; }
+    UI.save();
     setTimeout(function () {
       UI.modal('<h2>' + (win ? '勝利' : '敗北') + '</h2><p>' + (win ? '攻破了' + opp.name + '的城門。' : '我方城門被攻破了。') + '</p>' +
         '<p class="dim">共 ' + G.turn + ' 回合。試玩版暫時沒有獎勵。</p><div class="row end"><button id="do-again">再戰一場</button><button class="pri" id="do-back">返回</button></div>');
@@ -591,7 +611,8 @@
     me.ai = setTimeout(function () {   // ✅ Jay：等 60 秒沒人就改跟電腦打
       if (NET !== me || gone) return;
       me.close(); NET = null; UI.close();
-      DU.start(D.OPPONENTS[Math.floor(Math.random() * D.OPPONENTS.length)], true);
+      var pool = D.OPPONENTS.filter(function (o) { return o.lv === 2; });   // ★ 假裝真人時用高級／混合的牌組
+      DU.start(pool[Math.floor(Math.random() * pool.length)], true);
     }, DU.MATCH_WAIT || 60000);
     ws.onmessage = function (e) { var m = JSON.parse(e.data); if (m.t === "matched") { gone = true; clearTimeout(me.ai); ws.close(); DU.connect(m.room); } else if (m.t === "err") UI.flash(m.msg); };
     ws.onclose = function () { if (!gone) { NET = null; UI.modal('<h2>配對中斷</h2><p>連線中斷了，請再試一次。</p><div class="row end"><button onclick="SG.UI.close()">好</button></div>'); } };
