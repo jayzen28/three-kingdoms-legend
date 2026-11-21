@@ -1229,3 +1229,6 @@ body.ci-shake .cutin{animation:ciShake .36s}
 .ts-sub{font-size:13px;color:#bdb096;opacity:0;transition:opacity .3s .2s}
 .toss.show .ts-res{opacity:1;transform:none}.toss.show .ts-sub{opacity:1}
 .toss .ci-skip{position:static;opacity:0;animation:none;transition:opacity .3s .5s}.toss.show .ci-skip{opacity:1}
+/* ✅ Jay 2026-11-21：銅錢改成真的五銖錢（篆書浮雕） */
+.ts-face{background:url(../img/coin_front.webp) center/100% 100% no-repeat!important;box-shadow:0 0 26px rgba(236,211,145,.45)!important}
+.ts-face.b{background-image:url(../img/coin_back.webp)!important}
