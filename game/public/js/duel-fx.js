@@ -81,6 +81,55 @@
     }); });
   };
 
+  // ===== 組合（湊齊）演出：電光火石（✅ Jay 2026-11-21：照開發提的做，加強電光火石） =====
+  // ★ 各組顏色與專屬元素是開發配的
+  var SETFX = { "五虎將": ["#ffd45e", "rays"], "五子良將": ["#7cc0ff", "slash"], "河北四庭柱": ["#c49bff", "rings"], "桃園結義": ["#ff9ec8", "petals"],
+    "水鏡門下": ["#8ff0ff", "stars"], "司馬一族": ["#b07cff", "smoke"], "南蠻": ["#9be05e", "fire"], "大都督": ["#ff6b3a", "fire"],
+    "託孤重臣": ["#fff1c4", "rays"], "荊州": ["#5ee0c8", "waves"], "益州": ["#7be07a", "mist"], "護主": ["#f5d98a", "shield"] };
+  var NUM = ["", "一", "二", "三", "四", "五"];
+  function zig(x0, y0, x1, y1, n, j) {   // 鋸齒閃電
+    var p = [[x0, y0]];
+    for (var i = 1; i < n; i++) { var t = i / n; p.push([x0 + (x1 - x0) * t + (Math.random() - .5) * j, y0 + (y1 - y0) * t + (Math.random() - .5) * j]); }
+    p.push([x1, y1]); return p.map(function (q) { return q[0].toFixed(1) + "," + q[1].toFixed(1); }).join(" ");
+  }
+  DU.setin = function (st, side) {
+    var full = st.n >= st.size, fx = SETFX[st.tag] || ["#f5d98a", "rays"], col = fx[0];
+    var arts = st.names.map(function (n) { var d = D.CARD[n]; return { n: n, art: d && d.art, on: st.got.indexOf(n) >= 0 }; });
+    var imgs = arts.filter(function (a) { return a.art; }).map(function (a) { DU.preloadFx([a.n]); return cache[a.art]; });
+    var wait = function (p, ms) { return Promise.race([p, new Promise(function (r) { setTimeout(r, ms); })]); };
+    return wait(Promise.all(imgs), 700).then(function () { return new Promise(function (res) {
+      var el = document.createElement("div");
+      el.className = "setin s" + (side || 0) + (full ? " full" : "");
+      el.style.setProperty("--c1", col); el.style.setProperty("--ec", col); el.style.setProperty("--k", arts.length);
+      var strips = arts.map(function (a, i) {
+        return '<div class="si-strip' + (a.on ? '' : ' off') + '" style="--i:' + i + ';animation-delay:' + (120 + i * 90) + 'ms"><div class="si-pic" style="' + (a.art ? 'background-image:url(img/' + a.art + '_full.webp)' : '') + '"></div><b>' + a.n + '</b></div>';
+      }).join("");
+      var bolts = ""; for (var b = 0; b < (full ? 7 : 4); b++) {
+        var x0 = Math.random() * 100, x1 = Math.random() * 100;
+        bolts += '<polyline style="animation-delay:' + (380 + b * 70 + Math.random() * 120).toFixed(0) + 'ms" points="' + zig(x0, -5, x1, 105, 12, 14) + '"/>';
+      }
+      var sparks = ""; for (var k = 0; k < (full ? 46 : 28); k++) {
+        var ang = Math.random() * 360, len = 30 + Math.random() * 60;
+        sparks += '<i style="--a:' + ang.toFixed(0) + 'deg;--l:' + len.toFixed(0) + 'vmin;animation-delay:' + (560 + Math.random() * 160).toFixed(0) + 'ms"></i>';
+      }
+      var pips = ""; for (var q = 1; q <= st.size; q++) pips += '<i class="' + (q <= st.n ? 'on' : '') + '"></i>';
+      el.innerHTML = '<div class="ci-dim"></div><div class="si-strips">' + strips + '</div>' + elem(fx[1]) +
+        '<svg class="si-bolts" viewBox="0 0 100 100" preserveAspectRatio="none">' + bolts + '</svg>' +
+        '<div class="si-flash"></div><div class="si-sparks">' + sparks + '</div>' +
+        '<div class="si-txt"><div class="si-tag">' + (side ? '敵方・' : '') + '組合' + (full ? '・全員集結' : '') + '</div>' +
+        '<div class="si-name">' + st.tag.split("").map(function (ch, i) { return '<span style="animation-delay:' + (700 + i * 80) + 'ms">' + ch + '</span>'; }).join("") + '</div>' +
+        '<div class="si-pips">' + pips + '</div><div class="si-bonus">' + NUM[st.n] + '人陣・兵力 <b>+' + st.bonus + '</b></div></div>' +
+        '<div class="ci-skip">點一下跳過</div>';
+      document.body.appendChild(el);
+      var done = false, timers = [];
+      var finish = function () { if (done) return; done = true; timers.forEach(clearTimeout); el.classList.add("out"); setTimeout(function () { el.remove(); res(); }, 320); };
+      timers.push(setTimeout(function () { document.body.classList.add("ci-shake"); setTimeout(function () { document.body.classList.remove("ci-shake"); }, 380); }, 560));
+      if (full) timers.push(setTimeout(function () { document.body.classList.add("ci-shake"); setTimeout(function () { document.body.classList.remove("ci-shake"); }, 380); }, 1150));
+      timers.push(setTimeout(finish, full ? 2900 : 2400));
+      el.addEventListener("click", finish);
+    }); });
+  };
+
   // ===== 開局拋銅錢決定先後手（✅ Jay 2026-11-21） =====
   // first：0＝我方先攻（字面朝上）、1＝對手先攻（背面朝上）
   DU.coinToss = function (first, oppName) {
@@ -114,6 +163,13 @@
         p.querySelectorAll("[data-sd]").forEach(function (b) { b.onclick = function () { st.side = +b.dataset.sd; draw(); play(); }; });
         p.querySelectorAll("[data-rr]").forEach(function (b) { b.onclick = function () { st.rar = b.dataset.rr; draw(); play(); }; });
         p.querySelector("#ci-play").onclick = play;
+        var sp = document.createElement("div"); sp.innerHTML = '<select id="ci-set">' + Object.keys(D.SET_TAGS).map(function (t) { return '<option>' + t + '</option>'; }).join("") + '</select><button class="chip" data-sn="part">湊到門檻</button><button class="chip" data-sn="full">全員</button>';
+        p.appendChild(sp);
+        sp.querySelectorAll("[data-sn]").forEach(function (b) { b.onclick = function () {
+          var t = p.querySelector("#ci-set").value, names = D.SET_TAGS[t].split(" ").filter(function (n) { return D.CARD[n]; }), tier = D.SET_TIER[names.length];
+          var n = b.dataset.sn === "full" ? names.length : +Object.keys(tier)[0];
+          if (!busy) { busy = true; DU.setin({ tag: t, size: names.length, n: n, bonus: tier[n], names: names, got: names.slice(0, n) }, st.side).then(function () { busy = false; }); }
+        }; });
         p.querySelector("#ci-pick").onchange = function () { d = D.CARD[this.value]; draw(); play(); };
       };
       var busy = false;

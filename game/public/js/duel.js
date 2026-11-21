@@ -29,17 +29,25 @@
   // ===== 數值 =====
   D.energy = function (P) { return P.back.reduce(function (a, u) { return a + u.d.gen; }, 0) + (P.eb || 0); };   // eb：軍糧這回合多的軍餉
   D.field = function (P) { return P.front.concat(P.back); };
-  D.setDone = function (P, tag) {
+  D.setDone = function (P, tag) { var s = D.setInfo(P, tag); return s.n === s.size; };
+  // 湊齊：場上（前後陣都算）有幾位不同的成員、現在的加成
+  D.setInfo = function (P, tag) {
     var names = D.SET_TAGS[tag].split(" ").filter(function (n) { return D.CARD[n]; });
     var on = D.field(P).map(function (u) { return u.d.name; });
-    return names.every(function (n) { return on.indexOf(n) >= 0; });
+    var got = names.filter(function (n) { return on.indexOf(n) >= 0; });
+    var tier = D.SET_TIER[names.length] || {}, bonus = 0;
+    Object.keys(tier).forEach(function (k) { if (got.length >= +k) bonus = Math.max(bonus, tier[k]); });
+    return { tag: tag, size: names.length, n: got.length, bonus: bonus, names: names, got: got };
+  };
+  D.setBonus = function (P, d) {   // 一位武將屬於好幾組時，取最高那組（不疊加）★
+    var b = 0; d.tags.forEach(function (t) { if (D.SET_TAGS[t]) b = Math.max(b, D.setInfo(P, t).bonus); }); return b;
   };
   // 滿血兵力（含加成）
   D.bp = function (P, u, blocking) {
     var bp = u.d.bp + (u.buf || 0), all = D.field(P);
     if (u.d.skill === "結義") bp += 500 * Math.min(3, all.filter(function (v) { return v !== u && shareTag(u.d, v.d); }).length);
     if (u.d.tags.indexOf("吳") >= 0 && all.some(function (v) { return v.d.name === "孫權"; })) bp += 500 * Math.min(3, all.filter(function (v) { return v.d.tags.indexOf("吳") >= 0; }).length);
-    if (u.d.tags.some(function (t) { return D.SET_TAGS[t] && D.setDone(P, t); })) bp += D.SET_BONUS;
+    bp += D.setBonus(P, u.d);
     if (blocking && u.d.skill === "鐵壁") bp += 1000;
     return bp;
   };
@@ -411,6 +419,22 @@
     if (act.t === "break") return D.breakGate(G, who, act.id);
     if (act.t === "lubu") return D.lubu(G, who, act.id, act.tid);
   };
+  // 湊齊升級時記一筆演出（人數變多、加成變高才播；人被擊退降級後再湊回來會再播）
+  function checkSets(G) {
+    if (!G || (G.human < 0 && !G.both)) return;
+    G.p.forEach(function (P) {
+      P.sets = P.sets || {};
+      Object.keys(D.SET_TAGS).forEach(function (t) {
+        var s = D.setInfo(P, t), was = P.sets[t] || 0;
+        if (s.bonus > was) (G.fxq = G.fxq || []).push({ who: P.who, set: s });
+        P.sets[t] = s.bonus;
+      });
+    });
+  }
+  D.checkSets = checkSets;
+  ["play", "swap", "move", "useItem", "attack", "block", "snipe", "breakGate", "lubu", "endTurn", "chooseReturn", "chooseDiscard"].forEach(function (k) {
+    var f = D[k]; D[k] = function (G) { var r = f.apply(this, arguments); checkSets(G); return r; };
+  });
   // 不需要畫面的整局自動對打（測試用）
   D.autoplay = function (G, maxTurns) {
     G.human = -1;

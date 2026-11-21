@@ -31,7 +31,7 @@
       logs: G.logs.slice(-6).map(function (t) { return seat === 0 ? t : flip(t); }) };
     if (G.pending) { v.pending = ser(G.pending); v.pending.who = r(G.pending.who); }
     EVENTS.forEach(function (k) { if (G[k]) { v[k] = ser(G[k]); if (v[k].who !== undefined) v[k].who = r(G[k].who); } });
-    if (G.fxq && G.fxq.length) v.fxq = G.fxq.map(function (x) { return { who: r(x.who), d: ser(x.d) }; });   // 特技演出
+    if (G.fxq && G.fxq.length) v.fxq = G.fxq.map(function (x) { var o = ser(x); o.who = r(x.who); return o; });   // 特技演出
     return v;
   };
 
