@@ -27,8 +27,8 @@
   var nm = function (G, who) { return who === G.human ? "我方" : "敵方"; };
 
   // ===== 數值 =====
-  D.energy = function (P) {   // eb：軍糧這回合多的軍餉；屯糧：在場上每位 +1（✅ Jay 2026-11-21 選 B，不累積）
-    return P.back.reduce(function (a, u) { return a + u.d.gen; }, 0) + (P.eb || 0) + D.field(P).filter(function (u) { return u.d.skill === "屯糧"; }).length;
+  D.energy = function (P) {   // eb：軍糧這回合多的軍餉；屯糧：在場上每位 +2（✅ Jay 2026-11-21，不累積）
+    return P.back.reduce(function (a, u) { return a + u.d.gen; }, 0) + (P.eb || 0) + 2 * D.field(P).filter(function (u) { return u.d.skill === "屯糧"; }).length;
   };
   D.field = function (P) { return P.front.concat(P.back); };
   D.setDone = function (P, tag) { var s = D.setInfo(P, tag); return s.n === s.size; };
@@ -199,7 +199,7 @@
     var P = G.p[who], O = G.p[1 - who], d = u.d, s = d.skill, shown = false;
     var say = function (t) { if (!shown) { shown = true; fx(G, who, d); } G.log("　" + (d.personal ? d.skillName : s) + "：" + t); };
     if (s === "軍師") { say("抽 1 張"); draw(G, P); }
-    else if (s === "屯糧") say("她在場上時軍餉 +1（現在 " + D.energy(P) + "）");
+    else if (s === "屯糧") say("她在場上時軍餉 +2（現在 " + D.energy(P) + "）");
     else if (s === "策反") {
       var tg = O.front.find(function (v) { return v.id === tid; }) || O.front.slice().sort(function (a, b) { return D.hp(O, b) - D.hp(O, a); })[0];
       if (tg) {
