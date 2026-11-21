@@ -349,7 +349,7 @@
         h = '<b class="kai">' + u.d.name + '</b>' + (inBack ? '<button id="da-move" ' + (G.phase === "main" && me.front.length < D.FRONT ? '' : 'disabled') + '>移上前陣</button>'
           : '<button class="pri" id="da-atk" ' + (D.canAttack(G, 0, u) ? '' : 'disabled') + '>進攻</button>' +
             (u.d.skill === "遠射" ? '<button id="da-snipe" ' + (D.canSnipe(G, 0, u) ? '' : 'disabled') + '>遠射後陣</button>' : '') +
-            (u.d.skill === "單挑" ? '<button class="gold" id="da-duel" ' + (D.canDuel(G, 0, u) ? '' : 'disabled') + ' title="每次出陣後第一次進攻才能用">單挑</button>' : '') +
+            (u.d.skill === "單挑" ? '<button class="gold" id="da-duel" ' + (D.canDuel(G, 0, u) ? '' : 'disabled') + ' title="每場限用一次">單挑</button>' : '') +
             (u.d.skill === "破門" ? '<button id="da-break" ' + (D.canBreak(G, 0, u) ? '' : 'disabled') + ' title="兵力要 5000 以上">破門</button>' : '') +
             (u.d.name === "呂布" ? '<button class="gold" id="da-lubu" ' + (D.canLubu(G, 0, u) ? '' : 'disabled') + '>神擋殺神（3令）</button>' : '') +
             (u.act ? '' : '<span class="dim">休整中</span>')) + '<button class="sm plain" id="da-see">看卡</button>';

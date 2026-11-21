@@ -314,12 +314,12 @@
     if (!f.deadB && D.field(O).indexOf(t) >= 0) G.log("　" + t.d.name + " 剩兵力 " + D.hp(O, t));
     G.lastFight = { a: a, b: t, f: f }; return true;
   };
-  // 單挑：每次出陣後的第一次進攻，指定敵方前陣一位（休整中的也可以）交戰，算格擋（★ 休整中可指定、算格擋：開發解讀，Jay「照你改」）
-  D.canDuel = function (G, who, u) { return D.canAttack(G, who, u) && u.d.skill === "單挑" && !u.fought && G.p[1 - who].front.length > 0; };
+  // 單挑：✅ Jay 2026-11-21 每場限用一次（★ 同名武將共用一次）；指定敵方前陣一位（休整中的也可以）交戰，算格擋
+  D.canDuel = function (G, who, u) { var P = G.p[who]; return D.canAttack(G, who, u) && u.d.skill === "單挑" && !(P.duels && P.duels[u.d.name]) && G.p[1 - who].front.length > 0; };
   D.duel = function (G, who, unitId, targetId) {
     var P = G.p[who], O = G.p[1 - who], a = P.front.find(function (x) { return x.id === unitId; }), t = O.front.find(function (x) { return x.id === targetId; });
     if (!t || !D.canDuel(G, who, a)) return false;
-    G.phase = "attack"; a.act = false; a.atk++; a.fought = true;
+    G.phase = "attack"; a.act = false; a.atk++; a.fought = true; (P.duels = P.duels || {})[a.d.name] = 1;
     fx(G, who, a.d); G.log(nm(G, who) + " " + a.d.name + " 單挑 " + t.d.name + "（兵力 " + D.hp(P, a) + " 對 " + D.hp(O, t, true) + "）");
     var f = fight(G, who, a, 1 - who, t, { blocking: true });
     if (!f.deadB && D.field(O).indexOf(t) >= 0) G.log("　" + t.d.name + " 剩兵力 " + D.hp(O, t));
