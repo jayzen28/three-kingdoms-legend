@@ -81,6 +81,23 @@
     }); });
   };
 
+  // ===== 開局拋銅錢決定先後手（✅ Jay 2026-11-21） =====
+  // first：0＝我方先攻（字面朝上）、1＝對手先攻（背面朝上）
+  DU.coinToss = function (first, oppName) {
+    return new Promise(function (res) {
+      var el = document.createElement("div"); el.className = "toss";
+      el.innerHTML = '<div class="ts-title kai">拋銅錢・定先後</div><div class="ts-rule"><span><b>字面</b> 你先攻</span><span><b>背面</b> ' + (oppName ? esc(oppName) : '對手') + '先攻</span></div>' +
+        '<div class="ts-stage"><div class="ts-shadow"></div><div class="ts-coin ' + (first === 0 ? 'head' : 'tail') + '"><div class="ts-face f"><i></i><b class="l">五</b><b class="r">銖</b></div><div class="ts-face b"><i></i><em></em></div></div></div>' +
+        '<div class="ts-res kai">' + (first === 0 ? '字面！<br><strong>你先攻</strong>' : '背面！<br><strong>你後攻</strong>') + '</div><div class="ts-sub">' + (first === 0 ? '先攻第 1 回合 1 道軍令、不抽牌' : '後攻前兩回合各 2 道軍令') + '</div><div class="ci-skip">點一下繼續</div>';
+      document.body.appendChild(el);
+      var done = false, end = function () { if (done) return; done = true; el.classList.add("out"); setTimeout(function () { el.remove(); res(); }, 300); };
+      setTimeout(function () { el.classList.add("show"); }, 1750);
+      var auto = setTimeout(end, 3300);
+      el.addEventListener("click", function () { if (el.classList.contains("show")) { clearTimeout(auto); end(); } });
+    });
+  };
+  function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
   // ===== 試看頁：?fx=關羽 =====
   var q = /[?&]fx=([^&]+)/.exec(location.search);
   if (q) window.addEventListener("load", function () {

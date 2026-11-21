@@ -22,7 +22,7 @@
   D.view = function (G, seat) {
     var r = function (w) { return w < 0 || w === undefined ? w : (w === seat ? 0 : 1); };
     var side = function (P, mine) {
-      var o = ser({ who: r(P.who), front: P.front, back: P.back, side: P.side, ap: P.ap, apMax: P.apMax, t: P.t, seal: P.seal });
+      var o = ser({ who: r(P.who), front: P.front, back: P.back, side: P.side, ap: P.ap, apMax: P.apMax, t: P.t, seal: P.seal, eb: P.eb || 0 });
       o.hand = mine || (G.pending && G.pending.type === "discard" && G.pending.who === seat) ? ser(P.hand) : hide(P.hand);
       o.deck = hide(P.deck); o.life = hide(P.life);
       return o;

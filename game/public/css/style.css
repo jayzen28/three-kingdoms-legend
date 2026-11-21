@@ -1205,3 +1205,27 @@ body.ci-shake .cutin{animation:ciShake .36s}
   background:radial-gradient(circle,rgba(255,255,255,.15),color-mix(in srgb,var(--ec) 45%,transparent) 60%,var(--ec) 72%,transparent 74%);opacity:0;animation:ceShield .9s cubic-bezier(.2,1.4,.4,1) .5s both}
 .s1 .ce-shield i{left:62%}
 @keyframes ceShield{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}60%{opacity:1;transform:translate(-50%,-50%) scale(1.05)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.2)}}
+/* ===== 開局拋銅錢（✅ Jay 2026-11-21） ===== */
+.toss{position:fixed;inset:0;z-index:190;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#f0e8d8;cursor:pointer;
+  background:radial-gradient(ellipse at 50% 45%,rgba(60,40,15,.75),rgba(7,6,10,.96) 70%);animation:ciFade .25s both;transition:opacity .3s}
+.toss.out{opacity:0}
+.ts-title{font-size:28px;color:#ecd391;letter-spacing:.2em;text-shadow:0 0 14px rgba(212,168,83,.6),0 2px 0 #000}
+.ts-rule{display:flex;gap:18px;font-size:14px;color:#d8c9a8}.ts-rule b{color:#ecd391;margin-right:4px}
+.ts-stage{position:relative;width:180px;height:300px;perspective:700px}
+.ts-shadow{position:absolute;left:50%;bottom:6px;width:120px;height:18px;margin-left:-60px;border-radius:50%;background:radial-gradient(rgba(0,0,0,.7),transparent 70%);animation:tsShadow 1.6s ease-in-out both}
+@keyframes tsShadow{0%{transform:scale(1);opacity:.8}45%{transform:scale(.4);opacity:.3}100%{transform:scale(1);opacity:.8}}
+.ts-coin{position:absolute;left:50%;bottom:30px;width:130px;height:130px;margin-left:-65px;transform-style:preserve-3d;animation:tsUp 1.6s cubic-bezier(.3,0,.4,1) both}
+.ts-coin.head{--spin:1800deg}.ts-coin.tail{--spin:1980deg}
+@keyframes tsUp{0%{translate:0 0;transform:rotateX(0)}45%{translate:0 -150px}85%{translate:0 0;transform:rotateX(var(--spin))}92%{translate:0 -10px;transform:rotateX(var(--spin))}100%{translate:0 0;transform:rotateX(var(--spin))}}
+.ts-face{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,#fff1b8,#e0b04a 35%,#a8741e 70%,#6e4a12);box-shadow:inset 0 0 0 6px #c99a3c,inset 0 0 0 8px #6e4a12,inset 0 0 18px rgba(0,0,0,.45),0 0 26px rgba(236,211,145,.55)}
+.ts-face.b{transform:rotateX(180deg);background:radial-gradient(circle at 35% 30%,#f3dc9a,#c99a3c 35%,#8c6218 70%,#5a3c0d)}
+.ts-face i{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;background:#1a120a;box-shadow:0 0 0 4px #c99a3c,0 0 0 6px #6e4a12}
+.ts-face b{position:absolute;top:50%;font-family:"Ma Shan Zheng",var(--kai);font-size:34px;color:#5a3a0c;transform:translateY(-52%);text-shadow:0 1px 0 #ffe9a8}
+.ts-face b.l{left:16px}.ts-face b.r{right:16px}
+.ts-face em{position:absolute;inset:26px;border:3px solid rgba(90,58,12,.6);border-radius:50%}
+.ts-res{font-size:22px;text-align:center;line-height:1.3;opacity:0;transform:scale(.6);transition:all .35s cubic-bezier(.2,1.5,.4,1)}
+.ts-res strong{display:inline-block;font-size:44px;color:#ffe9a8;text-shadow:0 0 18px rgba(236,211,145,.8),0 3px 0 #000;letter-spacing:.1em}
+.ts-sub{font-size:13px;color:#bdb096;opacity:0;transition:opacity .3s .2s}
+.toss.show .ts-res{opacity:1;transform:none}.toss.show .ts-sub{opacity:1}
+.toss .ci-skip{position:static;opacity:0;animation:none;transition:opacity .3s .5s}.toss.show .ci-skip{opacity:1}

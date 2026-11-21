@@ -27,7 +27,7 @@
   var nm = function (G, who) { return who === G.human ? "我方" : "敵方"; };
 
   // ===== 數值 =====
-  D.energy = function (P) { return P.back.reduce(function (a, u) { return a + u.d.gen; }, 0); };
+  D.energy = function (P) { return P.back.reduce(function (a, u) { return a + u.d.gen; }, 0) + (P.eb || 0); };   // eb：軍糧這回合多的軍餉
   D.field = function (P) { return P.front.concat(P.back); };
   D.setDone = function (P, tag) {
     var names = D.SET_TAGS[tag].split(" ").filter(function (n) { return D.CARD[n]; });
@@ -89,7 +89,7 @@
 
   // ===== 回合 =====
   D.startTurn = function (G) {
-    var P = G.p[G.cur]; P.t++; G.turn++; G.phase = "main"; G.live = true;
+    var P = G.p[G.cur]; P.t++; G.turn++; G.phase = "main"; G.live = true; G.p[0].eb = 0; G.p[1].eb = 0;
     D.field(P).forEach(function (u) { if (u.frozen) u.frozen = false; else u.act = true; u.atk = 0; u.extra = 0; u.moved = false; u.fresh = false; });
     D.field(G.p[1 - G.cur]).forEach(function (u) { u.guard = false; });
     P.apMax = G.cur === G.first ? Math.min(3, P.t) : (P.t <= 2 ? 2 : 3);
@@ -141,7 +141,7 @@
     var P = G.p[who], u = P.back.find(function (x) { return x.id === unitId; });
     if (!u || G.cur !== who || G.phase !== "main" || P.front.length >= D.FRONT || G.pending) return false;
     P.back.splice(P.back.indexOf(u), 1); P.front.push(u); u.moved = true;
-    if (u.d.name === "呂蒙") u.noblock = G.turn;
+    if (u.d.name === "呂蒙") { u.noblock = G.turn; fx(G, who, u.d); }
     G.log(nm(G, who) + " " + u.d.name + " 移上前陣");
     return true;
   };
@@ -167,6 +167,7 @@
     P.hand.splice(handIdx, 1); P.ap -= it.ap; P.side.push(it);
     var say = function (s) { G.log(nm(G, who) + "使用道具「" + it.name + "」：" + s); };
     if (it.id === "ling") { P.ap += 2; say("軍令 +2（剩 " + P.ap + " 道）"); }
+    else if (it.id === "liang") { P.eb = (P.eb || 0) + 2; say("這回合軍餉 +2（現在 " + D.energy(P) + "）"); }
     else if (it.id === "chitu") { var z = P.front.indexOf(t) >= 0 ? P.front : P.back; z.splice(z.indexOf(t), 1); P.hand.push(t.d); say(t.d.name + " 回到手牌"); }
     else if (it.id === "dao") { t.buf += 1500; say(t.d.name + " 兵力 +1500"); }
     else if (it.id === "wushen") { t.buf += 3000; say(t.d.name + " 兵力 +3000"); }
@@ -364,6 +365,9 @@
         else if (P.front.length < D.FRONT) zone = "front"; else zone = "back";
         return { t: "play", i: opts[0].i, zone: zone };
       }
+      // 軍糧：多 2 軍餉能出手上更強的卡時用（還要留軍令出卡）
+      var lg = idx("liang");
+      if (lg >= 0 && P.ap >= 2 && G.phase === "main" && P.hand.some(function (x) { return !x.item && x.cost > D.energy(P) && x.cost <= D.energy(P) + 2 && x.ap <= P.ap - 1 && (P.front.length < D.FRONT || P.back.length < D.BACK); })) return { t: "item", i: lg };
       // 軍令道具：多 2 道能多出一張卡時用
       var li = idx("ling");
       if (li >= 0 && P.hand.some(function (x) { return !x.item && D.energy(P) >= x.cost && x.ap <= P.ap + 2 && x.ap > P.ap; })) return { t: "item", i: li };

@@ -154,6 +154,7 @@
   // ★ 取得方式：Jay 要「牌組抽得到＋茶館酒館抽得到」，掉落機率還沒定 → 試玩期大家都能放
   D.ITEMS = [
     { id: "ling", name: "軍令", ap: 0, tgt: null, text: "不用軍令，這回合軍令 +2（可以超過 3 道）。" },
+    { id: "liang", name: "軍糧", ap: 1, tgt: null, text: "這回合軍餉 +2（可以出費用高 2 的武將），回合結束消失。" },   // ✅ Jay 2026-11-21
     { id: "chitu", name: "赤兔馬", ap: 1, tgt: "mine", text: "讓己方前陣或後陣一位武將離開戰場、回到手牌。" },
     { id: "bao", name: "小籠包", ap: 1, tgt: null, react: true, text: "己方武將被擊退時（手上有這張、還有 1 道軍令就自動使用），改成留在場上、兵力剩 1000。" },
     { id: "dao", name: "青龍偃月刀", ap: 1, tgt: "mine", text: "這回合，己方一位武將兵力 +1500。" },
@@ -176,7 +177,7 @@
     var avail = D.LIST.filter(function (d) { return d.tags.some(function (t) { return opp.tags.indexOf(t) >= 0; }); })
       .map(function (d) { return { d: d, n: d.strong ? 4 : 3 }; });
     var deck = D.autoDeck(avail, D.DECK - 3, rnd);
-    ["ling", "dao", "dou", "bao", "wushen"].sort(function () { return (rnd || Math.random)() - 0.5; }).slice(0, 3).forEach(function (id) { deck[D.itemKey(id)] = 1; });
+    ["ling", "liang", "dao", "dou", "bao", "wushen"].sort(function () { return (rnd || Math.random)() - 0.5; }).slice(0, 3).forEach(function (id) { deck[D.itemKey(id)] = 1; });
     return deck;
   };
 })(window.SG);

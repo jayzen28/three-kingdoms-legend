@@ -222,7 +222,7 @@
     $("#mul-re").onclick = function () { D.mulligan(G, 0); mulled = true; $("#mul-pv").innerHTML = hand(); bindPv(); $("#mul-w").hidden = !D.noZero(G.p[0]); this.disabled = true; };
     $("#mul-go").onclick = function () { UI.close(); D.startTurn(G); ghostClock(); afterAction(); if (G.cur === 1) DU.aiTurn(); };
     };
-    showMul();
+    if (DU.coinToss) DU.coinToss(G.first, GHOST ? opp.name : null).then(showMul); else showMul();   // ✅ Jay：每場先拋銅錢決定先後手
   };
   function ghostClock() { if (GHOST) GHOST.dl = Date.now() + 90000; }
   // 時間到自動結束回合（跟線上一樣）
@@ -644,6 +644,7 @@
     ["dtime", "dtime2", "mul-time"].forEach(function (id) { var e = document.getElementById(id); if (e) { e.textContent = id === "dtime" ? t : '剩 ' + left + ' 秒'; e.classList.toggle("low", left <= 10); } });
   }
   function netMull(m) {
+    if (!NET.tossed && DU.coinToss) { NET.tossed = true; var me0 = NET; if (!$("#s-duelb").offsetParent || G) { G = null; UI.go("duelb"); DU.render(); } UI.close(); return DU.coinToss(m.first ? 0 : 1, m.opp || "對手").then(function () { if (NET === me0) netMull(me0.lastMull || m); }); }
     NET.lastMull = m;
     if (!$("#s-duelb").offsetParent || G) { G = null; UI.go("duelb"); DU.render(); }
     NET.dl = m.deadline; NET.pdl = 0; startClock();
