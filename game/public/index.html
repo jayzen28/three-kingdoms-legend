@@ -4,18 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>三國LEGEND</title>
-<link rel="icon" type="image/png" sizes="32x32" href="img/icon_32.png">
-<link rel="apple-touch-icon" href="img/icon_180.png">
+<link rel="icon" type="image/png" sizes="32x32" href="img/icon_32.png?v=2">
+<link rel="apple-touch-icon" href="img/icon_180.png?v=2">
 <meta name="theme-color" content="#07060a">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap">
 <link rel="preload" href="font/brush.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="img/loading.webp" as="image"><link rel="preload" href="img/logo_s.webp" as="image">
+<link rel="preload" href="img/loading.webp?v=2" as="image"><link rel="preload" href="img/logo_s.webp" as="image">
 <style>/* 開場載入畫面（✅ Jay 2026-11-22：四位武將沙灘圖） */
 #boot{position:fixed;inset:0;z-index:9999;background:#07060a;overflow:hidden;transition:opacity .5s}
 #boot.done{opacity:0;pointer-events:none}
-#boot::before{content:"";position:absolute;inset:-30px;background:url(img/loading.webp) center/cover;filter:blur(22px) brightness(.55)}
-#boot .bt-img{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);height:100%;aspect-ratio:572/1024;max-width:100%;background:url(img/loading.webp) center top/cover;box-shadow:0 0 40px rgba(0,0,0,.6)}
+#boot::before{content:"";position:absolute;inset:-30px;background:url(img/loading.webp?v=2) center/cover;filter:blur(22px) brightness(.55)}
+#boot .bt-img{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);height:100%;aspect-ratio:572/1024;max-width:100%;background:url(img/loading.webp?v=2) center top/cover;box-shadow:0 0 40px rgba(0,0,0,.6)}
 #boot .bt-ui{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,calc(100vh*572/1024));padding:0 9% 5.5vh;box-sizing:border-box;text-align:center}
 #boot .bt-logo{display:block;width:62%;margin:0 auto 10px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45))}
 #boot .bt-bar{height:10px;border-radius:999px;background:rgba(40,24,10,.55);border:1px solid #d4a853;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.35)}
