@@ -1083,10 +1083,10 @@ body.lux[data-scr=duelb]::before{background:radial-gradient(ellipse 80% 45% at 5
 #s-duelb .drow{grid-template-columns:16px repeat(4,1fr);gap:5px}
 #s-duelb .drow .slot{max-width:none;width:min(100%,calc((100dvh - 420px) * 3 / 16))}
 #s-duelb .dfield{padding:12px 10px}
-#s-duelb .dc.s-s::after{top:calc(133.33cqw - 56cqw);height:56cqw;background:linear-gradient(transparent,rgba(12,9,7,.9) 40%,rgba(12,9,7,.96))}
-#s-duelb .dc.s-s .nm{top:calc(133.33cqw - 50cqw);font-size:16cqw}
-#s-duelb .dc.s-s .sk1{display:block;top:calc(133.33cqw - 32cqw);font-size:12.5cqw;font-weight:700;letter-spacing:0;color:#f5d98a;text-shadow:0 1px 2px #000}
-#s-duelb .dc.s-s .bp{top:calc(133.33cqw - 17cqw);font-size:13.5cqw}
+#s-duelb .dc.s-s::after,.dhandpv .dc.s-s::after,.blk-row .dc.s-s::after{top:calc(133.33cqw - 56cqw);height:56cqw;background:linear-gradient(transparent,rgba(12,9,7,.9) 40%,rgba(12,9,7,.96))}
+#s-duelb .dc.s-s .nm,.dhandpv .dc.s-s .nm,.blk-row .dc.s-s .nm{top:calc(133.33cqw - 50cqw);font-size:16cqw}
+#s-duelb .dc.s-s .sk1,.dhandpv .dc.s-s .sk1,.blk-row .dc.s-s .sk1{display:block;top:calc(133.33cqw - 32cqw);font-size:12.5cqw;font-weight:700;letter-spacing:0;color:#f5d98a;text-shadow:0 1px 2px #000}
+#s-duelb .dc.s-s .bp,.dhandpv .dc.s-s .bp,.blk-row .dc.s-s .bp{top:calc(133.33cqw - 17cqw);font-size:13.5cqw}
 #s-duelb .dhand{gap:6px;min-height:0;padding:8px 2px 6px}
 #s-duelb .dhand .dc{width:min(23vw,98px)}
 #s-duelb .dbar{font-size:13px}
@@ -1382,3 +1382,22 @@ body.ci-shake .fxo{animation:ciShake .36s}
 .blk-atk .bpn b{font-size:26px;color:#ffd2b8;font-family:ui-monospace,monospace}
 .blk-row .dc{width:64px}
 .cl-res.win{color:#ffd27a}.cl-res.lose{color:#9fb8d0}.cl-res.even{color:#ffe2a0}
+
+/* 挑牌視窗的特技說明 */
+.pk-info{min-height:3.2em;margin:4px 0 8px;padding:8px 10px;border:1px solid rgba(212,168,83,.45);border-radius:6px;background:rgba(0,0,0,.35);font-size:14px;line-height:1.45;color:#f0e8d8}
+.pk-info b{color:#f5d98a}.pk-info i{font-style:normal;color:#ffb79a;font-size:13px}
+
+/* CI 標誌（✅ Jay 2026-11-22：黑漆描金字標） */
+.brand-logo{height:34px;width:auto;display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+
+/* 城門圖（Gemini） */
+.fxo .cl-gate,.fxo.hit .cl-col.gate.broke .cl-gate{aspect-ratio:752/684;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible;width:118%}
+.fxo .cl-gate::before{display:none}
+.fxo .cl-gate img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 8px 16px rgba(0,0,0,.6))}
+.fxo .cl-gate .g1{opacity:0;transition:opacity .12s}
+.fxo.hit .cl-col.gate.broke .g1{opacity:1}
+.fxo.hit .cl-col.gate.broke .g0{opacity:0}
+.fxo.hit .cl-col.gate.broke .cl-gate{animation:gateHit .4s}
+@keyframes gateHit{0%{transform:none}25%{transform:translate(-6px,3px) scale(1.04)}50%{transform:translate(5px,-2px)}100%{transform:none}}
+.gf-back{background:#1a120c!important;display:flex;align-items:center;justify-content:center}
+.gf-back img{width:92%;height:auto}

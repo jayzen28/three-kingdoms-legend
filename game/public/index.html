@@ -4,26 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>三國LEGEND</title>
+<link rel="icon" type="image/png" sizes="32x32" href="img/icon_32.png">
+<link rel="apple-touch-icon" href="img/icon_180.png">
+<meta name="theme-color" content="#07060a">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap">
 <link rel="preload" href="font/brush.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="img/loading.webp" as="image">
+<link rel="preload" href="img/loading.webp" as="image"><link rel="preload" href="img/logo_s.webp" as="image">
 <style>/* 開場載入畫面（✅ Jay 2026-11-22：四位武將沙灘圖） */
 #boot{position:fixed;inset:0;z-index:9999;background:#07060a;overflow:hidden;transition:opacity .5s}
 #boot.done{opacity:0;pointer-events:none}
 #boot::before{content:"";position:absolute;inset:-30px;background:url(img/loading.webp) center/cover;filter:blur(22px) brightness(.55)}
 #boot .bt-img{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);height:100%;aspect-ratio:572/1024;max-width:100%;background:url(img/loading.webp) center top/cover;box-shadow:0 0 40px rgba(0,0,0,.6)}
 #boot .bt-ui{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,calc(100vh*572/1024));padding:0 9% 5.5vh;box-sizing:border-box;text-align:center}
-#boot .bt-logo{font:700 min(8vw,4.2vh,40px)/1 "Noto Serif TC",serif;white-space:nowrap;color:#fff6dc;letter-spacing:.06em;text-shadow:0 2px 0 #7a4a12,0 0 14px rgba(0,0,0,.55);margin-bottom:12px}
-#boot .bt-logo b{color:#d4a853;margin-left:.15em;letter-spacing:.12em}
+#boot .bt-logo{display:block;width:62%;margin:0 auto 10px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.45))}
 #boot .bt-bar{height:10px;border-radius:999px;background:rgba(40,24,10,.55);border:1px solid #d4a853;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.35)}
 #boot .bt-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#b8862f,#ffe08a,#d4a853);transition:width .15s}
 #boot .bt-txt{margin-top:8px;font:600 14px "Noto Serif TC",serif;color:#5a3610;text-shadow:0 1px 0 rgba(255,255,255,.7)}
 </style>
-<link rel="stylesheet" href="css/style.css?v=1122b">
+<link rel="stylesheet" href="css/style.css?v=1122c">
 </head>
 <body>
-<div id="boot"><div class="bt-img"></div><div class="bt-ui"><div class="bt-logo">三國<b>LEGEND</b></div><div class="bt-bar"><i id="bt-fill"></i></div><div class="bt-txt" id="bt-txt">載入中…</div></div></div>
+<div id="boot"><div class="bt-img"></div><div class="bt-ui"><img class="bt-logo" src="img/logo_s.webp" alt="三國LEGEND"><div class="bt-bar"><i id="bt-fill"></i></div><div class="bt-txt" id="bt-txt">載入中…</div></div></div>
 <script>(function () {   // 載入進度：資源還在載時慢慢推到 92%，全部載完跳 100% 再淡出（★ 最少顯示 1.2 秒）
   var t0 = Date.now(), p = 0, f = document.getElementById("bt-fill"), x = document.getElementById("bt-txt");
   var tk = setInterval(function () { p = Math.min(92, p + (92 - p) * 0.08 + 0.4); f.style.width = p + "%"; x.textContent = "載入中… " + Math.round(p) + "%"; }, 120);
@@ -41,7 +43,7 @@
 </svg>
 
 <header id="top">
-  <div class="brand"><span class="seal">三國</span><span class="brand-t">LEGEND</span></div>
+  <div class="brand"><img class="brand-logo" src="img/logo_s.webp" alt="三國LEGEND"></div>
   <div class="purse">
     <span class="res" title="銅錢"><i class="ic-coin"></i><b id="r-copper">0</b></span>
     <span class="res" title="元寶"><i class="ic-ingot"></i><b id="r-yb">0</b></span>
@@ -92,9 +94,9 @@
 <script src="js/battle-ui.js?v=1121c"></script>
 <script src="js/duel-data.js?v=1121r"></script>
 <script src="js/duel.js?v=1122a"></script><script src="js/duel-net.js?v=1121m"></script>
-<script src="js/duel-ui.js?v=1122b"></script>
+<script src="js/duel-ui.js?v=1122c"></script>
 <script src="js/faces.js?v=1121n"></script>
-<script src="js/duel-fx.js?v=1122b"></script>
+<script src="js/duel-fx.js?v=1122c"></script>
 <script src="js/main.js?v=1120k"></script>
 </body>
 </html>

@@ -9,6 +9,10 @@
 
   // ===== 卡面 =====
   // size：s＝場上／手牌小卡、m＝組牌與收集冊、l＝大卡（簡潔版）、u＝大卡（完整版，參考 UA 卡的排法）
+  DU.skillLine = function (d) {   // 一行特技說明（挑牌視窗用）
+    if (d.item) return '<b>' + d.name + '</b>（道具）：' + d.text;
+    return '<b>' + d.name + '</b>・' + (d.skill ? (d.personal ? '★' : '') + d.skillName + '：' + d.skillText : '沒有特技') + (d.trig ? '　<i>急報・' + d.trig + '</i>' : '');
+  };
   DU.face = function (d, size, opt) {
     opt = opt || {};
     if (d.item) return DU.itemFace(d, size, opt);
@@ -479,12 +483,14 @@
     });
   };
   DU.illusionPick = function () {
-    var me = G.p[0], pick = [];
+    var me = G.p[0], pick = [], last = -1;
     var draw = function () {
+      var ld = me.hand[last];   // ✅ Jay 2026-11-22：挑牌時要看得到特技，點哪張就在下面顯示那張的特技說明
       UI.modal('<h2>幻術</h2><p>挑 2 張手牌放回牌組底（已選 ' + pick.length + ' / 2）。</p><div class="dhandpv">' +
         me.hand.map(function (d, i) { return DU.face(d, "s", { cls: pick.indexOf(i) >= 0 ? 'sel' : '', attr: ' data-ret="' + i + '"' }); }).join("") + '</div>' +
+        '<div class="pk-info">' + (ld ? DU.skillLine(ld) : '<span class="dim">點卡片選擇，下面會顯示那張的特技</span>') + '</div>' +
         '<div class="row end"><button class="pri" id="ret-ok" ' + (pick.length === Math.min(2, me.hand.length) ? '' : 'disabled') + '>放回</button></div>');
-      $$("[data-ret]").forEach(function (c) { c.onclick = function () { var i = +c.dataset.ret, k = pick.indexOf(i); if (k >= 0) pick.splice(k, 1); else if (pick.length < 2) pick.push(i); draw(); }; });
+      $$("[data-ret]").forEach(function (c) { c.onclick = function () { var i = +c.dataset.ret, k = pick.indexOf(i); last = i; if (k >= 0) pick.splice(k, 1); else if (pick.length < 2) pick.push(i); draw(); }; });
       $("#ret-ok").onclick = function () {
         UI.close();
         if (NET) { busy = true; NET.send({ t: "act", a: "return", args: [pick] }); DU.render(); return; }

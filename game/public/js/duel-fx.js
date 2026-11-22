@@ -223,7 +223,7 @@
     var B = c.kind === "gate" ? { gate: true } : { d: c.b, p: c.pb, dead: c.deadB, left: c.leftB, role: c.kind === "snipe" ? "後陣" : c.kind === "lubu" ? "目標" : "格擋" };
     var col = function (x, w) {
       if (x.gate) return '<div class="cl-col def gate' + (c.gates ? ' broke' : '') + '"><div class="cl-tag">' + w + '・城門</div>' +
-        '<div class="cl-gate"><i class="dl"></i><i class="dr"></i><span class="kai">城門</span></div>' +
+        '<div class="cl-gate"><img class="g0" src="img/gate.webp" alt=""><img class="g1" src="img/gate_broken.webp" alt=""></div>' +   // ✅ Jay 2026-11-22：城門改用 Gemini 畫的圖
         '<div class="cl-num"><small>城門</small><b>' + (c.gates ? '−' + c.gates : '0') + '</b></div><div class="cl-left">' + (c.gates ? '剩 ' + c.left + ' 道' : '護主擋下') + '</div></div>';
       var res = x.dead ? '被擊退' : (x.left !== undefined && x.left < x.p ? '剩兵力 ' + x.left : (x.atk ? '' : c.kind === "snipe" ? '' : '擋下了'));
       if (x.atk && c.noCounter && !x.dead) res = '不會被反扣';
@@ -247,7 +247,7 @@
     var R = { hand: ["急報・援軍", "加入" + w + "手牌"], back: ["急報・伏兵", "直接進入" + w + "後陣"], counter: ["急報・反擊", (x.u ? x.u.name : "前陣武將") + " 重新可行動、兵力 +1000"] };
     var r = R[x.res] || [c.trig === "伏兵" ? "急報・伏兵（後陣滿了）" : c.trig === "反擊" ? "急報・反擊（沒人能用）" : "沒有急報", "放進" + w + "棄牌區"];
     var html = '<div class="gf-head"><div class="gf-title kai">' + w + '城門被破</div><div class="gf-sub">剩 ' + x.left + ' 道城門・翻開被破的城門牌</div></div>' +
-      '<div class="gf-card"><div class="gf-inner"><div class="gf-back kai">城門</div><div class="gf-front">' + DU.face(c, "m") + '</div></div></div>' +
+      '<div class="gf-card"><div class="gf-inner"><div class="gf-back"><img src="img/gate_broken.webp" alt=""></div><div class="gf-front">' + DU.face(c, "m") + '</div></div></div>' +
       '<div class="gf-res"><b class="kai">' + r[0] + '</b><span>' + c.name + ' → ' + r[1] + '</span></div>';
     return overlay("gflip " + (side ? "theirs" : "mine"), html, 2600, [[450, function (el) { el.classList.add("flip"); }], [900, function (el) { el.classList.add("res"); }]]);
   };
@@ -305,3 +305,4 @@
     }, 600);
   });
 })(window.SG);
+["gate", "gate_broken"].forEach(function (n) { var i = new Image(); i.src = "img/" + n + ".webp"; });   // 城門圖先載
