@@ -7,9 +7,34 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC:wght@400;700&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700&display=swap">
 <link rel="preload" href="font/brush.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="img/loading.webp" as="image">
+<style>/* 開場載入畫面（✅ Jay 2026-11-22：四位武將沙灘圖） */
+#boot{position:fixed;inset:0;z-index:9999;background:#07060a;overflow:hidden;transition:opacity .5s}
+#boot.done{opacity:0;pointer-events:none}
+#boot::before{content:"";position:absolute;inset:-30px;background:url(img/loading.webp) center/cover;filter:blur(22px) brightness(.55)}
+#boot .bt-img{position:absolute;top:0;bottom:0;left:50%;transform:translateX(-50%);height:100%;aspect-ratio:572/1024;max-width:100%;background:url(img/loading.webp) center top/cover;box-shadow:0 0 40px rgba(0,0,0,.6)}
+#boot .bt-ui{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:min(100%,calc(100vh*572/1024));padding:0 9% 5.5vh;box-sizing:border-box;text-align:center}
+#boot .bt-logo{font:700 min(8vw,4.2vh,40px)/1 "Noto Serif TC",serif;white-space:nowrap;color:#fff6dc;letter-spacing:.06em;text-shadow:0 2px 0 #7a4a12,0 0 14px rgba(0,0,0,.55);margin-bottom:12px}
+#boot .bt-logo b{color:#d4a853;margin-left:.15em;letter-spacing:.12em}
+#boot .bt-bar{height:10px;border-radius:999px;background:rgba(40,24,10,.55);border:1px solid #d4a853;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.35)}
+#boot .bt-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#b8862f,#ffe08a,#d4a853);transition:width .15s}
+#boot .bt-txt{margin-top:8px;font:600 14px "Noto Serif TC",serif;color:#5a3610;text-shadow:0 1px 0 rgba(255,255,255,.7)}
+</style>
 <link rel="stylesheet" href="css/style.css?v=1122b">
 </head>
 <body>
+<div id="boot"><div class="bt-img"></div><div class="bt-ui"><div class="bt-logo">三國<b>LEGEND</b></div><div class="bt-bar"><i id="bt-fill"></i></div><div class="bt-txt" id="bt-txt">載入中…</div></div></div>
+<script>(function () {   // 載入進度：資源還在載時慢慢推到 92%，全部載完跳 100% 再淡出（★ 最少顯示 1.2 秒）
+  var t0 = Date.now(), p = 0, f = document.getElementById("bt-fill"), x = document.getElementById("bt-txt");
+  var tk = setInterval(function () { p = Math.min(92, p + (92 - p) * 0.08 + 0.4); f.style.width = p + "%"; x.textContent = "載入中… " + Math.round(p) + "%"; }, 120);
+  window.addEventListener("load", function () {
+    setTimeout(function () {
+      clearInterval(tk); f.style.width = "100%"; x.textContent = "載入完成";
+      var b = document.getElementById("boot");
+      setTimeout(function () { b.classList.add("done"); setTimeout(function () { b.remove(); }, 600); }, 300);
+    }, Math.max(0, 1200 - (Date.now() - t0)));
+  });
+})();</script>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-foot" viewBox="0 0 10 12"><circle cx="4.4" cy="2.1" r="1.7"/><path d="M2.4 4.3h4l.7 4H6l-.3 3.4H4.6L4.4 8.6 4.2 11.7H3.1L2.8 8.3h-1z"/><path d="M8.3.2v11.5" stroke="currentColor" stroke-width=".7" fill="none"/><path d="M8.3 0l.9 1.8H7.4z"/></symbol>
   <symbol id="i-horse" viewBox="0 0 12 12"><circle cx="5.2" cy="1.7" r="1.5"/><path d="M4 3.4h2.6l.5 3H3.6z"/><path d="M1 6.2h7.2l1.4-2.4 1.6.5-.4 1.6-1.2.3-.6 2.2v3.4H8V9.3H3.6v2.5H2.6V9L1 8.2z"/></symbol>
