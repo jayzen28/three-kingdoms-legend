@@ -1617,3 +1617,23 @@ details.sl-how summary{font-family:var(--kai);font-weight:700;font-size:16px;col
 @keyframes slFxWind{0%{transform:translateX(-90%) scale(.8) rotate(-12deg);opacity:0}25%{opacity:1}50%{transform:translateX(0) scale(1.2) rotate(4deg);opacity:1}100%{transform:translateX(95%) scale(.9) rotate(14deg);opacity:0}}
 .sl-sp.sp-rock img{animation:slFxRock 1.4s cubic-bezier(.6,0,.9,.5) forwards}
 @keyframes slFxRock{0%{transform:translateY(-110%) scale(.7);opacity:1}26%{transform:translateY(4%) scale(1.15);opacity:1}34%{transform:translateY(0) scale(1.05,.95)}80%{transform:translateY(0) scale(1.05);opacity:1}100%{transform:translateY(0) scale(1.1);opacity:0}}
+
+/* 拉霸守城 第五輪（Jay 2026-11-23）：軍師、×2、符號新框、雷不切邊 */
+.sl-grid::before{content:none}
+.sl-grid{--cs:calc((min(46vw,200px) - 26px) / 3);width:min(46vw,200px)}
+.sl-sym.gen .hd{left:14.5%;top:13.5%;width:71%;height:71%}
+.sl-mac{position:relative;padding-top:50px;gap:8px;align-items:stretch}
+.sl-ctl{justify-content:center}
+.sl-adv{flex:1 1 56px;min-width:52px;max-width:110px;position:relative;border-radius:8px;overflow:hidden;background:radial-gradient(circle at 50% 30%,#2c4a48,#0c1414);
+  box-shadow:inset 0 0 0 2px #5a120d,inset 0 0 0 3px #f6dc8f,0 0 0 2px #7a5a1e,0 4px 12px rgba(0,0,0,.6)}
+.sl-adv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 8%}
+.sl-adv b{position:absolute;left:0;right:0;bottom:0;text-align:center;font-family:var(--kai);font-size:14px;color:#ffe9b0;padding:10px 0 3px;background:linear-gradient(transparent,rgba(20,6,4,.92) 55%);letter-spacing:.3em;text-indent:.3em}
+.sl-say{position:absolute;left:0;right:0;top:0;height:42px;display:flex;align-items:center;padding:4px 10px;font-size:12px;line-height:1.35;color:#2a1a10;
+  background:linear-gradient(#fff6dc,#ecd9a8);border-radius:8px;box-shadow:0 0 0 1px #7a5a1e,0 2px 6px rgba(0,0,0,.5);overflow:hidden}
+.sl-mac::before{content:"";position:absolute;left:26px;top:41px;border:7px solid transparent;border-top-color:#ecd9a8;z-index:1}
+.sl-x2{position:absolute;right:8px;bottom:8px;z-index:5;width:46px;height:46px;border-radius:50%;padding:0;font-family:ui-monospace,monospace;font-weight:800;font-size:16px;color:#ecd391;
+  background:rgba(12,8,8,.78);border:0;box-shadow:0 0 0 2px #7a5a1e,0 0 0 3px #e9c46a,0 3px 8px rgba(0,0,0,.6)}
+.sl-x2.on{color:#1a1208;background:linear-gradient(#fff2b8,#d4a853);box-shadow:0 0 0 2px #7a5a1e,0 0 0 3px #fff0b8,0 0 14px rgba(255,215,120,.8)}
+.sl-sp.sp-thunder{align-items:flex-start}
+.sl-sp.sp-thunder img{width:max(135%,560px);margin-top:-8%;-webkit-mask-image:linear-gradient(transparent,#000 14%);mask-image:linear-gradient(transparent,#000 14%)}
+.sl-res{min-height:54px;padding:6px 0 2px}

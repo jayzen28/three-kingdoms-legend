@@ -22,20 +22,11 @@
   // ===== 地圖（世界座標 400×500，城門在下方中央） =====
   M.W = 400; M.H = 500;
   M.GATE = { x: 200, y: 486 };
-  var TRUNK = [[200, 330], [200, 486]];
-  M.PATHS = [
-    [[40, -12], [40, 110], [118, 165], [118, 262]].concat(TRUNK),      // 0 左上
-    [[200, -12], [200, 120], [168, 185], [200, 250]].concat(TRUNK),    // 1 正上
-    [[360, -12], [360, 110], [282, 165], [282, 262]].concat(TRUNK),    // 2 右上
-    [[-12, 212], [62, 212], [118, 262]].concat(TRUNK),                 // 3 左
-    [[412, 212], [338, 212], [282, 262]].concat(TRUNK)                 // 4 右
-  ];
-  M.GATE_NAMES = ["左上", "正上", "右上", "左側", "右側"];
-  M.SLOTS = [[78, 58], [322, 58], [150, 128], [240, 128], [80, 180], [320, 180], [72, 282], [328, 282], [165, 352], [235, 352], [140, 430], [260, 430]];
-  M.KEY = [8, 9];   // 要衝：所有路線最後都會經過，任何兵種都打得到
-
-  // 預先把路線切成等距點，方便移動與找落石位置
-  M.PTS = M.PATHS.map(function (p) {
+  // ✅ Jay 2026-11-23 第五輪：每一關的地圖配置都不一樣（用關卡數當亂數種子，同一關每次都一樣）
+  //   五個入口（上方 2～3 個、左右兩側 2～3 個）→ 左右各一個分匯點 → 總匯點 → 主幹 → 城門
+  //   營寨沿路兩側自動擺；主幹兩側固定兩個「要衝」，所有路線都會經過（✅ 至少打得到 75% 入口）
+  function mrnd(seed) { var a = (seed * 2654435761) >>> 0; return function () { a = (a + 0x6D2B79F5) >>> 0; var t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function cut(p) {
     var out = [], acc = 0;
     for (var i = 0; i < p.length - 1; i++) {
       var a = p[i], b = p[i + 1], L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(1, Math.round(L / 4));
@@ -44,7 +35,61 @@
     }
     out.push({ x: p[p.length - 1][0], y: p[p.length - 1][1], s: acc });
     out.len = acc; return out;
-  });
+  }
+  M.genMap = function (stage) {
+    var r = mrnd((stage || 1) + 1000), R = function (a, b) { return Math.round(a + (b - a) * r()); };
+    var J = [R(140, 260), R(296, 340)], T1 = [200 + R(-46, 46), R(384, 408)], gate = [M.GATE.x, M.GATE.y], tail = [J, T1, [200, 452], gate];
+    var JL = [Math.min(J[0] - 46, R(78, 136)), R(206, J[1] - 44)], JR = [Math.max(J[0] + 46, R(264, 322)), R(206, J[1] - 44)];
+    if (r() < 0.3) JL = J; else if (r() < 0.3) JR = J;        // 有時某一側不分匯，直接接到總匯點
+    var style = Math.floor(r() * 3), paths = [], names = [];
+    function top(x, Jn, nm) { var y1 = R(78, 118); paths.push([[x, -12], [x, y1], [Math.round((x + Jn[0]) / 2) + R(-18, 18), Math.round((y1 + Jn[1]) / 2) + R(-10, 16)], Jn].concat(Jn === J ? tail.slice(1) : tail)); names.push(nm); }
+    function side(left, y, Jn, nm) { var x0 = left ? -12 : M.W + 12, x1 = left ? R(42, 66) : M.W - R(42, 66); paths.push([[x0, y], [x1, y], Jn].concat(Jn === J ? tail.slice(1) : tail)); names.push(nm); }
+    if (style === 0) {          // 上三、左右各一
+      top(R(34, 74), JL, "左上"); top(R(176, 224), J, "正上");
+      top(R(326, 366), JR, "右上"); side(true, R(Math.max(60, JL[1] - 100), JL[1] - 26), JL, "左側"); side(false, R(Math.max(60, JR[1] - 100), JR[1] - 26), JR, "右側");
+    } else {                    // 上二、一側二、另一側一
+      var two = style === 1;    // true＝左邊兩個側入口
+      top(R(58, 118), JL, "左上"); top(R(282, 342), JR, "右上");
+      side(two, R(70, 112), two ? JL : JR, two ? "左上側" : "右上側"); side(two, R(170, 214), two ? JL : JR, two ? "左側" : "右側");
+      side(!two, R(140, 210), two ? JR : JL, two ? "右側" : "左側");
+    }
+    var pts = paths.map(cut), all = []; pts.forEach(function (P) { for (var i = 0; i < P.length; i += 2) all.push(P[i]); });
+    var near = function (x, y) { var m = 1e9; all.forEach(function (q) { var d = Math.hypot(q.x - x, q.y - y); if (d < m) m = d; }); return m; };
+    // 要衝：主幹上、總匯點下方兩側
+    var kx = J[0] + (T1[0] - J[0]) * 0.36, ky = J[1] + (T1[1] - J[1]) * 0.36, tl = Math.hypot(T1[0] - J[0], T1[1] - J[1]), nx = (T1[1] - J[1]) / tl, ny = -(T1[0] - J[0]) / tl;
+    var slots = [[Math.round(kx - nx * 37), Math.round(ky - ny * 37)], [Math.round(kx + nx * 37), Math.round(ky + ny * 37)]];
+    // 其他營寨：沿每條路（不含主幹）兩側 40 的位置取候選，再挑分散的 10 個
+    var cand = [];
+    pts.forEach(function (P) {
+      for (var i = 10; i < P.length - 2; i += 6) {
+        var a = P[i], b = P[i + 1]; if (a.y > J[1] - 6) break;
+        var dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy) || 1;
+        [1, -1].forEach(function (sd) {
+          var x = a.x - dy / L * 40 * sd, y = a.y + dx / L * 40 * sd;
+          if (x < 30 || x > M.W - 30 || y < 46 || y > 430) return;
+          var d = near(x, y); if (d < 31 || d > 43) return;
+          cand.push([Math.round(x), Math.round(y)]);
+        });
+      }
+    });
+    var far = function (c) { var m = 1e9; slots.forEach(function (q) { var d = Math.hypot(q[0] - c[0], q[1] - c[1]); if (d < m) m = d; }); return m; };
+    while (slots.length < 12 && cand.length) {
+      var bi = -1, bd = 50; cand.forEach(function (c, i) { var d = far(c) + r() * 6; if (d > bd) { bd = d; bi = i; } });
+      if (bi < 0) break; slots.push(cand[bi]); cand.splice(bi, 1);
+    }
+    // 裝飾：樹、山石，離路和營寨遠一點
+    var deco = [], tries = 0;
+    while (deco.length < 22 && tries++ < 400) {
+      var x = R(8, M.W - 8), y = R(14, 452); if (near(x, y) < 30) continue;
+      if (slots.some(function (q) { return Math.hypot(q[0] - x, q[1] - y) < 26; })) continue;
+      if (deco.some(function (q) { return Math.hypot(q.x - x, q.y - y) < 20; })) continue;
+      deco.push({ x: x, y: y, k: r() < 0.82 ? "tree" + (1 + Math.floor(r() * 4)) : "rock", s: 0.8 + r() * 0.5 });
+    }
+    deco.sort(function (a, b) { return a.y - b.y; });
+    return { stage: stage, paths: paths, pts: pts, slots: slots, key: [0, 1], names: names, deco: deco, theme: ((stage || 1) - 1) % 4, J: J };
+  };
+  M.useMap = function (map) { M.MAP = map; M.PATHS = map.paths; M.PTS = map.pts; M.SLOTS = map.slots; M.KEY = map.key; M.GATE_NAMES = map.names; };
+  M.useMap(M.genMap(1));
   function posAt(pi, s) {
     var P = M.PTS[pi], i = Math.max(0, Math.min(P.length - 1, Math.floor(s / P.len * (P.length - 1))));
     while (i < P.length - 1 && P[i + 1].s < s) i++;
@@ -65,23 +110,27 @@
   M.ROSTER_MAX = 5;
   M.STAR_ATK = [1, 1.5, 2.1, 2.8, 3.6];
   M.STAR_HP = [1, 1.4, 1.9, 2.5, 3.2];
-  M.REVIVE = 8;
-  M.TYPE = {   // 射程、攻擊間隔、可擋幾個敵人
-    "槍": { rng: 60, cd: 1.0, block: 3 },
-    "騎": { rng: 75, cd: 0.8, block: 1 },
-    "刺": { rng: 60, cd: 0.8, crit: 0.3 },
-    "弓": { rng: 125, cd: 1.0 },
-    "法": { rng: 105, cd: 1.5, splash: 34 }
+  M.REVIVE = 4;
+  // 射程、攻擊間隔（引擎秒；一般速度下實際秒數是 2 倍）、可擋幾個敵人
+  // ★ 節奏調慢後武將的出手頻率維持原本的實際秒數（槍兵每秒 1 下），慢下來的是敵軍行軍
+  M.TYPE = {
+    "槍": { rng: 60, cd: 0.5, block: 3 },
+    "騎": { rng: 75, cd: 0.4, block: 1 },
+    "刺": { rng: 60, cd: 0.25 },            // ✅ Jay 2026-11-23：刺客不暴擊，攻速是一般的 200%
+    "弓": { rng: 125, cd: 0.5 },
+    "法": { rng: 105, cd: 0.75, splash: 34 }
   };
+
   M.ENEMY = {
     spear: { name: "黃巾槍兵", img: "sol_e_spear", hp: 819, atk: 62, spd: 30, food: 4 },
     cav: { name: "黃巾騎兵", img: "sol_e_cav", hp: 655, atk: 83, spd: 58, food: 5 },
-    shield: { name: "黃巾力士", img: "sol_e_assassin", hp: 2457, atk: 114, spd: 18, food: 9 },
+    shield: { name: "黃巾力士", img: "sol_e_assassin", hp: 2457, atk: 114, spd: 22, food: 9 },
     bow: { name: "黃巾弓兵", img: "sol_e_bow", hp: 608, atk: 52, spd: 32, food: 4 },
     mage: { name: "黃巾道士", img: "sol_e_mage", hp: 760, atk: 73, spd: 26, food: 6 }
   };
-  M.HP_GROW = 1.2;
-  M.BOSSES = { boss1: { gen: "張寶", hp: 28600, atk: 260, spd: 13, food: 80 }, boss2: { gen: "張角", hp: 93600, atk: 400, spd: 11, food: 120 } };
+  M.HP_GROW = 1.12;
+  M.MINION_HP = 1 / 3; M.MINION_N = 2; M.MINION_FOOD = 0.5;   // ✅ Jay 2026-11-23：小兵血量減 2/3、數量加一倍（★ 每隻給的軍糧減半，總量不變）
+  M.BOSSES = { boss1: { gen: "張寶", hp: 14000, atk: 260, walk: 28, food: 80 }, boss2: { gen: "張角", hp: 45000, atk: 400, walk: 40, food: 120 } };
   M.BOSS = M.BOSSES.boss2;
   M.WAVE_NAMES = ["敵軍先鋒", "敵軍本陣"];
   M.SYM = ["火", "雷", "風", "石", "令"];   // 5 以後是出征名單上的武將
@@ -90,22 +139,24 @@
   M.HIT_W = { "火": 1, "雷": 1, "風": 1, "石": 1, gen: 2.4 };   // 中獎時連出哪一種
   M.JACK2 = 0.5; M.JACK3 = 0.01;   // 每一局：第一位必出，第二位 50%，第三位 1%
   M.JACK_AT = [5, 15]; M.JACK_GAP = [10, 30];   // ★ 第一次三令出現在第 5～15 轉之間，之後每次再隔 10～30 轉
-  M.BOSS_CD = 3;
-  M.SIN_BOSS = 2; M.CAV_MINION = 1.5;   // ✅ Jay 2026-11-23：刺客打 Boss 攻擊 2 倍、騎兵打小兵 1.5 倍（★ 刺客原本的 30% 暴擊先保留，等 Jay 決定）
+  M.BOSS_CD = 1.5;   // ✅ Boss 每 3 秒攻擊一次（一般速度下；引擎時間是它的一半，見 M.SPEED）
+  M.SPEED = 0.5;     // ✅ Jay 2026-11-23：節奏調慢一倍；地圖上的「×2」鍵切回兩倍速
+  M.SIN_BOSS = 2; M.CAV_MINION = 1.5;   // ✅ Jay 2026-11-23：刺客打 Boss 攻擊 2 倍、騎兵打小兵 1.5 倍
   M.WILD = 4; M.GEN0 = 5;
-  M.FIRE_T = 10; M.FIRE_ATK = 1.2; M.BURN_P = 0.10; M.BURN_TICK = 1.5; M.BURN_T = 9;
-  M.THUNDER_MUL = 3; M.STUN = 2;
+  M.FIRE_T = 5; M.FIRE_ATK = 1.2; M.BURN_P = 0.10; M.BURN_TICK = 0.75; M.BURN_T = 4.5;   // 一般速度下：火箭 10 秒、每 1.5 秒燒一次、燒 9 秒
+  M.THUNDER_MUL = 3; M.STUN = 1;   // 一般速度下停頓 2 秒
   M.ROCK_MUL = 2; M.ROCK_HP = 5; M.ROCK_R = 26;
-  M.WIND_T = 6; M.WIND = 3;
+  M.WIND_T = 3; M.WIND = 3;   // 一般速度下 6 秒
 
   // 兩大波的出兵表：[秒, 入口, 兵種, 數量, 間隔, 強度等級]
   M.WAVES = [
     [[0, 1, "spear", 6, 1.6, 1], [6, 0, "spear", 5, 1.6, 2], [12, 2, "spear", 5, 1.6, 2], [20, 3, "cav", 4, 1.2, 3], [24, 4, "cav", 4, 1.2, 3],
-     [32, 0, "spear", 5, 1.4, 4], [36, 2, "bow", 5, 1.4, 4], [44, 1, "shield", 3, 3, 5], [50, 3, "spear", 6, 1.2, 5], [54, 4, "spear", 6, 1.2, 5], [62, 1, "boss1", 1, 1, 5]],
+     [32, 0, "spear", 5, 1.4, 4], [36, 2, "bow", 5, 1.4, 4], [44, 1, "shield", 3, 3, 5], [50, 3, "spear", 6, 1.2, 5], [54, 4, "spear", 6, 1.2, 5], [39, 1, "boss1", 1, 1, 5]],
     [[0, 0, "mage", 4, 2, 6], [0, 2, "mage", 4, 2, 6], [10, 1, "cav", 8, 0.8, 6], [18, 3, "spear", 8, 1, 7], [22, 4, "spear", 8, 1, 7], [30, 1, "shield", 4, 2.5, 7],
      [40, 0, "cav", 6, 0.8, 8], [43, 2, "cav", 6, 0.8, 8], [50, 1, "bow", 8, 1, 8], [58, 3, "shield", 3, 2, 9], [64, 0, "mage", 6, 1.2, 9], [64, 2, "mage", 6, 1.2, 9],
-     [74, 4, "cav", 8, 0.7, 10], [82, 0, "spear", 8, 1, 10], [82, 2, "spear", 8, 1, 10], [90, 1, "shield", 4, 2, 10], [96, 1, "boss2", 1, 1, 10]]
+     [74, 4, "cav", 8, 0.7, 10], [82, 0, "spear", 8, 1, 10], [82, 2, "spear", 8, 1, 10], [90, 1, "shield", 4, 2, 10], [60, 1, "boss2", 1, 1, 10]]
   ];
+  M.WAVE_K = [22 / 62, 38 / 96];   // ★ 出兵時間壓縮：整局（一般速度）約 3 分鐘，配合 BGM 長度
   M.TACTICS = [
     { id: "bowrng", name: "強弓", desc: "弓兵射程 +20%" },
     { id: "spearhp", name: "堅陣", desc: "槍兵兵力 +40%" },
@@ -145,6 +196,7 @@
   }
   M.newGame = function (list, S, rnd, stage) {
     rnd = rnd || Math.random; stage = stage || 1;
+    M.useMap(M.genMap(stage));
     var G = {
       t: 0, rnd: rnd, lives: M.LIVES, food: M.FOOD0, wave: 0, phase: "deploy", waveT: 0, queue: [], over: false, won: false,
       gens: [], reserve: [], enemies: [], rocks: [], fx: [], tac: {}, fireT: 0, windT: 0, nid: 1, kills: 0, spins: 0, grid: [], hits: [], S: S,
@@ -246,7 +298,11 @@
   M.startBattle = function (G) { if (G.phase !== "deploy" || !G.gens.length) return false; G.phase = "fight"; nextWave(G); return true; };
   function nextWave(G) {
     G.wave++; G.waveT = 0; G.queue = [];
-    M.WAVES[G.wave - 1].forEach(function (e) { for (var i = 0; i < e[3]; i++) G.queue.push({ at: e[0] + i * e[4], gate: e[1], k: e[2], lvl: e[5] }); });
+    var K = M.WAVE_K[G.wave - 1];
+    M.WAVES[G.wave - 1].forEach(function (e) {
+      var boss = !!M.BOSSES[e[2]], n = boss ? 1 : e[3] * M.MINION_N, gap = Math.max(0.28, e[4] * K / M.MINION_N);
+      for (var i = 0; i < n; i++) G.queue.push({ at: e[0] * K + i * gap, gate: e[1], k: e[2], lvl: e[5] });
+    });
     G.queue.sort(function (a, b) { return a.at - b.at; });
     G.fx.push({ t: G.t, kind: "wave", wave: G.wave });
   }
@@ -254,11 +310,11 @@
     var e, lvl = q.lvl || G.wave, mul = Math.pow(M.HP_GROW, lvl - 1);
     if (M.BOSSES[q.k]) {
       var B = M.BOSSES[q.k], bc = SG.GEN[B.gen];
-      e = { boss: true, big: q.k === "boss2", name: B.gen, art: bc && bc.art, hp: B.hp * G.sm.hp, atk: B.atk * G.sm.atk, spd: B.spd, food: B.food };
+      e = { boss: true, big: q.k === "boss2", name: B.gen, art: bc && bc.art, hp: B.hp * G.sm.hp, atk: B.atk * G.sm.atk, spd: M.PTS[q.gate].len / B.walk, food: B.food };   // 不管路多長，Boss 都走一樣久
       G.fx.push({ t: G.t, kind: "boss", name: B.gen, art: e.art, big: e.big });
     } else {
       var d = M.ENEMY[q.k];
-      e = { k: q.k, img: d.img, name: d.name, hp: d.hp * mul * G.sm.hp, atk: d.atk * Math.pow(1.1, lvl - 1) * G.sm.atk, spd: d.spd * (0.92 + G.rnd() * 0.16), food: d.food };
+      e = { k: q.k, img: d.img, name: d.name, hp: d.hp * M.MINION_HP * mul * G.sm.hp, atk: d.atk * Math.pow(1.1, lvl - 1) * G.sm.atk, spd: d.spd * (0.92 + G.rnd() * 0.16), food: d.food * M.MINION_FOOD };
     }
     e.id = G.nid++; e.max = e.hp; e.path = q.gate; e.s = 0; e.cd = 0; e.stun = 0; e.burn = 0; e.burnD = 0; e.burnTick = 0; e.block = null;
     var p = posAt(e.path, 0); e.x = p.x; e.y = p.y;
@@ -336,16 +392,12 @@
     return { sym: "令", jackpot: true, guests: got };
   }
   function dropRock(G, g) {
-    var sp = M.SLOTS[g.slot], r = genRng(G, g) + 20, best = null;
-    // 落在範圍內、最靠近敵軍（沒有敵軍就靠近城門）的路線點
+    // ✅ Jay 2026-11-23：石頭放在那位武將的前面（離他最近的路上，往敵軍來的方向一點），同時兩條「石」就在同一點丟兩顆
+    var sp = M.SLOTS[g.slot], best = null, bd = genRng(G, g) + 20;
     M.PTS.forEach(function (P) {
-      for (var i = 0; i < P.length; i += 3) {
-        var q = P[i]; if (Math.hypot(q.x - sp[0], q.y - sp[1]) > r) continue;
-        var near = 0; G.enemies.forEach(function (e) { var d = Math.hypot(e.x - q.x, e.y - q.y); if (d < 60) near += 60 - d; });
-        var sc = near * 10 + q.y * 0.01;
-        if (!best || sc > best.sc) best = { x: q.x, y: q.y, sc: sc };
-      }
+      for (var i = 0; i < P.length; i++) { var q = P[i], d = Math.hypot(q.x - sp[0], q.y - sp[1]); if (d < bd) { bd = d; best = { P: P, i: i }; } }
     });
+    if (best) { var fi = Math.max(0, best.i - 4), fq = best.P[fi]; best = { x: fq.x, y: fq.y }; }
     if (!best) return;
     var d = genAtk(G, g) * M.ROCK_MUL, hp = genAtk(G, g) * M.ROCK_HP;
     G.rocks.push({ id: G.nid++, x: best.x, y: best.y, hp: hp, max: hp });
@@ -366,7 +418,7 @@
     if (e.hp <= 0) return;
     if (G.stat && G._src) { var k0 = G._src + (e.boss ? "B" : "M"); G.stat[k0] = (G.stat[k0] || 0) + Math.min(d, e.hp); }
     e.hp -= d; G.fx.push({ t: G.t, kind: "dmg", x: e.x, y: e.y, v: Math.round(d), c: kind });
-    if (e.hp <= 0) { G.kills++; G.food += Math.round(e.food * (1 + 0.4 * (G.tac.food || 0))); G.fx.push({ t: G.t, kind: "die", x: e.x, y: e.y }); }
+    if (e.hp <= 0) { G.kills++; G.foodF = (G.foodF || 0) + e.food * (1 + 0.4 * (G.tac.food || 0)); var fi = Math.floor(G.foodF); G.foodF -= fi; G.food += fi; G.fx.push({ t: G.t, kind: "die", x: e.x, y: e.y }); }
   }
 
   // ===== 每一幀 =====
@@ -397,7 +449,7 @@
       e.cd -= dt;
       if (e.block) {
         var b = G.gens.find(function (g) { return g.id === e.block; });
-        if (e.cd <= 0) { e.cd = 1; b.hp -= e.atk; G.fx.push({ t: G.t, kind: "hurt", gid: b.id }); if (b.hp <= 0) { b.hp = 0; b.down = M.REVIVE; G.fx.push({ t: G.t, kind: "down", x: M.SLOTS[b.slot][0], y: M.SLOTS[b.slot][1] }); } }
+        if (e.cd <= 0) { e.cd = 0.5; b.hp -= e.atk; G.fx.push({ t: G.t, kind: "hurt", gid: b.id }); if (b.hp <= 0) { b.hp = 0; b.down = M.REVIVE; G.fx.push({ t: G.t, kind: "down", x: M.SLOTS[b.slot][0], y: M.SLOTS[b.slot][1] }); } }
         return;
       }
       if (e.boss) {   // Boss：每 3 秒攻擊一次；到城門前每次攻擊扣一次城門
@@ -417,7 +469,7 @@
       // 落石擋路
       var ns = e.s + e.spd * dt, np = posAt(e.path, ns), rock = null;
       G.rocks.forEach(function (k) { if (!rock && k.hp > 0 && Math.hypot(np.x - k.x, np.y - k.y) < 14 && Math.hypot(np.x - k.x, np.y - k.y) < Math.hypot(e.x - k.x, e.y - k.y)) rock = k; });
-      if (rock) { if (e.cd <= 0) { e.cd = 1; rock.hp -= e.atk; if (rock.hp <= 0) G.fx.push({ t: G.t, kind: "rockbreak", x: rock.x, y: rock.y }); } return; }
+      if (rock) { if (e.cd <= 0) { e.cd = 0.5; rock.hp -= e.atk; if (rock.hp <= 0) G.fx.push({ t: G.t, kind: "rockbreak", x: rock.x, y: rock.y }); } return; }
       e.s = ns; e.x = np.x; e.y = np.y;
       if (e.s >= M.PTS[e.path].len - 2) {   // 到城門
         e.hp = 0; e.gone = true;
@@ -435,14 +487,14 @@
         if (e.hp <= 0 || e.y < 0) return;
         if (Math.hypot(e.x - sp[0], e.y - sp[1]) > r) return;
         var prog = e.s / M.PTS[e.path].len + (e.block === g.id ? 1 : 0);   // 優先打自己擋住的、再來是最接近城門的
+        if (e.boss && g.c.typ === "刺") prog += 2;                                // ★ 刺客看到敵將就先打敵將（配合「打敵將 ×2」）
         if (prog > best) { best = prog; tgt = e; }
       });
       if (!tgt) return;
-      g.cd = genCd(G, g);
+      g.cd = genCd(G, g); g.atkT = G.t;
       var d = genAtk(G, g), kind = "hit"; G._src = g.c.typ;
       if (g.c.typ === "刺" && tgt.boss) d *= M.SIN_BOSS;
       if (g.c.typ === "騎" && !tgt.boss) d *= M.CAV_MINION;
-      if (T.crit && G.rnd() < T.crit) { d *= 2; kind = "crit"; }
       if (g.c.typ === "弓" && G.fireT > 0) {
         d *= M.FIRE_ATK; kind = "fire";
         tgt.burn = M.BURN_T * (1 + 0.5 * (G.tac.firelong || 0)); tgt.burnD = Math.max(tgt.burnD, d * M.BURN_P); tgt.burnTick = M.BURN_TICK;

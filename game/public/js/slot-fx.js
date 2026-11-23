@@ -25,22 +25,26 @@
     var s = c.createBufferSource(), g = c.createGain(), f = c.createBiquadFilter(); f.type = "highpass"; f.frequency.value = hp || 800;
     s.buffer = b; g.gain.value = vol || 0.2; s.connect(f); f.connect(g); g.connect(c.destination); s.start(t);
   }
+  // ✅ Jay 2026-11-23：特效音改用 Suno 生成的檔案（audio/sl_*.mp3）；轉輪的滴答聲和敵將出陣的鑼聲還是程式合成
+  var A = function (k, from, vol) { if (SG.Audio) SG.Audio.sfx(k, 1, from, vol); };
   F.snd = {
     tick: function () { tone(1800 + Math.random() * 400, 0, 0.03, "square", 0.025); },
-    thunk: function () { tone(140, 0, 0.18, "sine", 0.5, 60); noise(0, 0.06, 0.15, 400); },
-    drum: function (k) { noise(0, 0.07, 0.08 + 0.12 * k, 200); tone(90 + 40 * k, 0, 0.08, "triangle", 0.15); },
-    win: function (big) { var n = big ? [523, 659, 784, 1047, 1319] : [659, 784, 1047]; n.forEach(function (f, i) { tone(f, i * 0.09, 0.25, "triangle", 0.18); tone(f * 2, i * 0.09, 0.15, "sine", 0.05); }); },
-    coins: function (n) { for (var i = 0; i < (n || 8); i++) tone(2200 + Math.random() * 1600, i * 0.05 + Math.random() * 0.03, 0.12, "sine", 0.06); },
-    whoosh: function () { noise(0, 0.35, 0.18, 1200); },
+    thunk: function () { A("sl_stop", 0, 0.8); },
+    drumroll: function (ms) { A("sl_drum", Math.max(0, 2.6 - ms / 1000), 1); },   // 鼓聲的最高點對準第三排停下的瞬間
+    win: function (big) { A(big ? "sl_big" : "sl_win"); },
+    coins: function () { A("sl_coin", 0, 0.7); },
+    whoosh: function () { A("sl_cut"); },
+    jack: function () { A("sl_jack", 0, 1); },
     gong: function () { [98, 147, 196, 294].forEach(function (f, i) { tone(f, 0, 2.2, "sine", 0.22 - i * 0.04); }); noise(0, 0.5, 0.15, 300); },
     rise: function () { tone(220, 0, 1.2, "sawtooth", 0.05, 880); },
-    fire: function () { noise(0, 0.6, 0.2, 300); },
-    thunder: function () { noise(0, 0.9, 0.35, 60); tone(60, 0, 0.6, "sine", 0.4, 30); },
-    wind: function () { noise(0, 0.8, 0.12, 2000); },
-    rock: function () { tone(70, 0, 0.4, "sine", 0.6, 35); noise(0.05, 0.4, 0.25, 150); }
+    fire: function () { A("sl_fire"); },
+    thunder: function () { A("sl_thunder"); },
+    wind: function () { A("sl_wind"); },
+    rock: function () { A("sl_rock"); },
+    gate: function () { A("sl_gate", 0, 1); }
   };
 
-  F.preload = function () { ["sym_fire", "sym_thunder", "sym_wind", "sym_rock", "sym_ling", "sym_frame", "fx_fire", "fx_thunder", "fx_wind", "fx_rock", "title_mjzz", "u_e_spear", "u_e_cav", "u_e_shield", "u_e_bow", "u_e_mage", "u_a_spear", "u_a_cav", "u_a_bow", "u_a_sin", "u_a_mage"].forEach(function (n) { var i = new Image(); i.src = "img/slot/" + n + ".webp" + (n === "title_mjzz" ? "?v=1" : ""); }); };
+  F.preload = function () { ["sym_fire", "sym_thunder", "sym_wind", "sym_rock", "sym_ling", "sym_frame", "fx_fire", "fx_thunder", "fx_wind", "fx_rock", "title_mjzz", "u_e_spear", "u_e_cav", "u_e_shield", "u_e_bow", "u_e_mage", "g_spear", "g_cav", "g_bow", "g_sin", "g_mage", "u_boss1", "u_boss2", "u_camp"].forEach(function (n) { var i = new Image(); i.src = "img/slot/" + n + ".webp" + (n === "title_mjzz" ? "?v=1" : ""); }); };
 
   // ===== 轉輪 =====
   // 盤面 9 格：索引 i 在第 i%3 排（直的）、第 floor(i/3) 列
@@ -88,10 +92,7 @@
       });
     });
   };
-  function drumroll(ms, lvl) {
-    var t0 = Date.now(); (function beat() { var k = Math.min(1, (Date.now() - t0) / ms); F.snd.drum(k * (lvl === 2 ? 1 : 0.6)); if (Date.now() - t0 < ms - 80) setTimeout(beat, 160 - 110 * k); })();
-    if (lvl === 2) F.snd.rise();
-  }
+  function drumroll(ms, lvl) { F.snd.drumroll(ms); if (lvl === 2) F.snd.rise(); }
 
   // ===== 中獎 =====
   F.win = function (box, field, hits, opts) {
@@ -103,7 +104,7 @@
     }).join("");
     hits.forEach(function (h) { h.ln.forEach(function (i) { cells[i].classList.add("hit"); }); });
     coins(box, big ? 26 : 12);
-    F.snd.win(big); F.snd.coins(big ? 16 : 8);
+    F.snd.win(big); if (big) F.snd.coins();
     if (big) bigWin(field);
     var syms = {}; hits.forEach(function (h) { syms[h.sym] = 1; });
     (opts.splash || []).forEach(function (k, i) { setTimeout(function () { splash(field, k); }, 150 + i * 260); });
@@ -150,7 +151,7 @@
         '<div class="sl-jk-title"><img src="img/slot/title_mjzz.webp?v=1" alt="名將助陣" onerror="this.parentNode.classList.add(\'txt\');this.parentNode.textContent=\'名將助陣\'"></div>' +
         '<div class="sl-jk-tap">點一下繼續</div>';
       document.body.appendChild(o);
-      F.snd.gong(); setTimeout(F.snd.rise, 700); setTimeout(function () { F.snd.win(true); F.snd.coins(20); }, 1500);
+      F.snd.jack(); setTimeout(function () { F.snd.coins(); }, 1500);
       var ok = false, closed = false; setTimeout(function () { ok = true; o.classList.add("tap"); }, 1800);
       var close = function () { if (closed) return; closed = true; o.classList.add("out"); setTimeout(function () { o.remove(); done(); }, 300); };
       o.onclick = function () { if (ok) close(); };
