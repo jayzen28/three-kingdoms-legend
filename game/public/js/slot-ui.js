@@ -5,7 +5,7 @@
   var FV = { "魏": "wei", "蜀": "shu", "吳": "wu", "群雄": "qun", "黃巾": "yt" };
   var FC = { wei: "#6aaeed", shu: "#4ec87a", wu: "#e05858", qun: "#b07cd8", yt: "#c8a830" };
   var SYMC = { "火": "#e8742c", "雷": "#8f7bff", "風": "#4ec87a", "石": "#9a8a74", "武": "#d4a853", "令": "#c0392b" };
-  var SYMD = { "火": "弓兵射火箭", "雷": "法師落雷", "風": "全軍攻速", "石": "槍兵落石", "武": "增援武將", "令": "萬用" };
+  var SYMD = { "火": "弓兵射火箭", "雷": "法師落雷", "風": "全軍攻速", "石": "槍兵落石", "令": "萬用・三令請名將" };
   function S() { return SG._state; }
   var IMG = {};
   function img(src) { if (!IMG[src]) { var i = new Image(); i.src = src; IMG[src] = i; } return IMG[src]; }
@@ -21,8 +21,8 @@
     var tips = [["弓", "火"], ["法", "雷"], ["槍", "石"]].map(function (x) { return '<span class="' + (cnt[x[0]] ? "" : "off") + '">「' + x[1] + '」要有' + SG.TYPES[x[0]].name + '</span>'; }).join("");
     $("#s-slot").innerHTML = UI.strip("st-slot", "拉霸守城", "測試版・佈陣守城，拉霸用計") +
       '<div class="paper sl-lobby">' +
-      '<div class="sl-how"><b>玩法</b><p>黃巾軍從五個入口分批殺來，目標是城門；城門被打到三次就失守，Boss 走到城門直接失守。開戰前先把 ' + M.START_DEPLOY + ' 位武將放到營寨，之後拉霸連出「武」才會增援名單上的其他人。殺敵得軍糧，拉一次 ' + M.SPIN_COST + ' 軍糧。</p>' +
-      '<div class="sl-syms">' + M.SYM.map(function (s) { return '<span><i style="background:' + SYMC[s] + '">' + s + '</i>' + SYMD[s] + '</span>'; }).join("") + '</div></div>' +
+      '<div class="sl-how"><b>玩法</b><p>黃巾軍分 ' + M.WAVES.length + ' 大波、從五個入口殺來，目標是城門；城門被打到三次就失守。開戰前先把 ' + M.START_DEPLOY + ' 位武將放到營寨（金框「要衝」每條路都打得到）。出征的 ' + M.ROSTER_MAX + ' 位武將會出現在拉霸上，連成一線就上陣，已上陣的就升星。殺敵得軍糧，拉一次 ' + M.SPIN_COST + ' 軍糧。</p>' +
+      '<div class="sl-syms">' + M.SYM.map(function (s) { return '<span><i style="background:' + SYMC[s] + '">' + s + '</i>' + SYMD[s] + '</span>'; }).join("") + '<span><i style="background:#8a96aa">將</i>武將頭像：上陣／升星</span></div></div>' +
       '<div class="sl-sec">出征名單 <small>' + pick.length + ' / ' + M.ROSTER_MAX + '・點武將加入或移出</small></div>' +
       '<div class="sl-tips">' + tips + '</div>' +
       '<div class="sl-own">' + own.map(function (c) {
@@ -54,7 +54,7 @@
     UI.go("slotb");
     var cells = ""; for (var i = 0; i < 9; i++) cells += '<div class="sl-cell" data-i="' + i + '"></div>';
     $("#s-slotb").innerHTML =
-      '<div class="sl-hud"><button class="sm plain" id="sl-quit">撤退</button><div class="sl-wv">第 <b id="sl-w">0</b>/' + M.WAVES.length + ' 波</div>' +
+      '<div class="sl-hud"><button class="sm plain" id="sl-quit">撤退</button><div class="sl-wv">第 <b id="sl-w">0</b>/' + M.WAVES.length + ' 大波</div>' +
       '<div class="sl-lives" id="sl-lives"></div><div class="sl-food">糧 <b id="sl-food"></b></div></div>' +
       '<div class="sl-field"><canvas id="sl-cv"></canvas><div class="sl-ban" id="sl-ban"></div><div class="sl-buff" id="sl-buff"></div><div class="sl-tip" id="sl-tip"></div></div>' +
       '<div class="sl-bot"><div class="sl-res" id="sl-res"></div>' +
@@ -62,7 +62,7 @@
       '<div class="sl-ctl"><button class="sl-spin" id="sl-spin"><span>開戰</span><small id="sl-cost"></small></button>' +
       '<div class="sl-row2"><button class="sm" id="sl-rep">修城門 ' + M.REPAIR_COST + '</button><label class="sl-auto"><input type="checkbox" id="sl-autob"' + (auto ? ' checked' : '') + '> 自動</label></div></div></div></div>';
     cv = $("#sl-cv"); cx = cv.getContext("2d"); fit();
-    drawGrid(G.grid); renderRes(); tip("佈陣：點下方武將，再點地圖上的營寨（可先放 " + M.START_DEPLOY + " 位），然後按「開戰」");
+    drawGrid(G.grid); renderRes(); tip("佈陣：點下方武將，再點地圖上的營寨（可先放 " + M.START_DEPLOY + " 位；金框「要衝」每條路都打得到），然後按「開戰」");
     $("#sl-spin").onclick = function () { if (G.phase === "deploy") { if (!M.startBattle(G)) tip("至少要放一位武將"); else { tip(""); renderRes(); } } else doSpin(); };
     $("#sl-autob").onchange = function () { auto = this.checked; };
     $("#sl-rep").onclick = function () { if (!M.repair(G)) tip(G.lives >= M.LIVES ? "城門完好" : "軍糧不足"); };
@@ -86,13 +86,13 @@
     var box = $("#sl-res"); if (!box || !G) return;
     var h = G.reserve.map(function (r, i) {
       var ok = G.phase === "deploy" ? G.deployLeft > 0 : r.ready;
-      return '<button class="sl-rc' + (ok ? ' ok' : '') + (sel && sel.res === i ? ' sel' : '') + (r.guest ? ' guest' : '') + '" data-r="' + i + '"><img src="img/' + r.c.art + '_head.webp" alt=""><small>' + (ok ? SG.TYPES[r.c.typ].name : '待增援') + '</small></button>';
+      return '<button class="sl-rc' + (ok ? ' ok' : '') + (sel && sel.res === i ? ' sel' : '') + (r.guest ? ' guest' : '') + '" data-r="' + i + '"><img src="img/' + r.c.art + '_head.webp" alt="">' + (r.notOwn ? '<em>未擁有</em>' : '') + '<small>' + (ok ? SG.TYPES[r.c.typ].name + (r.star > 1 ? r.star + '★' : '') : '待拉霸') + '</small></button>';
     }).join("");
     box.innerHTML = h || '<span class="dim">名單上的武將都已上陣</span>';
     $$(".sl-rc", box).forEach(function (b) {
       b.onclick = function () {
         var i = +b.dataset.r, r = G.reserve[i], ok = G.phase === "deploy" ? G.deployLeft > 0 : r.ready;
-        if (!ok) { tip(G.phase === "deploy" ? "開局只能先放 " + M.START_DEPLOY + " 位" : "拉霸連出「武」才會增援"); return; }
+        if (!ok) { tip(G.phase === "deploy" ? "開局只能先放 " + M.START_DEPLOY + " 位" : "拉霸連出" + r.c.gen + "才會上陣"); return; }
         sel = sel && sel.res === i ? null : { res: i }; renderRes(); tip(sel ? "點地圖上的空營寨放下" + r.c.gen : "");
       };
     });
@@ -116,7 +116,10 @@
     if (here) { sel = { gen: here.id }; tip(here.c.gen + "：點空營寨換位置"); }
   }
 
-  function symHtml(s) { var n = M.SYM[s]; return '<span class="sl-sym" style="--sc:' + SYMC[n] + '">' + n + '</span>'; }
+  function symHtml(s) {
+    if (s >= M.GEN0) { var c = G.list[s - M.GEN0]; return '<span class="sl-sym gen"><img src="img/' + c.art + '_head.webp" alt=""></span>'; }
+    var n = M.SYM[s]; return '<span class="sl-sym" style="--sc:' + SYMC[n] + '">' + n + '</span>';
+  }
   function drawGrid(g) { $$(".sl-cell").forEach(function (el, i) { el.innerHTML = symHtml(g[i]); el.className = "sl-cell"; }); }
 
   function doSpin() {
@@ -130,7 +133,7 @@
     if (!anim) return;
     var el = $$(".sl-cell"), dt = now - anim.t0, done = 0;
     for (var i = 0; i < 9; i++) {
-      if (dt < anim.stop[i % 3]) { if (Math.random() < 0.5) el[i].innerHTML = symHtml(Math.floor(Math.random() * 6)); el[i].classList.add("roll"); }
+      if (dt < anim.stop[i % 3]) { if (Math.random() < 0.5) el[i].innerHTML = symHtml(Math.floor(Math.random() * G.nsym)); el[i].classList.add("roll"); }
       else { if (el[i].classList.contains("roll")) { el[i].classList.remove("roll"); el[i].innerHTML = symHtml(anim.fin[i]); } done++; }
     }
     if (done < 9) return;
@@ -139,13 +142,14 @@
     hits.forEach(function (h) { h.ln.forEach(function (i) { el[i].classList.add("hit"); }); });
     var res = M.applyHits(G, hits), msg = [];
     res.forEach(function (r) {
-      if (r.jackpot) msg.push(r.guest ? "三令齊發！" + r.guest + " 前來助陣" : "三令齊發！軍糧 +" + r.food);
+      if (r.jackpot) msg.push(r.guests && r.guests.length ? "三令齊發！" + r.guests.join("、") + " 前來助陣" : "三令齊發！");
       else if (r.none) msg.push("「" + r.sym + "」" + r.none);
       else if (r.sym === "火") msg.push("火箭！");
       else if (r.sym === "雷") msg.push("落雷！");
       else if (r.sym === "石") msg.push("落石！");
       else if (r.sym === "風") msg.push("疾風！攻速 ×" + M.WIND);
-      else if (r.sym === "武") msg.push(r.ready ? r.ready + " 可以上陣" : r.up ? r.up + " 升到 " + r.star + "★" : "軍糧 +" + r.food);
+      else if (r.up) msg.push(r.up + " 升到 " + r.star + "★");
+      else if (r.ready) msg.push(r.ready + (r.star ? " 上陣時 " + r.star + "★" : " 可以上陣"));
     });
     showBan(msg.join("　"));
     if (SG.Audio) SG.Audio.sfx(hits.length > 1 ? "sr" : "burst_n");
@@ -166,7 +170,7 @@
     for (; lastFx < G.fx.length; lastFx++) {
       var f = G.fx[lastFx];
       if (f.seen) continue; f.seen = 1;
-      if (f.kind === "wave") showBan("第 " + f.wave + " 波" + (M.WAVES[f.wave - 1].some(function (e) { return e[2] === "boss"; }) ? "・張角親征！" : ""));
+      if (f.kind === "wave") showBan("第 " + f.wave + " 大波" + (M.WAVES[f.wave - 1].some(function (e) { return e[2] === "boss"; }) ? "・張角親征！" : ""));
       else if (f.kind === "boss") { showBan("頭目 " + f.name + " 出現！", true); if (SG.Audio) SG.Audio.sfx("shake"); }
       else if (f.kind === "gate") { shake = 1; if (SG.Audio) SG.Audio.sfx("shake"); }
       else if (f.kind === "ready" || f.kind === "jackpot") renderRes();
@@ -189,7 +193,7 @@
   }
   function showTactics() {
     G.offerShown = true;
-    UI.modal('<h2>第 ' + G.wave + ' 波守住了！</h2><p class="dim">選一張軍略（軍糧 +30）</p><div class="sl-tacs">' +
+    UI.modal('<h2>第 ' + G.wave + ' 大波守住了！</h2><p class="dim">選一張軍略（軍糧 +30）</p><div class="sl-tacs">' +
       G.offer.map(function (t) { return '<button class="sl-tac" data-t="' + t.id + '"><b>' + t.name + '</b><span>' + t.desc + '</span></button>'; }).join("") + '</div>');
     UI.back = function () { };   // 一定要選
     $$(".sl-tac").forEach(function (b) { b.onclick = function () { UI.back = null; UI.close(); G.offerShown = false; M.chooseTactic(G, b.dataset.t); renderRes(); }; });
@@ -239,6 +243,10 @@
         var hint = sel && (sel.res !== undefined || sel.gen);
         c.fillStyle = hint ? "rgba(236,211,145,.28)" : "rgba(28,21,18,.55)"; c.strokeStyle = hint ? "#ecd391" : "rgba(212,168,83,.55)"; c.lineWidth = hint ? 2 : 1.2;
         c.beginPath(); c.arc(W2(p[0]), H2(p[1]), 15 * s, 0, Math.PI * 2); c.fill(); c.stroke();
+      }
+      if (M.KEY.indexOf(i) >= 0) {
+        c.strokeStyle = "#ecd391"; c.lineWidth = 2; c.beginPath(); c.arc(W2(p[0]), H2(p[1]), 19 * s, 0, Math.PI * 2); c.stroke();
+        c.font = "700 " + Math.round(6 * s + 5) + "px 'LXGW WenKai TC', serif"; c.textAlign = "center"; c.fillStyle = "#ecd391"; if (!g) c.fillText("要衝", W2(p[0]), H2(p[1]) + 4);
       }
     });
     G.enemies.slice().sort(function (a, b) { return a.y - b.y; }).forEach(function (e) { drawEnemy(c, e); });
@@ -304,6 +312,8 @@
         c.globalAlpha = a; c.strokeStyle = "#ecd391"; c.lineWidth = 3; c.beginPath(); c.arc(W2(f.x), H2(f.y), (16 + age * 40) * s, 0, 7); c.stroke();
         if (f.kind === "up") { c.font = "700 " + Math.round(8 * s + 6) + "px 'LXGW WenKai TC', serif"; c.textAlign = "center"; c.fillStyle = "#ecd391"; c.fillText("升星 " + f.star + "★", W2(f.x), H2(f.y) - 30 * s - age * 20); }
         c.globalAlpha = 1;
+      } else if (f.kind === "bosshit" && age < 0.45) {
+        c.globalAlpha = 1 - age / 0.45; c.strokeStyle = "#ff5a4a"; c.lineWidth = 5; c.beginPath(); c.arc(W2(f.x), H2(f.y), (12 + age * 70) * s, 0, 7); c.stroke(); c.globalAlpha = 1;
       } else if (f.kind === "die" && age < 0.4) {
         c.globalAlpha = 1 - age / 0.4; c.fillStyle = "#d4a853"; c.font = "700 " + Math.round(6 * s + 5) + "px sans-serif"; c.textAlign = "center"; c.fillText("+糧", W2(f.x), H2(f.y) - 36 * s - age * 30); c.globalAlpha = 1;
       }
@@ -316,7 +326,7 @@
     if (!G.quit) { d.runs++; if (G.won) d.wins++; d.best = Math.max(d.best, Math.max(0, cleared)); SG.Store.save(st); }
     var g = G; G = null;
     UI.modal('<h2>' + (g.won ? '守城成功！' : g.quit ? '撤退' : '城門失守') + '</h2>' +
-      '<p>守住 <b>' + Math.max(0, cleared) + '</b> / ' + M.WAVES.length + ' 波・殺敵 ' + g.kills + '・拉霸 ' + g.spins + ' 次</p>' +
+      '<p>守住 <b>' + Math.max(0, cleared) + '</b> / ' + M.WAVES.length + ' 大波・殺敵 ' + g.kills + '・拉霸 ' + g.spins + ' 次</p>' +
       '<div class="row end"><button id="sl-back">返回大廳</button><button class="pri" id="sl-again">再來一局</button></div>');
     UI.back = function () { $("#modal").classList.remove("show"); UI.go("slot"); };
     $("#sl-back").onclick = function () { UI.close(); };

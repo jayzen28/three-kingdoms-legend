@@ -9,8 +9,10 @@
      石：槍兵落石擋路，敵軍要打破才能前進；落下時範圍內敵軍受 200% 攻擊
      風：全兵種攻擊加速 200%
      令：萬用
-   ★ 開發暫定：「武」＝增援一位出征名單上的武將（沒有可增援的就隨機一位升星）、各數值、火箭與風的持續時間、落石血量、
-     開局可佈陣 3 位、軍略三選一、三個「令」請助陣武將、Boss 到城門直接失守 */
+   ✅ Jay 2026-11-23 第二輪：改成 3 大波；一定要有 2 個營寨打得到 75% 以上入口的兵（要衝）；出征只選 5 位，5 位武將直接放進拉霸；
+     三個「令」100% 請一位 UR/SSR 助陣（玩家沒有的優先）、50% 第二位、1% 第三位；Boss 每 3 秒攻擊一次，到城門每次攻擊扣一次；
+     拉霸費用減半；中獎機率 33%
+   ★ 開發暫定：大波選 3 波、開局可佈陣 3 位、武將連線＝增援（已上陣就升星）、各數值、火箭與風的持續時間、落石血量、軍略三選一 */
 (function (SG) {
   var M = SG.Slot = {};
 
@@ -26,7 +28,8 @@
     [[412, 212], [338, 212], [282, 262]].concat(TRUNK)                 // 4 右
   ];
   M.GATE_NAMES = ["左上", "正上", "右上", "左側", "右側"];
-  M.SLOTS = [[78, 58], [322, 58], [150, 128], [240, 128], [80, 180], [320, 180], [72, 282], [328, 282], [150, 338], [250, 338], [162, 420], [238, 420]];
+  M.SLOTS = [[78, 58], [322, 58], [150, 128], [240, 128], [80, 180], [320, 180], [72, 282], [328, 282], [165, 352], [235, 352], [140, 430], [260, 430]];
+  M.KEY = [8, 9];   // 要衝：所有路線最後都會經過，任何兵種都打得到
 
   // 預先把路線切成等距點，方便移動與找落石位置
   M.PTS = M.PATHS.map(function (p) {
@@ -50,11 +53,11 @@
 
   // ===== 數值（★ 全部暫定） =====
   M.LIVES = 3;
-  M.SPIN_COST = 20;
+  M.SPIN_COST = 10;
   M.FOOD0 = 80;
   M.REPAIR_COST = 150;
   M.START_DEPLOY = 3;
-  M.ROSTER_MAX = 8;
+  M.ROSTER_MAX = 5;
   M.STAR_ATK = [1, 1.5, 2.1, 2.8, 3.6];
   M.STAR_HP = [1, 1.4, 1.9, 2.5, 3.2];
   M.REVIVE = 8;
@@ -66,34 +69,33 @@
     "法": { rng: 105, cd: 1.5, splash: 34 }
   };
   M.ENEMY = {
-    spear: { name: "黃巾槍兵", img: "sol_e_spear", hp: 1050, atk: 78, spd: 30, food: 4 },
-    cav: { name: "黃巾騎兵", img: "sol_e_cav", hp: 840, atk: 104, spd: 58, food: 5 },
-    shield: { name: "黃巾力士", img: "sol_e_assassin", hp: 3150, atk: 143, spd: 18, food: 9 },
-    bow: { name: "黃巾弓兵", img: "sol_e_bow", hp: 780, atk: 65, spd: 32, food: 4 },
-    mage: { name: "黃巾道士", img: "sol_e_mage", hp: 975, atk: 91, spd: 26, food: 6 }
+    spear: { name: "黃巾槍兵", img: "sol_e_spear", hp: 630, atk: 62, spd: 30, food: 4 },
+    cav: { name: "黃巾騎兵", img: "sol_e_cav", hp: 504, atk: 83, spd: 58, food: 5 },
+    shield: { name: "黃巾力士", img: "sol_e_assassin", hp: 1890, atk: 114, spd: 18, food: 9 },
+    bow: { name: "黃巾弓兵", img: "sol_e_bow", hp: 468, atk: 52, spd: 32, food: 4 },
+    mage: { name: "黃巾道士", img: "sol_e_mage", hp: 585, atk: 73, spd: 26, food: 6 }
   };
   M.HP_GROW = 1.2;
-  M.BOSS = { gen: "張角", hp: 90000, atk: 400, spd: 11, food: 120 };
-  M.SYM = ["火", "雷", "風", "石", "武", "令"];
-  M.SYM_W = [0.18, 0.18, 0.18, 0.18, 0.18, 0.10];
-  M.WILD = 5;
+  M.BOSS = { gen: "張角", hp: 72000, atk: 400, spd: 11, food: 120 };
+  M.SYM = ["火", "雷", "風", "石", "令"];   // 5 以後是出征名單上的武將
+  M.HIT_P = 0.33;          // 每轉一次中獎機率
+  M.HIT2_P = 0.12;         // 中獎時同時連出兩條
+  M.HIT_W = { "火": 1, "雷": 1, "風": 1, "石": 1, gen: 2.4, jack: 0.18 };   // 中獎時連出哪一種
+  M.JACK2 = 0.5; M.JACK3 = 0.01;
+  M.BOSS_CD = 3;
+  M.WILD = 4; M.GEN0 = 5;
   M.FIRE_T = 10; M.FIRE_ATK = 1.2; M.BURN_P = 0.10; M.BURN_TICK = 1.5; M.BURN_T = 9;
   M.THUNDER_MUL = 3; M.STUN = 2;
   M.ROCK_MUL = 2; M.ROCK_HP = 5; M.ROCK_R = 26;
   M.WIND_T = 6; M.WIND = 3;
 
-  // 每一波的出兵表：[秒, 入口, 兵種, 數量, 間隔]
+  // 3 大波的出兵表：[秒, 入口, 兵種, 數量, 間隔, 強度等級]
   M.WAVES = [
-    [[0, 1, "spear", 6, 1.6]],
-    [[0, 0, "spear", 5, 1.6], [6, 2, "spear", 5, 1.6]],
-    [[0, 1, "spear", 6, 1.4], [8, 3, "cav", 4, 1.2]],
-    [[0, 0, "spear", 5, 1.4], [4, 2, "bow", 5, 1.4], [12, 4, "cav", 5, 1.0]],
-    [[0, 1, "shield", 3, 3], [6, 3, "spear", 6, 1.2], [10, 4, "spear", 6, 1.2]],
-    [[0, 0, "mage", 4, 2], [0, 2, "mage", 4, 2], [10, 1, "cav", 8, 0.8]],
-    [[0, 3, "spear", 8, 1], [4, 4, "spear", 8, 1], [12, 1, "shield", 4, 2.5]],
-    [[0, 0, "cav", 6, 0.8], [3, 2, "cav", 6, 0.8], [10, 1, "bow", 8, 1], [18, 3, "shield", 3, 2]],
-    [[0, 1, "shield", 5, 2], [5, 0, "mage", 6, 1.2], [5, 2, "mage", 6, 1.2], [14, 4, "cav", 8, 0.7]],
-    [[0, 0, "spear", 8, 1], [0, 2, "spear", 8, 1], [6, 3, "cav", 6, 0.8], [6, 4, "cav", 6, 0.8], [14, 1, "shield", 4, 2], [22, 1, "boss", 1, 1]]
+    [[0, 1, "spear", 6, 1.6, 1], [6, 0, "spear", 5, 1.6, 2], [12, 2, "spear", 5, 1.6, 2], [22, 1, "spear", 6, 1.4, 3], [28, 3, "cav", 4, 1.2, 3], [36, 4, "cav", 4, 1.2, 3]],
+    [[0, 0, "spear", 5, 1.4, 4], [4, 2, "bow", 5, 1.4, 4], [12, 4, "cav", 5, 1, 4], [20, 1, "shield", 3, 3, 5], [26, 3, "spear", 6, 1.2, 5], [30, 4, "spear", 6, 1.2, 5],
+     [40, 0, "mage", 4, 2, 6], [40, 2, "mage", 4, 2, 6], [50, 1, "cav", 8, 0.8, 6], [58, 3, "spear", 8, 1, 7], [62, 4, "spear", 8, 1, 7], [70, 1, "shield", 4, 2.5, 7]],
+    [[0, 0, "cav", 6, 0.8, 8], [3, 2, "cav", 6, 0.8, 8], [10, 1, "bow", 8, 1, 8], [18, 3, "shield", 3, 2, 8], [26, 1, "shield", 5, 2, 9], [31, 0, "mage", 6, 1.2, 9], [31, 2, "mage", 6, 1.2, 9],
+     [40, 4, "cav", 8, 0.7, 9], [50, 0, "spear", 8, 1, 10], [50, 2, "spear", 8, 1, 10], [56, 3, "cav", 6, 0.8, 10], [56, 4, "cav", 6, 0.8, 10], [64, 1, "shield", 4, 2, 10], [70, 1, "boss", 1, 1, 10]]
   ];
   M.TACTICS = [
     { id: "bowrng", name: "強弓", desc: "弓兵射程 +20%" },
@@ -141,10 +143,54 @@
     };
     list.forEach(function (c) { var s = genStats(c, S); G.reserve.push({ c: c, base: s }); });
     G.deployLeft = M.START_DEPLOY;
-    for (var i = 0; i < 9; i++) G.grid.push(pickSym(G));
+    G.nsym = M.GEN0 + list.length;
+    for (var i = 0; i < 9; i++) G.grid.push(0);
+    G.grid = missGrid(G);
     return G;
   };
-  function pickSym(G) { var r = G.rnd(), a = 0; for (var i = 0; i < M.SYM_W.length; i++) { a += M.SYM_W[i]; if (r < a) return i; } return 0; }
+  function anySym(G, noWild) { var k; do { k = Math.floor(G.rnd() * G.nsym); } while (noWild && k === M.WILD); return k; }
+  function evalGrid(G, g) {
+    var hits = [];
+    M.LINES.forEach(function (ln) {
+      var s = ln.map(function (i) { return g[i]; }), base = s.filter(function (x) { return x !== M.WILD; });
+      if (!base.length) hits.push({ ln: ln, sym: M.WILD, jackpot: true });
+      else if (base.every(function (x) { return x === base[0]; })) hits.push({ ln: ln, sym: base[0] });
+    });
+    return hits;
+  }
+  M.evalGrid = evalGrid;
+  function missGrid(G) {
+    for (var k = 0; k < 200; k++) { var g = []; for (var i = 0; i < 9; i++) g.push(anySym(G, G.rnd() > 0.06)); if (!evalGrid(G, g).length) return g; }
+    return [0, 1, 2, 3, 0, 1, 2, 3, 0];
+  }
+  function pickHitSym(G) {
+    var W = M.HIT_W, tot = W["火"] + W["雷"] + W["風"] + W["石"] + W.gen + W.jack, r = G.rnd() * tot;
+    var order = [["火", 0], ["雷", 1], ["風", 2], ["石", 3]];
+    for (var i = 0; i < order.length; i++) { r -= W[order[i][0]]; if (r < 0) return order[i][1]; }
+    r -= W.gen; if (r < 0) return M.GEN0 + Math.floor(G.rnd() * (G.nsym - M.GEN0));
+    return M.WILD;
+  }
+  function hitGrid(G, n) {
+    for (var k = 0; k < 400; k++) {
+      var g = [], want = [], used = {};
+      for (var i = 0; i < 9; i++) g.push(-1);
+      var ok = true;
+      for (var j = 0; j < n && ok; j++) {
+        var lns = M.LINES.filter(function (ln, li) { return !used[li]; }), li2 = Math.floor(G.rnd() * lns.length), ln = lns[li2], sym = pickHitSym(G);
+        used[M.LINES.indexOf(ln)] = 1;
+        ln.forEach(function (c, q) {
+          var v = sym === M.WILD ? M.WILD : (q === 1 && G.rnd() < 0.25 ? M.WILD : sym);
+          if (g[c] >= 0 && g[c] !== v && g[c] !== M.WILD && v !== M.WILD) ok = false; else if (g[c] < 0 || g[c] === M.WILD) g[c] = v;
+        });
+        want.push(sym);
+      }
+      if (!ok) continue;
+      for (var c2 = 0; c2 < 9; c2++) if (g[c2] < 0) g[c2] = anySym(G, true);
+      var h = evalGrid(G, g);
+      if (h.length === n) return g;
+    }
+    return missGrid(G);
+  }
 
   function genAtk(G, g) {
     var a = g.base.atk * M.STAR_ATK[g.star - 1] * (1 + 0.12 * (G.tac.allatk || 0));
@@ -173,7 +219,7 @@
     if (G.phase === "deploy" && G.deployLeft <= 0) return false;
     if (G.phase !== "deploy" && !G.reserve[ri].ready) return false;
     var r = G.reserve.splice(ri, 1)[0];
-    var g = { id: G.nid++, c: r.c, base: r.base, slot: si, star: 1, cd: 0, down: 0, guest: !!r.guest };
+    var g = { id: G.nid++, c: r.c, base: r.base, slot: si, star: r.star || 1, cd: 0, down: 0, guest: !!r.guest, notOwn: !!r.notOwn };
     g.max = genMax(G, g); g.hp = g.max;
     G.gens.push(g);
     if (G.phase === "deploy") G.deployLeft--;
@@ -190,19 +236,19 @@
   M.startBattle = function (G) { if (G.phase !== "deploy" || !G.gens.length) return false; G.phase = "fight"; nextWave(G); return true; };
   function nextWave(G) {
     G.wave++; G.waveT = 0; G.queue = [];
-    M.WAVES[G.wave - 1].forEach(function (e) { for (var i = 0; i < e[3]; i++) G.queue.push({ at: e[0] + i * e[4], gate: e[1], k: e[2] }); });
+    M.WAVES[G.wave - 1].forEach(function (e) { for (var i = 0; i < e[3]; i++) G.queue.push({ at: e[0] + i * e[4], gate: e[1], k: e[2], lvl: e[5] }); });
     G.queue.sort(function (a, b) { return a.at - b.at; });
     G.fx.push({ t: G.t, kind: "wave", wave: G.wave });
   }
   function spawn(G, q) {
-    var e, mul = Math.pow(M.HP_GROW, G.wave - 1);
+    var e, lvl = q.lvl || G.wave, mul = Math.pow(M.HP_GROW, lvl - 1);
     if (q.k === "boss") {
       var bc = SG.GEN[M.BOSS.gen];
       e = { boss: true, name: M.BOSS.gen, art: bc && bc.art, hp: M.BOSS.hp, atk: M.BOSS.atk, spd: M.BOSS.spd, food: M.BOSS.food };
       G.fx.push({ t: G.t, kind: "boss", name: M.BOSS.gen, art: e.art });
     } else {
       var d = M.ENEMY[q.k];
-      e = { k: q.k, img: d.img, name: d.name, hp: d.hp * mul, atk: d.atk * Math.pow(1.1, G.wave - 1), spd: d.spd * (0.92 + G.rnd() * 0.16), food: d.food };
+      e = { k: q.k, img: d.img, name: d.name, hp: d.hp * mul, atk: d.atk * Math.pow(1.1, lvl - 1), spd: d.spd * (0.92 + G.rnd() * 0.16), food: d.food };
     }
     e.id = G.nid++; e.max = e.hp; e.path = q.gate; e.s = 0; e.cd = 0; e.stun = 0; e.burn = 0; e.burnD = 0; e.burnTick = 0; e.block = null;
     var p = posAt(e.path, 0); e.x = p.x; e.y = p.y;
@@ -215,15 +261,10 @@
   M.spin = function (G) {
     if (!M.canSpin(G)) return null;
     G.food -= M.spinCost(G); G.spins++;
-    for (var i = 0; i < 9; i++) G.grid[i] = pickSym(G);
-    var hits = [];
-    M.LINES.forEach(function (ln) {
-      var s = ln.map(function (i) { return G.grid[i]; }), base = s.filter(function (x) { return x !== M.WILD; });
-      if (!base.length) hits.push({ ln: ln, sym: M.WILD, jackpot: true });
-      else if (base.every(function (x) { return x === base[0]; })) hits.push({ ln: ln, sym: base[0] });
-    });
-    G.hits = hits;
-    return hits;
+    var r = G.rnd();
+    G.grid = r < M.HIT_P ? hitGrid(G, G.rnd() < M.HIT2_P ? 2 : 1) : missGrid(G);
+    G.hits = evalGrid(G, G.grid);
+    return G.hits;
   };
   M.applyHits = function (G, hits) {
     var out = [];
@@ -232,7 +273,7 @@
   };
   function ofType(G, t) { return G.gens.filter(function (g) { return g.c.typ === t && g.down <= 0; }); }
   function trigger(G, h) {
-    var sym = M.SYM[h.sym];
+    var sym = M.SYM[h.sym] || "";
     if (h.jackpot) return jackpot(G);
     if (sym === "火") {
       var a = ofType(G, "弓"); if (!a.length) return { sym: sym, none: "場上沒有弓兵" };
@@ -254,23 +295,34 @@
       return { sym: sym, n: sp2.length };
     }
     if (sym === "風") { G.windT = Math.max(G.windT, M.WIND_T); G.fx.push({ t: G.t, kind: "wind" }); return { sym: sym }; }
-    if (sym === "武") {
-      var wait = G.reserve.filter(function (r) { return !r.ready; });
-      if (wait.length) { var r = wait[Math.floor(G.rnd() * wait.length)]; r.ready = true; G.fx.push({ t: G.t, kind: "ready", name: r.c.gen }); return { sym: sym, ready: r.c.gen }; }
-      var up = G.gens.filter(function (g) { return g.star < 5; });
-      if (up.length) { var g = up[Math.floor(G.rnd() * up.length)]; g.star++; g.max = genMax(G, g); g.hp = g.max; var p = M.SLOTS[g.slot]; G.fx.push({ t: G.t, kind: "up", x: p[0], y: p[1], star: g.star }); return { sym: sym, up: g.c.gen, star: g.star }; }
-      G.food += 40; return { sym: sym, food: 40 };
+    if (h.sym >= M.GEN0) {   // 武將連線：還沒上陣的可以上陣；已上陣的升星
+      var c = G.list[h.sym - M.GEN0], f = G.gens.find(function (g) { return g.c === c; }), r = G.reserve.find(function (x) { return x.c === c; });
+      if (f) {
+        if (f.star < 5) { f.star++; f.max = genMax(G, f); } f.hp = f.max; f.down = 0;
+        var p = M.SLOTS[f.slot]; G.fx.push({ t: G.t, kind: "up", x: p[0], y: p[1], star: f.star }); return { sym: c.gen, up: c.gen, star: f.star };
+      }
+      if (r) { if (r.ready) { r.star = Math.min(5, (r.star || 1) + 1); return { sym: c.gen, ready: c.gen, star: r.star }; } r.ready = true; G.fx.push({ t: G.t, kind: "ready", name: c.gen }); return { sym: c.gen, ready: c.gen }; }
+      return { sym: c.gen };
     }
     return { sym: sym };
   }
+  // 三個「令」：100% 一位 UR/SSR 助陣（玩家沒有的優先），50% 第二位，1% 第三位
   function jackpot(G) {
-    var S = G.S, inList = {}; G.list.forEach(function (c) { inList[c.gen] = 1; }); G.gens.forEach(function (g) { inList[g.c.gen] = 1; }); G.reserve.forEach(function (r) { inList[r.c.gen] = 1; });
-    var pool = S ? M.owned(S).filter(function (c) { if (inList[c.gen]) return false; var b = SG.best(S, c.id); return b && (b.rar === "SSR" || b.rar === "UR"); }) : [];
-    if (!pool.length) { G.food += 100; G.fx.push({ t: G.t, kind: "jackpot", food: 100 }); return { sym: "令", jackpot: true, food: 100 }; }
-    var c = pool[Math.floor(G.rnd() * pool.length)];
-    G.reserve.push({ c: c, base: genStats(c, S), ready: true, guest: true });
-    G.fx.push({ t: G.t, kind: "jackpot", name: c.gen, art: c.art });
-    return { sym: "令", jackpot: true, guest: c.gen };
+    var S = G.S, taken = {};
+    G.list.forEach(function (c) { taken[c.gen] = 1; }); G.gens.forEach(function (g) { taken[g.c.gen] = 1; }); G.reserve.forEach(function (r) { taken[r.c.gen] = 1; });
+    var pool = SG.CARDS.filter(function (c) { return c.art && !taken[c.gen] && (c.vers.indexOf("UR") >= 0 || c.vers.indexOf("SSR") >= 0); });
+    var seen = {}; pool = pool.filter(function (c) { if (seen[c.gen]) return false; seen[c.gen] = 1; return true; });
+    var n = 1 + (G.rnd() < M.JACK2 ? 1 : 0) + (G.rnd() < M.JACK3 ? 1 : 0), got = [];
+    for (var k = 0; k < n && pool.length; k++) {
+      var notOwn = pool.filter(function (c) { return !(S && SG.best(S, c.id)); }), from = notOwn.length ? notOwn : pool;
+      var c = from[Math.floor(G.rnd() * from.length)];
+      pool.splice(pool.indexOf(c), 1);
+      var rar = c.vers.indexOf("UR") >= 0 ? "UR" : "SSR", u = SG.unitStats(c, rar, 1);
+      G.reserve.push({ c: c, base: { hp: u.hp, atk: u.atk, rar: rar }, ready: true, guest: true, notOwn: !(S && SG.best(S, c.id)) });
+      got.push(c.gen);
+    }
+    G.fx.push({ t: G.t, kind: "jackpot", names: got });
+    return { sym: "令", jackpot: true, guests: got };
   }
   function dropRock(G, g) {
     var sp = M.SLOTS[g.slot], r = genRng(G, g) + 20, best = null;
@@ -336,6 +388,20 @@
         if (e.cd <= 0) { e.cd = 1; b.hp -= e.atk; G.fx.push({ t: G.t, kind: "hurt", gid: b.id }); if (b.hp <= 0) { b.hp = 0; b.down = M.REVIVE; G.fx.push({ t: G.t, kind: "down", x: M.SLOTS[b.slot][0], y: M.SLOTS[b.slot][1] }); } }
         return;
       }
+      if (e.boss) {   // Boss：每 3 秒攻擊一次；到城門前每次攻擊扣一次城門
+        var atGate = e.s >= M.PTS[e.path].len - 6;
+        if (e.cd <= 0) {
+          var near = null; G.gens.forEach(function (g) { if (g.down > 0) return; var sp = M.SLOTS[g.slot]; if (Math.hypot(sp[0] - e.x, sp[1] - e.y) < 70 && !near) near = g; });
+          var rk = G.rocks.find(function (k) { return Math.hypot(k.x - e.x, k.y - e.y) < 22; });
+          if (atGate) { e.cd = M.BOSS_CD; G.lives -= 1; G.fx.push({ t: G.t, kind: "gate" }); G.fx.push({ t: G.t, kind: "bosshit", x: e.x, y: e.y }); return; }
+          if (rk) { e.cd = M.BOSS_CD; rk.hp -= e.atk; G.fx.push({ t: G.t, kind: "bosshit", x: rk.x, y: rk.y }); if (rk.hp <= 0) G.fx.push({ t: G.t, kind: "rockbreak", x: rk.x, y: rk.y }); return; }
+          if (near) { e.cd = M.BOSS_CD; near.hp -= e.atk; var np0 = M.SLOTS[near.slot]; G.fx.push({ t: G.t, kind: "bosshit", x: np0[0], y: np0[1] }); if (near.hp <= 0) { near.hp = 0; near.down = M.REVIVE; } }
+        }
+        if (atGate) return;
+        if (G.rocks.some(function (k) { return Math.hypot(k.x - e.x, k.y - e.y) < 22; })) return;
+        var bs = Math.min(M.PTS[e.path].len - 5, e.s + e.spd * dt), bp = posAt(e.path, bs); e.s = bs; e.x = bp.x; e.y = bp.y;
+        return;
+      }
       // 落石擋路
       var ns = e.s + e.spd * dt, np = posAt(e.path, ns), rock = null;
       G.rocks.forEach(function (k) { if (!rock && k.hp > 0 && Math.hypot(np.x - k.x, np.y - k.y) < 14 && Math.hypot(np.x - k.x, np.y - k.y) < Math.hypot(e.x - k.x, e.y - k.y)) rock = k; });
@@ -343,7 +409,7 @@
       e.s = ns; e.x = np.x; e.y = np.y;
       if (e.s >= M.PTS[e.path].len - 2) {   // 到城門
         e.hp = 0; e.gone = true;
-        G.lives -= e.boss ? G.lives : 1; G.fx.push({ t: G.t, kind: "gate" });
+        G.lives -= 1; G.fx.push({ t: G.t, kind: "gate" });
       }
     });
     G.rocks = G.rocks.filter(function (k) { return k.hp > 0; });
