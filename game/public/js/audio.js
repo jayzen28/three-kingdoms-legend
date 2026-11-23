@@ -17,7 +17,7 @@
     if (cur && cur !== want) { var old = els[cur]; fade(old, 0, function () { old.pause(); }); }
     cur = want; var a = el(cur);
     var p = a.play(); if (p && p.catch) p.catch(function () {});
-    fade(a, 0.6);
+    fade(a, cur.indexOf("slot") === 0 ? 0.85 : 0.6);   // 拉霸守城的戰鬥曲大聲一點，不被音效蓋住
   }
   function paint() { document.querySelectorAll(".snd").forEach(function (b) { b.classList.toggle("off", !on); b.setAttribute("aria-pressed", on ? "true" : "false"); }); }
   // 音效：國樂音色（古箏刮奏、堂鼓、大鑼、梆子、編鐘），檔案在 audio/sfx_*.mp3

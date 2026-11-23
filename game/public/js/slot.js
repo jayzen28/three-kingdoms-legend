@@ -36,57 +36,86 @@
     out.push({ x: p[p.length - 1][0], y: p[p.length - 1][1], s: acc });
     out.len = acc; return out;
   }
+  // ✅ Jay 2026-11-23 第六輪：路線不要每次都像樹枝 → 六種路型輪流（蛇行、繞湖、之字山道、雙翼、三路並進、分進合擊），打完一輪再左右鏡射
+  var G0 = [200, 486];
+  var LAYOUTS = [
+    // ✅ 手繪地圖：路線與營寨位置照 img/slot/map_0.webp 對過（圖以 artK 倍畫在世界座標上，城牆頂約在 y=450）
+    { name: "蛇行道", art: "map_0", artK: 1.11, key: [[198, 374], [200, 452]], paths: [
+      [[308, -12], [306, 96], [90, 176], [90, 316], [142, 346], [198, 374], [200, 452], G0],
+      [[90, -12], [90, 176], [90, 316], [142, 346], [198, 374], [200, 452], G0],
+      [[412, 276], [304, 278], [198, 374], [200, 452], G0],
+      [[-12, 316], [90, 316], [142, 346], [198, 374], [200, 452], G0],
+      [[-12, 176], [90, 176], [90, 316], [142, 346], [198, 374], [200, 452], G0]], names: ["右上", "左上", "右側", "左側", "左上側"],
+      slots: [[162, 405], [236, 405], [45, 139], [47, 87], [47, 270], [133, 231], [142, 138], [353, 67], [318, 247], [264, 353], [145, 309], [203, 302]] },
+    { name: "繞湖道", key: [[200, 345], [200, 452]], lake: [200, 222, 60, 50], paths: [
+      [[200, -12], [200, 95], [112, 150], [100, 235], [138, 310], [200, 345], [200, 452], G0],
+      [[330, -12], [330, 80], [288, 150], [300, 235], [262, 310], [200, 345], [200, 452], G0],
+      [[70, -12], [70, 80], [112, 150], [100, 235], [138, 310], [200, 345], [200, 452], G0],
+      [[-12, 235], [100, 235], [138, 310], [200, 345], [200, 452], G0],
+      [[412, 235], [300, 235], [262, 310], [200, 345], [200, 452], G0]], names: ["正上", "右上", "左上", "左側", "右側"] },
+    { name: "之字山道", key: [[200, 350], [200, 452]], paths: [
+      [[412, 70], [120, 70], [120, 185], [300, 185], [300, 305], [200, 350], [200, 452], G0],
+      [[120, -12], [120, 70], [120, 185], [300, 185], [300, 305], [200, 350], [200, 452], G0],
+      [[-12, 185], [120, 185], [300, 185], [300, 305], [200, 350], [200, 452], G0],
+      [[412, 305], [300, 305], [200, 350], [200, 452], G0],
+      [[300, -12], [300, 185], [300, 305], [200, 350], [200, 452], G0]], names: ["右上側", "左上", "左側", "右側", "右上"] },
+    { name: "雙翼道", key: [[200, 380], [200, 452]], paths: [
+      [[70, -12], [70, 270], [120, 340], [200, 380], [200, 452], G0],
+      [[330, -12], [330, 270], [280, 340], [200, 380], [200, 452], G0],
+      [[-12, 180], [70, 180], [70, 270], [120, 340], [200, 380], [200, 452], G0],
+      [[412, 180], [330, 180], [330, 270], [280, 340], [200, 380], [200, 452], G0],
+      [[200, -12], [200, 150], [236, 240], [200, 320], [200, 380], [200, 452], G0]], names: ["左上", "右上", "左側", "右側", "正上"] },
+    { name: "三路並進", key: [[200, 385], [200, 452]], paths: [
+      [[90, -12], [90, 300], [200, 385], [200, 452], G0],
+      [[200, -12], [200, 300], [200, 385], [200, 452], G0],
+      [[310, -12], [310, 300], [200, 385], [200, 452], G0],
+      [[-12, 150], [90, 150], [90, 300], [200, 385], [200, 452], G0],
+      [[412, 150], [310, 150], [310, 300], [200, 385], [200, 452], G0]], names: ["左上", "正上", "右上", "左側", "右側"] }
+  ];
+  M.LAYOUTS = LAYOUTS;
   M.genMap = function (stage) {
-    var r = mrnd((stage || 1) + 1000), R = function (a, b) { return Math.round(a + (b - a) * r()); };
-    var J = [R(140, 260), R(296, 340)], T1 = [200 + R(-46, 46), R(384, 408)], gate = [M.GATE.x, M.GATE.y], tail = [J, T1, [200, 452], gate];
-    var JL = [Math.min(J[0] - 46, R(78, 136)), R(206, J[1] - 44)], JR = [Math.max(J[0] + 46, R(264, 322)), R(206, J[1] - 44)];
-    if (r() < 0.3) JL = J; else if (r() < 0.3) JR = J;        // 有時某一側不分匯，直接接到總匯點
-    var style = Math.floor(r() * 3), paths = [], names = [];
-    function top(x, Jn, nm) { var y1 = R(78, 118); paths.push([[x, -12], [x, y1], [Math.round((x + Jn[0]) / 2) + R(-18, 18), Math.round((y1 + Jn[1]) / 2) + R(-10, 16)], Jn].concat(Jn === J ? tail.slice(1) : tail)); names.push(nm); }
-    function side(left, y, Jn, nm) { var x0 = left ? -12 : M.W + 12, x1 = left ? R(42, 66) : M.W - R(42, 66); paths.push([[x0, y], [x1, y], Jn].concat(Jn === J ? tail.slice(1) : tail)); names.push(nm); }
-    if (style === 0) {          // 上三、左右各一
-      top(R(34, 74), JL, "左上"); top(R(176, 224), J, "正上");
-      top(R(326, 366), JR, "右上"); side(true, R(Math.max(60, JL[1] - 100), JL[1] - 26), JL, "左側"); side(false, R(Math.max(60, JR[1] - 100), JR[1] - 26), JR, "右側");
-    } else {                    // 上二、一側二、另一側一
-      var two = style === 1;    // true＝左邊兩個側入口
-      top(R(58, 118), JL, "左上"); top(R(282, 342), JR, "右上");
-      side(two, R(70, 112), two ? JL : JR, two ? "左上側" : "右上側"); side(two, R(170, 214), two ? JL : JR, two ? "左側" : "右側");
-      side(!two, R(140, 210), two ? JR : JL, two ? "右側" : "左側");
-    }
+    stage = stage || 1;
+    var r = mrnd(stage + 1000), R = function (a, b) { return Math.round(a + (b - a) * r()); };
+    var n = LAYOUTS.length, idx = (stage - 1) % n, mir = Math.floor((stage - 1) / n) % 2 === 1, L = LAYOUTS[idx], src = L;
+    var fx = function (q) { return [mir ? M.W - q[0] : q[0], q[1]]; };
+    var paths = src.paths.map(function (p) { return p.map(fx); }), key = src.key.map(fx), lake = L.lake ? [mir ? M.W - L.lake[0] : L.lake[0], L.lake[1], L.lake[2], L.lake[3]] : null;
+    var names = src.names.map(function (s) { return mir ? s.replace(/[左右]/g, function (c) { return c === "左" ? "右" : "左"; }) : s; });
     var pts = paths.map(cut), all = []; pts.forEach(function (P) { for (var i = 0; i < P.length; i += 2) all.push(P[i]); });
     var near = function (x, y) { var m = 1e9; all.forEach(function (q) { var d = Math.hypot(q.x - x, q.y - y); if (d < m) m = d; }); return m; };
-    // 要衝：主幹上、總匯點下方兩側
-    var kx = J[0] + (T1[0] - J[0]) * 0.36, ky = J[1] + (T1[1] - J[1]) * 0.36, tl = Math.hypot(T1[0] - J[0], T1[1] - J[1]), nx = (T1[1] - J[1]) / tl, ny = -(T1[0] - J[0]) / tl;
+    var inLake = function (x, y, pad) { return lake && Math.pow((x - lake[0]) / (lake[2] + pad), 2) + Math.pow((y - lake[1]) / (lake[3] + pad), 2) < 1; };
+    // 要衝：所有路線最後共用的那一段，兩側各一
+    var K0 = key[0], K1 = key[1], kx = K0[0] + (K1[0] - K0[0]) * 0.4, ky = K0[1] + (K1[1] - K0[1]) * 0.4, tl = Math.hypot(K1[0] - K0[0], K1[1] - K0[1]), nx = (K1[1] - K0[1]) / tl, ny = -(K1[0] - K0[0]) / tl;
     var slots = [[Math.round(kx - nx * 37), Math.round(ky - ny * 37)], [Math.round(kx + nx * 37), Math.round(ky + ny * 37)]];
-    // 其他營寨：沿每條路（不含主幹）兩側 40 的位置取候選，再挑分散的 10 個
+    if (L.slots) slots = L.slots.map(fx);   // 手繪地圖：營寨位置是對著圖擺的，前兩個是要衝
+    // 其他營寨：沿每條路兩側 40 的位置取候選，再挑分散的 10 個
     var cand = [];
     pts.forEach(function (P) {
       for (var i = 10; i < P.length - 2; i += 6) {
-        var a = P[i], b = P[i + 1]; if (a.y > J[1] - 6) break;
-        var dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy) || 1;
+        var a = P[i], b = P[i + 1]; if (a.y > 420) break;
+        var dx = b.x - a.x, dy = b.y - a.y, L2 = Math.hypot(dx, dy) || 1;
         [1, -1].forEach(function (sd) {
-          var x = a.x - dy / L * 40 * sd, y = a.y + dx / L * 40 * sd;
-          if (x < 30 || x > M.W - 30 || y < 46 || y > 430) return;
+          var x = a.x - dy / L2 * 40 * sd, y = a.y + dx / L2 * 40 * sd;
+          if (x < 30 || x > M.W - 30 || y < 46 || y > 430 || inLake(x, y, 14)) return;
           var d = near(x, y); if (d < 31 || d > 43) return;
           cand.push([Math.round(x), Math.round(y)]);
         });
       }
     });
     var far = function (c) { var m = 1e9; slots.forEach(function (q) { var d = Math.hypot(q[0] - c[0], q[1] - c[1]); if (d < m) m = d; }); return m; };
-    while (slots.length < 12 && cand.length) {
+    while (!L.slots && slots.length < 12 && cand.length) {
       var bi = -1, bd = 50; cand.forEach(function (c, i) { var d = far(c) + r() * 6; if (d > bd) { bd = d; bi = i; } });
       if (bi < 0) break; slots.push(cand[bi]); cand.splice(bi, 1);
     }
-    // 裝飾：樹、山石，離路和營寨遠一點
+    // 裝飾：樹、山石，離路、營寨、湖遠一點
     var deco = [], tries = 0;
-    while (deco.length < 22 && tries++ < 400) {
-      var x = R(8, M.W - 8), y = R(14, 452); if (near(x, y) < 30) continue;
+    while (deco.length < 24 && tries++ < 500) {
+      var x = R(8, M.W - 8), y = R(14, 452); if (near(x, y) < 30 || inLake(x, y, 10)) continue;
       if (slots.some(function (q) { return Math.hypot(q[0] - x, q[1] - y) < 26; })) continue;
       if (deco.some(function (q) { return Math.hypot(q.x - x, q.y - y) < 20; })) continue;
       deco.push({ x: x, y: y, k: r() < 0.82 ? "tree" + (1 + Math.floor(r() * 4)) : "rock", s: 0.8 + r() * 0.5 });
     }
     deco.sort(function (a, b) { return a.y - b.y; });
-    return { stage: stage, paths: paths, pts: pts, slots: slots, key: [0, 1], names: names, deco: deco, theme: ((stage || 1) - 1) % 4, J: J };
+    return { stage: stage, name: L.name, layout: idx, mirror: mir, paths: paths, pts: pts, slots: slots, key: [0, 1], names: names, deco: deco, lake: lake, theme: (stage - 1) % 4, art: L.art || null, artK: L.artK || 1 };
   };
   M.useMap = function (map) { M.MAP = map; M.PATHS = map.paths; M.PTS = map.pts; M.SLOTS = map.slots; M.KEY = map.key; M.GATE_NAMES = map.names; };
   M.useMap(M.genMap(1));
@@ -138,7 +167,7 @@
   M.HIT2_P = 0.12;         // 中獎時同時連出兩條
   M.HIT_W = { "火": 1, "雷": 1, "風": 1, "石": 1, gen: 2.4 };   // 中獎時連出哪一種
   M.JACK2 = 0.5; M.JACK3 = 0.01;   // 每一局：第一位必出，第二位 50%，第三位 1%
-  M.JACK_AT = [5, 15]; M.JACK_GAP = [10, 30];   // ★ 第一次三令出現在第 5～15 轉之間，之後每次再隔 10～30 轉
+  M.JACK_EARLY = 0.15; M.JACK_T = [15, 42]; M.JACK_GAP = [18, 40];   // ✅ Jay 2026-11-23：助陣太早出來 → 開戰 30 秒內出現的機率降到 15%（★），其餘落在 30～84 秒；下一位再隔 36～80 秒（引擎秒＝一半）
   M.BOSS_CD = 1.5;   // ✅ Boss 每 3 秒攻擊一次（一般速度下；引擎時間是它的一半，見 M.SPEED）
   M.SPEED = 0.5;     // ✅ Jay 2026-11-23：節奏調慢一倍；地圖上的「×2」鍵切回兩倍速
   M.SIN_BOSS = 2; M.CAV_MINION = 1.5;   // ✅ Jay 2026-11-23：刺客打 Boss 攻擊 2 倍、騎兵打小兵 1.5 倍
@@ -146,7 +175,7 @@
   M.FIRE_T = 5; M.FIRE_ATK = 1.2; M.BURN_P = 0.10; M.BURN_TICK = 0.75; M.BURN_T = 4.5;   // 一般速度下：火箭 10 秒、每 1.5 秒燒一次、燒 9 秒
   M.THUNDER_MUL = 3; M.STUN = 1;   // 一般速度下停頓 2 秒
   M.ROCK_MUL = 2; M.ROCK_HP = 5; M.ROCK_R = 26;
-  M.WIND_T = 3; M.WIND = 3;   // 一般速度下 6 秒
+  M.WIND_T = 5; M.WIND = 3;   // ✅ Jay 2026-11-23：風＝攻速 300%、10 秒（一般速度）；攻速不累加、時間累加
 
   // 兩大波的出兵表：[秒, 入口, 兵種, 數量, 間隔, 強度等級]
   M.WAVES = [
@@ -206,7 +235,7 @@
     G.deployLeft = M.START_DEPLOY;
     G.nsym = M.GEN0 + list.length;
     G.jackN = 1 + (rnd() < M.JACK2 ? 1 : 0) + (rnd() < M.JACK3 ? 1 : 0); G.jackDone = 0;
-    G.jackAt = M.JACK_AT[0] + Math.floor(rnd() * (M.JACK_AT[1] - M.JACK_AT[0] + 1));
+    G.jackAt = rnd() < M.JACK_EARLY ? 6 + rnd() * 9 : M.JACK_T[0] + rnd() * (M.JACK_T[1] - M.JACK_T[0]);
     for (var i = 0; i < 9; i++) G.grid.push(0);
     G.grid = missGrid(G);
     return G;
@@ -314,7 +343,7 @@
       G.fx.push({ t: G.t, kind: "boss", name: B.gen, art: e.art, big: e.big });
     } else {
       var d = M.ENEMY[q.k];
-      e = { k: q.k, img: d.img, name: d.name, hp: d.hp * M.MINION_HP * mul * G.sm.hp, atk: d.atk * Math.pow(1.1, lvl - 1) * G.sm.atk, spd: d.spd * (0.92 + G.rnd() * 0.16), food: d.food * M.MINION_FOOD };
+      e = { k: q.k, img: d.img, name: d.name, hp: d.hp * M.MINION_HP * mul * G.sm.hp, atk: d.atk * Math.pow(1.1, lvl - 1) * G.sm.atk, spd: d.spd * (0.92 + G.rnd() * 0.16) * Math.max(0.85, Math.min(1.9, M.PTS[q.gate].len / 520)), food: d.food * M.MINION_FOOD };
     }
     e.id = G.nid++; e.max = e.hp; e.path = q.gate; e.s = 0; e.cd = 0; e.stun = 0; e.burn = 0; e.burnD = 0; e.burnTick = 0; e.block = null;
     var p = posAt(e.path, 0); e.x = p.x; e.y = p.y;
@@ -327,8 +356,8 @@
   M.spin = function (G) {
     if (!M.canSpin(G)) return null;
     G.food -= M.spinCost(G); G.spins++;
-    var r = G.rnd(), forceJack = G.jackDone < G.jackN && (G.spins >= G.jackAt || (G.wave >= 2 && G.jackDone === 0));
-    if (forceJack) { G.jackDone++; G.jackAt = G.spins + M.JACK_GAP[0] + Math.floor(G.rnd() * (M.JACK_GAP[1] - M.JACK_GAP[0] + 1)); }
+    var r = G.rnd(), forceJack = G.jackDone < G.jackN && G.t >= G.jackAt;
+    if (forceJack) { G.jackDone++; G.jackAt = G.t + M.JACK_GAP[0] + G.rnd() * (M.JACK_GAP[1] - M.JACK_GAP[0]); }
     G.grid = forceJack ? hitGrid(G, 1, M.WILD) : r < M.HIT_P ? hitGrid(G, G.rnd() < M.HIT2_P ? 2 : 1) : missGrid(G);
     G.hits = evalGrid(G, G.grid);
     return G.hits;
@@ -361,7 +390,7 @@
       sp2.forEach(function (g) { dropRock(G, g); });
       return { sym: sym, n: sp2.length };
     }
-    if (sym === "風") { G.windT = Math.max(G.windT, M.WIND_T); G.fx.push({ t: G.t, kind: "wind" }); return { sym: sym }; }
+    if (sym === "風") { G.windT += M.WIND_T; G.fx.push({ t: G.t, kind: "wind" }); return { sym: sym }; }
     if (h.sym >= M.GEN0) {   // 武將連線：還沒上陣的可以上陣；已上陣的升星
       var c = G.list[h.sym - M.GEN0], f = G.gens.find(function (g) { return g.c === c; }), r = G.reserve.find(function (x) { return x.c === c; });
       if (f) {

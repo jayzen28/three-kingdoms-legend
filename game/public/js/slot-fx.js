@@ -28,20 +28,21 @@
   // ✅ Jay 2026-11-23：特效音改用 Suno 生成的檔案（audio/sl_*.mp3）；轉輪的滴答聲和敵將出陣的鑼聲還是程式合成
   var A = function (k, from, vol) { if (SG.Audio) SG.Audio.sfx(k, 1, from, vol); };
   F.snd = {
-    tick: function () { tone(1800 + Math.random() * 400, 0, 0.03, "square", 0.025); },
-    thunk: function () { A("sl_stop", 0, 0.8); },
-    drumroll: function (ms) { A("sl_drum", Math.max(0, 2.6 - ms / 1000), 1); },   // 鼓聲的最高點對準第三排停下的瞬間
-    win: function (big) { A(big ? "sl_big" : "sl_win"); },
-    coins: function () { A("sl_coin", 0, 0.7); },
-    whoosh: function () { A("sl_cut"); },
-    jack: function () { A("sl_jack", 0, 1); },
-    gong: function () { [98, 147, 196, 294].forEach(function (f, i) { tone(f, 0, 2.2, "sine", 0.22 - i * 0.04); }); noise(0, 0.5, 0.15, 300); },
+    // ✅ Jay 2026-11-23：音效蓋住 BGM → 攻擊（火雷風石）、升星、停輪都調小聲
+    tick: function () { tone(1800 + Math.random() * 400, 0, 0.03, "square", 0.012); },
+    thunk: function () { A("sl_stop", 0, 0.3); },
+    drumroll: function (ms) { A("sl_drum", Math.max(0, 2.6 - ms / 1000), 0.6); },   // 鼓聲的最高點對準第三排停下的瞬間
+    win: function (big) { A(big ? "sl_big" : "sl_win", 0, big ? 0.55 : 0.4); },
+    coins: function () { A("sl_coin", 0, 0.35); },
+    whoosh: function () { A("sl_cut", 0, 0.3); },
+    jack: function () { A("sl_jack", 0, 0.85); },
+    gong: function () { [98, 147, 196, 294].forEach(function (f, i) { tone(f, 0, 2.2, "sine", 0.13 - i * 0.025); }); noise(0, 0.5, 0.08, 300); },
     rise: function () { tone(220, 0, 1.2, "sawtooth", 0.05, 880); },
-    fire: function () { A("sl_fire"); },
-    thunder: function () { A("sl_thunder"); },
-    wind: function () { A("sl_wind"); },
-    rock: function () { A("sl_rock"); },
-    gate: function () { A("sl_gate", 0, 1); }
+    fire: function () { A("sl_fire", 0, 0.35); },
+    thunder: function () { A("sl_thunder", 0, 0.35); },
+    wind: function () { A("sl_wind", 0, 0.3); },
+    rock: function () { A("sl_rock", 0, 0.35); },
+    gate: function () { A("sl_gate", 0, 0.7); }
   };
 
   F.preload = function () { ["sym_fire", "sym_thunder", "sym_wind", "sym_rock", "sym_ling", "sym_frame", "fx_fire", "fx_thunder", "fx_wind", "fx_rock", "title_mjzz", "u_e_spear", "u_e_cav", "u_e_shield", "u_e_bow", "u_e_mage", "g_spear", "g_cav", "g_bow", "g_sin", "g_mage", "u_boss1", "u_boss2", "u_camp"].forEach(function (n) { var i = new Image(); i.src = "img/slot/" + n + ".webp" + (n === "title_mjzz" ? "?v=1" : ""); }); };
@@ -77,12 +78,11 @@
         strip.style.transition = "none";
         strip.innerHTML = items.map(function (h) { return '<div class="sl-cell">' + h + '</div>'; }).join("");
         strip.style.transform = "translateY(" + (-(items.length - 3) * H) + "px)";
-        strip.classList.add("blur");
         void strip.offsetHeight;
         strip.style.transition = "transform " + stops[c] + "ms " + (c === 2 && tease ? "cubic-bezier(.12,.7,.18,1)" : "cubic-bezier(.25,.75,.3,1.08)");
         strip.style.transform = "translateY(0)";
         setTimeout(function () {
-          strip.classList.remove("blur"); strip.style.transition = "none";
+          strip.style.transition = "none";
           strip.innerHTML = items.slice(0, 3).map(function (h) { return '<div class="sl-cell">' + h + '</div>'; }).join(""); strip.style.transform = "translateY(0)";
           reel.classList.remove("land"); void reel.offsetWidth; reel.classList.add("land");
           F.snd.thunk(); stopped++;
@@ -105,7 +105,7 @@
     hits.forEach(function (h) { h.ln.forEach(function (i) { cells[i].classList.add("hit"); }); });
     coins(box, big ? 26 : 12);
     F.snd.win(big); if (big) F.snd.coins();
-    if (big) bigWin(field);
+    if (big) bigWin(field, hits.length);
     var syms = {}; hits.forEach(function (h) { syms[h.sym] = 1; });
     (opts.splash || []).forEach(function (k, i) { setTimeout(function () { splash(field, k); }, 150 + i * 260); });
     (opts.cut || []).forEach(function (c, i) { setTimeout(function () { cutIn(field, c); }, 350 + i * 900); });
@@ -122,8 +122,8 @@
         { duration: 900 + Math.random() * 500, easing: "cubic-bezier(.2,.7,.4,1)" }).onfinish = (function (el) { return function () { el.remove(); }; })(c);
     }
   }
-  function bigWin(field) {
-    var e = document.createElement("div"); e.className = "sl-big"; e.innerHTML = "<b>大勝！</b>"; field.appendChild(e);
+  function bigWin(field, n) {
+    var e = document.createElement("div"); e.className = "sl-big"; e.innerHTML = "<b>" + (n >= 3 ? "三連線！" : "雙連線！") + "</b>";   // ✅ Jay 2026-11-23：不叫「大勝」（還沒打贏）；★ 先叫雙連線／三連線 field.appendChild(e);
     field.classList.remove("shake"); void field.offsetWidth; field.classList.add("shake");
     setTimeout(function () { e.remove(); }, 1500);
   }

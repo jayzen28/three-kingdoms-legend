@@ -26,6 +26,7 @@
     var shown = own.filter(function (c) { return (flt.ff === "全部" || c.fac === flt.ff) && (flt.ft === "全部" || c.typ === flt.ft); }).sort(function (a, b) { return rk(b) - rk(a); });
     var chips = function (attr, cur, arr) { return arr.map(function (v) { return '<button class="chip' + (v === cur ? ' on' : '') + '" data-' + attr + '="' + v + '">' + v + '</button>'; }).join(""); };
     var slots = ""; for (var k = 0; k < M.ROSTER_MAX; k++) { var pc = pick[k] && SG.GEN[pick[k]]; slots += pc ? '<button class="sl-pk" data-g="' + pc.gen + '"><span class="hd" style="--fc:' + FC[FV[pc.fac]] + '"><img src="img/' + pc.art + '_head.webp" alt=""></span><b>' + pc.gen + '</b><small>' + SG.TYPES[pc.typ].name + '</small></button>' : '<span class="sl-pk empty"><span class="hd"></span><b>空位</b><small>&nbsp;</small></span>'; }
+    var nm = M.genMap(d.stage || 1); if (nm.art) img("img/slot/" + nm.art + ".webp?v=1");   // 先把這一關的手繪地圖載進來
     $("#s-slot").innerHTML = UI.strip("st-slot", "拉霸守城", "測試版・一關一關守下去") +
       '<div class="paper sl-lobby">' +
       '<div class="sl-stage"><div><small>目前關卡</small><b>第 ' + d.stage + ' 關</b><small>最高紀錄：第 ' + (d.top || 0) + ' 關</small></div>' +
@@ -76,7 +77,7 @@
     UI.go("slotb");
     if (SG.Audio && SG.Audio.preloadSlot) SG.Audio.preloadSlot();
     $("#s-slotb").innerHTML =
-      '<div class="sl-hud"><button class="sm plain" id="sl-quit">撤退</button><div class="sl-wv"><small>第 ' + G.stage + ' 關</small><span id="sl-w">佈陣中</span></div>' +
+      '<div class="sl-hud"><button class="sm plain" id="sl-quit">撤退</button><div class="sl-wv"><small>第 ' + G.stage + ' 關・' + M.MAP.name + '</small><span id="sl-w">佈陣中</span></div>' +
       '<div class="sl-lives" id="sl-lives"></div><div class="sl-food">糧 <b id="sl-food"></b></div></div>' +
       '<div class="sl-field" id="sl-field"><canvas id="sl-cv"></canvas><div class="sl-ban" id="sl-ban"></div><div class="sl-buff" id="sl-buff"></div>' +
       '<button class="sl-x2' + (fast ? ' on' : '') + '" id="sl-x2">×2</button></div>' +
@@ -86,6 +87,8 @@
       '<div class="sl-ctl"><button class="sl-spin" id="sl-spin"><span>開戰</span><small id="sl-cost"></small></button>' +
       '<div class="sl-row2"><button class="sm" id="sl-rep">修城門 ' + M.REPAIR_COST + '</button><label class="sl-auto"><input type="checkbox" id="sl-autob"' + (auto ? ' checked' : '') + '> 自動</label></div></div></div></div>';
     cv = $("#sl-cv"); cx = cv.getContext("2d"); fit();
+    // 下方面板排好之後戰場高度會變，要跟著重算；不然畫面被壓扁、點擊位置也會偏
+    if (window.ResizeObserver) { if (fitRO) fitRO.disconnect(); fitRO = new ResizeObserver(function () { if (cv && cv.isConnected) { var r = cv.getBoundingClientRect(); if (Math.abs(r.width - W) > 0.5 || Math.abs(r.height - H) > 0.5) fit(); } }); fitRO.observe(cv.parentElement); }
     F.preload(); F.build($("#sl-grid"), G.grid, symHtml);
     renderRes(); tip("主公，先佈陣：點上面的武將，再點地圖上的營寨。金框「要衝」每條路都打得到。放好就按「開戰」。");
     $("#sl-spin").onclick = function () {
@@ -105,6 +108,7 @@
     cv.addEventListener("click", onTap);
     last = performance.now(); cancelAnimationFrame(raf); raf = requestAnimationFrame(loop);
   }
+  var fitRO = null;
   function fit() {
     var r = cv.getBoundingClientRect(); dpr = Math.min(2, window.devicePixelRatio || 1);
     W = Math.max(10, r.width); H = Math.max(10, r.height); cv.width = W * dpr; cv.height = H * dpr;
@@ -239,6 +243,7 @@
     { name: "夜襲", ground: "ground_grass", tint: "rgba(6,10,40,.58)", road: "#6e5e50", edge: "#1c1620" }
   ];
   function buildBg() {
+    if (M.MAP.art) return buildArtBg();
     var map = M.MAP, th = THEME[map.theme], need = [img("img/bf/" + th.ground + ".webp"), img("img/bf/ground_dirt.webp"), img("img/bf/obj_tree_1.webp"), img("img/bf/obj_tree_2.webp"), img("img/bf/obj_tree_3.webp"), img("img/bf/obj_tree_4.webp"), img("img/bf/obj_mtn_s.webp"), img("img/bf/obj_mtn_s_snow.webp")];
     var ready = need.every(function (i) { return i.complete && i.naturalWidth; });
     var c0 = document.createElement("canvas"); c0.width = W * dpr; c0.height = H * dpr;
@@ -256,6 +261,15 @@
     };
     stroke(40, "rgba(0,0,0,.28)"); stroke(32, th.edge); stroke(25, pat); stroke(25, th.road, 0.35); stroke(9, "rgba(255,240,200,.10)");
     if (map.theme === 3) stroke(25, "rgba(10,14,50,.35)");
+    // 湖（繞湖道）：水面＋岸邊
+    if (map.lake) {
+      var lk = map.lake, wt = img("img/bf/ground_water.webp"); if (!(wt.complete && wt.naturalWidth)) ready = false;
+      c.save(); c.beginPath(); c.ellipse(W2(lk[0]), H2(lk[1]), lk[2] * s, lk[3] * s, 0, 0, 7); c.fillStyle = "#274a5c"; c.fill(); c.clip();
+      if (wt.complete && wt.naturalWidth) { var tw = 120 * s; for (var wy = H2(lk[1] - lk[3]); wy < H2(lk[1] + lk[3]); wy += tw) for (var wx = W2(lk[0] - lk[2]); wx < W2(lk[0] + lk[2]); wx += tw) c.drawImage(wt, wx, wy, tw, tw); }
+      c.restore();
+      c.strokeStyle = "rgba(230,220,180,.55)"; c.lineWidth = 3 * s; c.beginPath(); c.ellipse(W2(lk[0]), H2(lk[1]), lk[2] * s, lk[3] * s, 0, 0, 7); c.stroke();
+      c.strokeStyle = "rgba(0,0,0,.35)"; c.lineWidth = 1.5; c.beginPath(); c.ellipse(W2(lk[0]), H2(lk[1]), (lk[2] + 3) * s, (lk[3] + 3) * s, 0, 0, 7); c.stroke();
+    }
     // 樹與山石（由上到下畫，下面的蓋住上面的）
     map.deco.forEach(function (t) {
       var im = t.k === "rock" ? (map.theme === 2 ? need[7] : need[6]) : need[1 + (+t.k.slice(4))];
@@ -272,6 +286,28 @@
     c.fillStyle = "#2a211a"; c.fillRect(W2(0), H2(474), M.W * s, 26 * s + 40);
     c.fillStyle = "#3b2f24"; for (var b = 0; b < M.W; b += 16) c.fillRect(W2(b), H2(468), 10 * s, 8 * s);
     c.fillStyle = "rgba(255,225,160,.12)"; c.fillRect(W2(0), H2(474), M.W * s, 2);
+    return { cv: c0, ready: ready };
+  }
+  // 手繪地圖：整張圖以 artK 倍畫在世界座標上（多出來的部分剛好填滿左右與下方的留白），鏡像關卡左右翻轉
+  function buildArtBg() {
+    var map = M.MAP, am = img("img/slot/" + map.art + ".webp?v=1"), ready = !!(am.complete && am.naturalWidth);
+    var c0 = document.createElement("canvas"); c0.width = W * dpr; c0.height = H * dpr;
+    var c = c0.getContext("2d"), s = view.s; c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    c.fillStyle = "#141a10"; c.fillRect(0, 0, W, H);
+    if (ready) {
+      var aw = M.W * map.artK * s, ah = M.H * map.artK * s;
+      c.save(); if (map.mirror) { c.translate(2 * W2(M.W / 2), 0); c.scale(-1, 1); }
+      c.imageSmoothingQuality = "high";
+      // 圖本身蓋不到的留白（上方、左右）：把圖翻面接上去，接縫處是連續的
+      var ax = W2(M.W / 2) - aw / 2, ay = H2(0);
+      [-1, 0].forEach(function (ty) { [-1, 1, 0].forEach(function (tx) {
+        var x0 = ax + tx * aw, y0 = ay + ty * ah; if (x0 > W || x0 + aw < 0 || y0 + ah < 0) return;
+        c.save(); c.translate(x0 + (tx ? aw : 0), y0 + (ty ? ah : 0)); c.scale(tx ? -1 : 1, ty ? -1 : 1); c.drawImage(am, 0, 0, aw, ah); c.restore();
+      }); });
+      c.restore();
+      var vg = c.createRadialGradient(W / 2, H * 0.45, Math.min(W, H) * 0.35, W / 2, H * 0.5, Math.max(W, H) * 0.8);
+      vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.38)"); c.fillStyle = vg; c.fillRect(0, 0, W, H);
+    }
     return { cv: c0, ready: ready };
   }
   function draw() {
@@ -362,10 +398,14 @@
     if (im.complete && im.naturalWidth) { c.save(); if (g.down > 0) c.globalAlpha = 0.35; c.drawImage(im, f * m.w, 0, m.w, m.h, x - m.ax * sc, y - m.ay * sc + breathe, m.w * sc, m.h * sc); c.restore(); }
   }
   function drawGenHud(c, g) {
-    var s = view.s, p = M.SLOTS[g.slot], x = W2(p[0]), y = H2(p[1]) + 5 * s, r = 14 * s, ring = g.guest ? "#ecd391" : (FC[FV[g.c.fac]] || "#d4a853");
+    var s = view.s, p = M.SLOTS[g.slot], x = W2(p[0]), y = H2(p[1]) + 5 * s, r = 18 * s, ring = g.guest ? "#ecd391" : (FC[FV[g.c.fac]] || "#d4a853");
     var hy = y - genTop(g) - r + 2 * s;
     token(c, g.c.art, x, hy, r, ring, g.down > 0);
-    if (g.down > 0) { c.font = "700 " + Math.round(9 * s + 4) + "px sans-serif"; c.textAlign = "center"; c.fillStyle = "#f0e8d8"; c.fillText(Math.ceil(g.down / (fast ? 1 : M.SPEED)), x, hy + 4); }
+    if (g.down > 0) {   // 被打倒：頭像變暗，數字是幾秒後復活
+      c.textAlign = "center"; c.lineWidth = 3; c.strokeStyle = "rgba(0,0,0,.85)";
+      c.font = "800 " + Math.round(11 * s + 4) + "px sans-serif"; c.fillStyle = "#ffffff"; var dn = Math.ceil(g.down / (fast ? 1 : M.SPEED)); c.strokeText(dn, x, hy + 5 * s); c.fillText(dn, x, hy + 5 * s);
+      c.font = "700 " + Math.round(6 * s + 4) + "px 'LXGW WenKai TC', serif"; c.fillStyle = "#ff9a8a"; c.strokeText("復活", x, hy - r - 3); c.fillText("復活", x, hy - r - 3);
+    }
     else bar(c, x, hy - r - 6, 30 * s, g.hp / g.max, "#4ec87a");
     c.font = "700 " + Math.round(6 * s + 4) + "px sans-serif"; c.textAlign = "center"; c.fillStyle = "#ecd391"; c.strokeStyle = "rgba(0,0,0,.8)"; c.lineWidth = 3;
     c.strokeText("★".repeat(g.star), x, y + 17 * s); c.fillText("★".repeat(g.star), x, y + 17 * s);

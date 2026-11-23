@@ -1637,3 +1637,6 @@ details.sl-how summary{font-family:var(--kai);font-weight:700;font-size:16px;col
 .sl-sp.sp-thunder{align-items:flex-start}
 .sl-sp.sp-thunder img{width:max(135%,560px);margin-top:-8%;-webkit-mask-image:linear-gradient(transparent,#000 14%);mask-image:linear-gradient(transparent,#000 14%)}
 .sl-res{min-height:54px;padding:6px 0 2px}
+
+/* 第六輪：轉輪不模糊（Jay 2026-11-23） */
+.sl-strip.blur .sl-sym,.sl-cell.roll .sl-sym{filter:none;transform:none}
