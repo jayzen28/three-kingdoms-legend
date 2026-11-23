@@ -26,11 +26,12 @@
     var shown = own.filter(function (c) { return (flt.ff === "全部" || c.fac === flt.ff) && (flt.ft === "全部" || c.typ === flt.ft); }).sort(function (a, b) { return rk(b) - rk(a); });
     var chips = function (attr, cur, arr) { return arr.map(function (v) { return '<button class="chip' + (v === cur ? ' on' : '') + '" data-' + attr + '="' + v + '">' + v + '</button>'; }).join(""); };
     var slots = ""; for (var k = 0; k < M.ROSTER_MAX; k++) { var pc = pick[k] && SG.GEN[pick[k]]; slots += pc ? '<button class="sl-pk" data-g="' + pc.gen + '"><span class="hd" style="--fc:' + FC[FV[pc.fac]] + '"><img src="img/' + pc.art + '_head.webp" alt=""></span><b>' + pc.gen + '</b><small>' + SG.TYPES[pc.typ].name + '</small></button>' : '<span class="sl-pk empty"><span class="hd"></span><b>空位</b><small>&nbsp;</small></span>'; }
-    var nm = M.genMap(d.stage || 1); if (nm.art) img("img/slot/" + nm.art + ".webp?v=1");   // 先把這一關的手繪地圖載進來
+    var nm = M.genMap(d.stage || 1); if (nm.art) img("img/slot/" + nm.art + ".webp?v=2");   // 先把這一關的手繪地圖載進來
     $("#s-slot").innerHTML = UI.strip("st-slot", "烽火", "試玩版・拉霸守城，一關一關守下去") +
       '<div class="paper sl-lobby">' +
       '<div class="sl-stage"><div><small>目前關卡</small><b>第 ' + d.stage + ' 關</b><small>最高紀錄：第 ' + (d.top || 0) + ' 關</small></div>' +
       '<button class="plaq sl-start" id="sl-start"' + (pick.length ? '' : ' disabled') + '><span>出征</span></button></div>' +
+      '<div class="sl-foes">本關敵軍：' + M.kinds(d.stage).map(function (k) { return M.ENEMY[k].name.replace("黃巾", ""); }).join("、") + (d.stage <= M.UNLOCK.length ? '<small>（' + (d.stage === 1 ? '第 1 關只有一種兵，之後每關多一種' : '這一關新增「' + M.ENEMY[M.UNLOCK[d.stage - 1]].name + '」') + '）</small>' : '') + '</div>' +
       '<div class="sl-sec">出征名單 <small>' + pick.length + ' / ' + M.ROSTER_MAX + '・點頭像移出</small></div>' +
       '<div class="sl-picks">' + slots + '</div><div class="sl-tips">' + tips + '</div>' +
       '<div class="filters sl-flt"><div><span>陣營</span>' + chips("ff", flt.ff, ["全部"].concat(SG.FACS)) + '</div><div><span>兵種</span>' + chips("ft", flt.ft, ["全部", "槍", "騎", "弓", "刺", "法"]) + '</div></div>' +
@@ -42,6 +43,7 @@
       '<p>試玩版：只開放這 10 位武將，不管有沒有抽到都能選。同兵種的武將一樣強，差別在特技；強弱靠拉霸升星跟特技。</p>' +
       '<p>特技：武將每出手一次就集一點氣，集滿自動放（地圖左下角可以切成手動，集滿後點那位武將）。' + own.map(function (c) { var k = M.SKILL[c.gen]; return k ? '<br><b>' + c.gen + '「' + k.name + '」</b>（' + k.kind + '）' + k.desc : ''; }).join("") + '</p>' +
       '<p>武將不會倒下。敵將會放招：「遲緩」讓武將攻速減半，「麻痹」讓武將暫時不能出手；血量被打到一半時會放大招（張寶「妖術迷陣」、張角「黃天當立」），之後每隔一陣子再放一次。</p>' +
+      '<p>敵軍：第 1 關只有槍兵，之後每過一關多一種。' + M.UNLOCK.map(function (k) { return '<br><b>' + M.ENEMY[k].name + '</b>：' + M.ENEMY[k].tip; }).join("") + '</p>' +
       '<p>兵種：槍兵擋路、連出「石」在自己前面落石；弓兵連出「火」射火箭；法師連出「雷」落雷；騎兵打小兵傷害 ×' + M.CAV_MINION + '；刺客出手快一倍、先打敵將，打敵將傷害 ×' + M.SIN_BOSS + '。</p>' +
       '<p>一局大約 3 分鐘，地圖右下角的「×2」可以加速。每一局會有一位沒出征的武將在「三令齊發」時前來助陣（50% 再來第二位）。</p><div class="sl-syms">' + M.SYM.map(function (s) { return '<span><img src="img/slot/sym_' + SYMF[s] + '.webp?v=2" alt="' + s + '">' + SYMD[s] + '</span>'; }).join("") + '<span><img src="img/slot/sym_frame.webp?v=2" alt="">武將頭像：上陣／升星</span></div></details>' +
       '<div class="sl-sec">守城榜 <small>前 20 名・' + P.esc(P.name()) + ' <button class="sm plain" id="sl-rename">改名</button></small></div><div id="sl-lb">' + P.boardHtml("slot", lbData) + '</div></div>';
@@ -123,9 +125,18 @@
   // ✅ Jay 2026-11-23：提示改由下方的軍師（諸葛亮）說，不蓋在地圖上
   // ✅ Jay 2026-11-23：軍師要會說教學跟建議的話。操作回饋（tip）顯示幾秒後，回到依戰況挑的建議（advise）
   var tipAt = 0, advT = 0, advS = "", advI = 0;
-  function tip(t) { tipT = t || ""; tipAt = performance.now(); var e = $("#sl-tip"); if (e) e.textContent = tipT || advise(true); }
+  function tip(t, hold) { tipT = t || ""; tipAt = performance.now() + (hold || 0); var e = $("#sl-tip"); if (e) e.textContent = tipT || advise(true); }
   var ADV = [
+    "槍兵放在金框「要衝」最穩：每條路的敵軍都會經過，她一次能擋 3 個。",
     "連出武將頭像：還沒上陣的會上陣，已上陣的升星，特技也跟著變強。",
+    "拉出「石」時，槍兵會在面前丟下落石，擋住來兵一段時間；同時兩條「石」就丟兩顆。",
+    "落石連敵將都擋得住。敵將快到城門時，一顆石頭可以多爭取好幾秒。",
+    "「火」要有弓兵、「雷」要有法師、「石」要有槍兵。出征時三種都帶，連線才不會浪費。",
+    "法師一次打一片，放在敵軍會擠在一起的路口最划算。",
+    "弓兵射程最遠，放在兩條路中間，兩邊都打得到。",
+    "刺客擋不了路，但出手最快、打敵將加倍；放在敵將會經過的路旁。",
+    "軍糧別一直存著：越早拉出武將上陣、升星，後面越輕鬆。",
+    "城門被打掉可以花 " + M.REPAIR_COST + " 軍糧修回來，最多修到 3。",
     "武將每出手一次就集一點氣，頭像外圈轉滿就會放特技。",
     "「風」讓全軍攻速變 3 倍，集氣也跟著變快。",
     "騎兵打小兵傷害 ×1.5，刺客打敵將 ×2。敵將來了，刺客最有用。",
@@ -139,8 +150,11 @@
     var now = performance.now(); if (!force && now - advT < 600) return advS;
     var out = "", hi = false, sc = M.spinCost ? M.spinCost(G) : M.SPIN_COST;
     if (G.phase === "deploy") {
-      out = !G.gens.length ? "主公，先佈陣：點上面的武將，再點地圖上的營寨。金框「要衝」每條路都會經過。"
-        : G.deployLeft > 0 ? "還可以再放 " + G.deployLeft + " 位。槍兵放路口擋路，弓兵、法師放後面。" : "佈陣完成，按「開戰」。其他武將要靠拉霸連線才會上陣。";
+      var spR = G.reserve.find(function (r) { return r.c.typ === "槍"; }), keyFree = M.KEY.some(function (si) { return M.slotFree(G, si); });
+      var spK = G.gens.some(function (g) { return g.c.typ === "槍" && M.KEY.indexOf(g.slot) >= 0; });
+      out = !G.gens.length ? "主公，先佈陣：點上面的武將，再點地圖上的營寨。" + (spR ? "建議先把槍兵「" + spR.c.gen + "」放在金框「要衝」：每條路都會經過，她一次能擋 3 個。" : "金框「要衝」每條路都會經過。")
+        : G.deployLeft > 0 ? "還可以再放 " + G.deployLeft + " 位。" + (spR && keyFree && !spK ? "槍兵「" + spR.c.gen + "」放金框「要衝」最好；" : "") + "弓兵、法師打得遠，放在兩條路中間或後面。"
+        : "佈陣完成，按「開戰」。其他武將要靠拉霸連出她的頭像才會上陣。";
       hi = true;
     } else if (G.phase === "tactic") { out = "先鋒已退，選一張軍略。"; hi = true; }
     else {
@@ -231,6 +245,16 @@
       var c = SG.GEN[r.up || r.ready]; if (!c) return;
       cut.push({ art: c.art, name: c.gen, msg: r.up ? "升星 " + r.star + "★！" : r.star ? "待命・" + r.star + "★" : "出陣！" });
     });
+    var EXP = { "石": "落石！石頭會擋住來兵一段時間，敵軍得先把它打碎才能過，連敵將也會被擋住。", "火": "火箭！弓兵攻擊 +20%，被射中的敵軍還會持續著火。", "雷": "落雷！法師周圍的敵軍受到大傷害，並停頓 2 秒。", "風": "疾風！全軍攻速變 3 倍、持續 10 秒，集氣也跟著變快。" };
+    G._exp = G._exp || {};
+    res.some(function (r) {
+      var k = r.none ? "none" + r.sym : r.up ? "up" : r.ready ? "ready" : r.sym; if (r.jackpot || (G._exp[k] || 0) >= 2) return false; G._exp[k] = (G._exp[k] || 0) + 1;
+      if (r.none) tip("「" + r.sym + "」沒有效果：" + r.none + "。下次連出" + { "火": "弓兵", "雷": "法師", "石": "槍兵" }[r.sym] + "的頭像，先讓她上陣。", 1500);
+      else if (EXP[r.sym]) tip(EXP[r.sym], 1500);
+      else if (r.up) tip(r.up + "升到 " + r.star + "★：攻擊更高，特技也更痛。", 1000);
+      else return false;
+      return true;
+    });
     F.win($("#sl-grid"), $("#sl-field"), hits, { splash: splash, cut: cut });
     if (msg.length) showBan(msg.join("　"));
     renderRes();
@@ -256,6 +280,7 @@
       else if (f.kind === "boss") { showBan((f.big ? "大將 " : "先鋒大將 ") + f.name + " 出陣！", true); F.snd.gong(); }
       else if (f.kind === "gate") { shake = 1; F.snd.gate(); }
       else if (f.kind === "ready") renderRes();
+      else if (f.kind === "newenemy" && (G.seenK2 = G.seenK2 || {}) && !G.seenK2[f.k]) { G.seenK2[f.k] = 1; if (f.k !== "spear" || G.stage === 1) tip("敵軍「" + M.ENEMY[f.k].name + "」：" + M.ENEMY[f.k].tip, 2500); }
       else if (f.kind === "skill") { if (f.id === "zhouyu") F.snd.fire(); else if (f.id === "zhangfei") F.snd.rock(); else if (f.id === "simayi") F.snd.thunder(); else F.snd.whoosh(); }
       else if (f.kind === "bossult") { showBan(f.name + "「" + f.sk + "」！", true); shake = 1; F.snd.gong(); F.snd.thunder(); }
     });
@@ -347,7 +372,7 @@
   }
   // 手繪地圖：整張圖以 artK 倍畫在世界座標上（多出來的部分剛好填滿左右與下方的留白），鏡像關卡左右翻轉
   function buildArtBg() {
-    var map = M.MAP, am = img("img/slot/" + map.art + ".webp?v=1"), ready = !!(am.complete && am.naturalWidth);
+    var map = M.MAP, am = img("img/slot/" + map.art + ".webp?v=2"), ready = !!(am.complete && am.naturalWidth);
     var c0 = document.createElement("canvas"); c0.width = W * dpr; c0.height = H * dpr;
     var c = c0.getContext("2d"), s = view.s; c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.fillStyle = "#141a10"; c.fillRect(0, 0, W, H);
@@ -362,6 +387,7 @@
         c.save(); c.translate(x0 + (tx ? aw : 0), y0 + (ty ? ah : 0)); c.scale(tx ? -1 : 1, ty ? -1 : 1); c.drawImage(am, 0, 0, aw, ah); c.restore();
       }); });
       c.restore();
+      if (map.dim) { c.fillStyle = "rgba(14,24,52," + map.dim + ")"; c.fillRect(0, 0, W, H); }   // 雪地太亮，壓一點讓角色清楚
       var vg = c.createRadialGradient(W / 2, H * 0.45, Math.min(W, H) * 0.35, W / 2, H * 0.5, Math.max(W, H) * 0.8);
       vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,.38)"); c.fillStyle = vg; c.fillRect(0, 0, W, H);
     }
@@ -439,7 +465,8 @@
       var nm = (e.big ? "大將・" : "先鋒・") + e.name; c.strokeText(nm, x, y - bh * 0.9 - 9); c.fillText(nm, x, y - bh * 0.9 - 9);
       bar(c, x, y - bh * 0.9 - 6, 60 * s, e.hp / e.max, "#e05858");
     } else {
-      var im = img("img/slot/u_e_" + e.k + ".webp"), h = (e.k === "cav" ? 44 : e.k === "shield" ? 40 : 36) * s, w = im.naturalWidth ? h * im.naturalWidth / im.naturalHeight : h / 2;
+      var im = img("img/slot/u_e_" + e.k + ".webp"), h = ({ cav: 44, shield: 40, brute: 52, ram: 48, dash: 34 }[e.k] || 36) * s, w = im.naturalWidth ? h * im.naturalWidth / im.naturalHeight : h / 2;
+      if (e.k === "ram") bob = 0;
       c.fillStyle = "rgba(0,0,0,.35)"; c.beginPath(); c.ellipse(x, y + 2 * s, w * 0.32, 4 * s, 0, 0, 7); c.fill();
       if (im.complete && im.naturalWidth) c.drawImage(im, x - w / 2, y - h * 0.88 - bob, w, h);
       if (e.hp < e.max) bar(c, x, y - h * 0.9 - bob, Math.max(18 * s, w * 0.8), e.hp / e.max, "#e05858");
@@ -535,6 +562,9 @@
         else if (f.id === "huangzhong") { var ex = f.x2 + (f.x2 - f.x1) * 0.3, ey = f.y2 + (f.y2 - f.y1) * 0.3; c.strokeStyle = "#ffe27a"; c.lineWidth = 6; c.beginPath(); c.moveTo(sx, sy - 22 * s); c.lineTo(W2(f.x1), H2(f.y1) - 8 * s); c.lineTo(W2(ex), H2(ey) - 8 * s); c.stroke(); }
         else { c.strokeStyle = f.id === "lvbu" ? "#ff5a3a" : f.id === "simayi" ? "#b99bff" : f.id === "zhouyu" ? "#ff9a4a" : "#ffd36b"; c.lineWidth = 4; c.beginPath(); c.arc(sx, sy - 8 * s, (20 + ka * (f.id === "lvbu" ? 30 : 120)) * s, 0, 7); c.stroke(); }
         c.globalAlpha = 1;
+      } else if (f.kind === "heal" && age < 0.6) {
+        c.globalAlpha = 1 - age / 0.6; c.strokeStyle = "#7dff9a"; c.lineWidth = 2.5; c.beginPath(); c.arc(W2(f.x), H2(f.y) - 8 * s, (10 + age * 70) * s, 0, 7); c.stroke();
+        c.font = "800 " + Math.round(10 * s + 5) + "px sans-serif"; c.textAlign = "center"; c.fillStyle = "#7dff9a"; c.fillText("＋", W2(f.x), H2(f.y) - 34 * s - age * 14 * s); c.globalAlpha = 1;
       } else if (f.kind === "debuff" && age < 0.7) {
         c.globalAlpha = 1 - age / 0.7; c.strokeStyle = f.d === "stun" ? "#ffe066" : "#8fd0ff"; c.lineWidth = 3;
         for (var q = 0; q < 3; q++) { c.beginPath(); c.arc(W2(f.x), H2(f.y) - 20 * s, (10 + q * 9 + age * 14) * s, age * 6 + q, age * 6 + q + 2.2); c.stroke(); }

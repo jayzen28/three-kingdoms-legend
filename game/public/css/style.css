@@ -1647,3 +1647,4 @@ details.sl-how summary{font-family:var(--kai);font-weight:700;font-size:16px;col
 .sl-skb.man{border-color:#e05858}.sl-skb.man b{color:#ff9a8a}
 .sl-buff .m{box-shadow:inset 3px 0 0 #b99bff}.sl-buff .e{box-shadow:inset 3px 0 0 #e05858;color:#ffb4a8}
 #nav button{letter-spacing:0}
+.sl-foes{margin:8px 0 2px;font-size:13px;color:#e9dcb8}.sl-foes small{color:#a8966e;margin-left:4px}

@@ -47,7 +47,7 @@
 
   UI.go = function (name) {
     $$(".screen").forEach(function (s) { s.classList.toggle("show", s.id === "s-" + name); });
-    $$("#nav button").forEach(function (b) { b.classList.toggle("act", b.dataset.go === name); });
+    $$("#nav button").forEach(function (b) { b.classList.toggle("act", b.dataset.go === name || (name === "team" && b.dataset.go === "camp")); });   // 編隊在戰役裡面
     var full = name === "battle" || name === "duelb" || name === "slotb";   // 戰鬥畫面（戰棋、鬥將）不顯示上下列
     $("#nav").style.display = full ? "none" : "";
     $("#top").style.display = full ? "none" : "";
@@ -374,7 +374,6 @@
       '<button class="orb" id="h-task"><img src="img/ui_ic_task.webp" alt=""><span>每日任務</span>' + (canClaim ? '<i class="badge"></i>' : '') + '</button>' +
       '<button class="orb" id="h-rec"><img src="img/ui_ic_tea.webp" alt=""><span>茶館招募</span></button>' +
       '<button class="orb" id="h-book"><img src="img/ui_ic_book.webp" alt=""><span>收集冊</span></button>' +
-      '<button class="orb sl-orb" id="h-slot"><b>烽</b><span>烽火</span></button>' +
       '<button class="orb gear" id="h-set"><b>設</b><span>設定</span></button></div>' +
       '<div class="go">' + stat + '<button class="plaq" id="h-go"><span>出戰</span></button>' +
       '<div class="nxt">' + (next ? '下一戰　' + next.id + '　' + next.name : '第一章已全數通關') + '</div></div>' +
@@ -387,7 +386,6 @@
     $("#h-task").onclick = UI.tasks;
     $("#h-rec").onclick = function () { UI.go("recruit"); };
     $("#h-book").onclick = function () { UI.go("book"); };
-    $("#h-slot").onclick = function () { UI.go("slot"); };
     $("#h-set").onclick = function () {
       UI.modal('<h2>設定</h2><p class="dim">第一期試玩版：單機，進度存在這台裝置的瀏覽器。主城顯示的是隊伍第一位武將；元寶為測試用，到酒館可領。</p>' +
         '<div class="row end"><button class="sm plain" id="h-reset">重置進度</button><button onclick="SG.UI.close()">收起</button></div>');
@@ -421,7 +419,8 @@
     var charm = SG.teamCharm(S);
     var html = UI.strip("st-camp", "黃巾之亂", "第一章・教學章節，首次通關送銅錢與茶館抽券") +
       '<div class="paper"><div class="trio"><span>隊伍平均魅力<b>' + Math.round(charm) + '</b></span><span>招降率<b>' + pct(charm * SG.F.REC) + '</b></span><span>已招降<b>' + (S.recruited || 0) + '</b></span></div>' +
-      '<div class="dim" style="margin-top:4px">每打倒一名有名字的敵將，照招降率擲一次；成功就得到她的 N 卡。</div></div><div class="paper flush">';
+      '<div class="dim" style="margin-top:4px">每打倒一名有名字的敵將，照招降率擲一次；成功就得到她的 N 卡。</div>' +
+      '<div class="row end" style="margin-top:10px"><span class="dim" style="flex:1">出戰隊伍 ' + S.team.length + ' / 10</span><button class="pri" id="camp-team">編隊</button></div></div><div class="paper flush">';
     var unlocked = true;
     SG.STAGES.forEach(function (st) {
       var done = !!S.cleared[st.id], can = unlocked;
@@ -434,6 +433,7 @@
     });
     $("#s-camp").innerHTML = html + '</div>';
     SG.Scene.banner($("#st-camp"), 21);
+    $("#camp-team").onclick = function () { UI.go("team"); };
     $$("[data-stage]").forEach(function (b) {
       b.onclick = function () {
         if (!S.team.length) return UI.flash("先到編隊選武將");
@@ -551,7 +551,7 @@
     }).join("");
     var charm = SG.teamCharm(S);
     $("#s-team").innerHTML = UI.strip("st-team", "點將布陣", "出戰 " + S.team.length + " / 10・同名武將只能一名") +
-      '<div class="row"><span class="dim grow">平均魅力 ' + Math.round(charm) + '，招降率 ' + pct(charm * SG.F.REC) + '</span><button class="gold" id="t-auto">一鍵最強</button></div>' +
+      '<div class="row"><span class="dim grow">平均魅力 ' + Math.round(charm) + '，招降率 ' + pct(charm * SG.F.REC) + '</span><button id="t-back">回戰役</button><button class="gold" id="t-auto">一鍵最強</button></div>' +
       '<div class="paper flush">' + (teamHtml || '<div class="li dim">還沒有武將</div>') + '</div>' +
       '<h2>可選武將 <small>' + pool.length + ' 位</small></h2>' +
       '<div class="filters"><div><span>排序</span>' + chips("so", so, ["戰力", "武力", "智力", "魅力", "卡別"]) + '</div>' +
@@ -561,6 +561,7 @@
     $$("[data-so]").forEach(function (b) { b.onclick = function () { UI.tSort = b.dataset.so; UI.r_team(); }; });
     $$("[data-ff]").forEach(function (b) { b.onclick = function () { UI.tFac = b.dataset.ff; UI.r_team(); }; });
     $$("[data-ft]").forEach(function (b) { b.onclick = function () { UI.tTyp = b.dataset.ft; UI.r_team(); }; });
+    $("#t-back").onclick = function () { UI.go("camp"); };
     $("#t-auto").onclick = function () { SG.autoTeam(S); UI.save(); UI.r_team(); };
     $$("#s-team [data-card]").forEach(function (row) {
       row.onclick = function (e) { if (e.target.tagName === "BUTTON") return; UI.cardDetail(SG.CARD_BY_ID[row.dataset.card]); };
