@@ -91,6 +91,7 @@
   M.JACK2 = 0.5; M.JACK3 = 0.01;   // 每一局：第一位必出，第二位 50%，第三位 1%
   M.JACK_AT = [5, 15]; M.JACK_GAP = [10, 30];   // ★ 第一次三令出現在第 5～15 轉之間，之後每次再隔 10～30 轉
   M.BOSS_CD = 3;
+  M.SIN_BOSS = 2; M.CAV_MINION = 1.5;   // ✅ Jay 2026-11-23：刺客打 Boss 攻擊 2 倍、騎兵打小兵 1.5 倍（★ 刺客原本的 30% 暴擊先保留，等 Jay 決定）
   M.WILD = 4; M.GEN0 = 5;
   M.FIRE_T = 10; M.FIRE_ATK = 1.2; M.BURN_P = 0.10; M.BURN_TICK = 1.5; M.BURN_T = 9;
   M.THUNDER_MUL = 3; M.STUN = 2;
@@ -294,7 +295,7 @@
       var m = ofType(G, "法"); if (!m.length) return { sym: sym, none: "場上沒有法師" };
       m.forEach(function (g) {
         var sp = M.SLOTS[g.slot], r = genRng(G, g), d = genAtk(G, g) * M.THUNDER_MUL;
-        G.fx.push({ t: G.t, kind: "thunder", x: sp[0], y: sp[1], r: r });
+        G.fx.push({ t: G.t, kind: "thunder", x: sp[0], y: sp[1], r: r }); G._src = "法";
         G.enemies.forEach(function (e) { if (Math.hypot(e.x - sp[0], e.y - sp[1]) <= r) { hurt(G, e, d, "thunder"); e.stun = Math.max(e.stun, M.STUN); } });
       });
       return { sym: sym, n: m.length };
@@ -349,7 +350,7 @@
     var d = genAtk(G, g) * M.ROCK_MUL, hp = genAtk(G, g) * M.ROCK_HP;
     G.rocks.push({ id: G.nid++, x: best.x, y: best.y, hp: hp, max: hp });
     G.fx.push({ t: G.t, kind: "rock", x: best.x, y: best.y, x0: sp[0], y0: sp[1] });
-    G.enemies.forEach(function (e) { if (Math.hypot(e.x - best.x, e.y - best.y) <= M.ROCK_R) hurt(G, e, d, "rock"); });
+    G._src = "槍"; G.enemies.forEach(function (e) { if (Math.hypot(e.x - best.x, e.y - best.y) <= M.ROCK_R) hurt(G, e, d, "rock"); });
   }
 
   M.repair = function (G) { if (G.over || G.lives >= M.LIVES || G.food < M.REPAIR_COST) return false; G.food -= M.REPAIR_COST; G.lives++; G.fx.push({ t: G.t, kind: "repair" }); return true; };
@@ -363,6 +364,7 @@
 
   function hurt(G, e, d, kind) {
     if (e.hp <= 0) return;
+    if (G.stat && G._src) { var k0 = G._src + (e.boss ? "B" : "M"); G.stat[k0] = (G.stat[k0] || 0) + Math.min(d, e.hp); }
     e.hp -= d; G.fx.push({ t: G.t, kind: "dmg", x: e.x, y: e.y, v: Math.round(d), c: kind });
     if (e.hp <= 0) { G.kills++; G.food += Math.round(e.food * (1 + 0.4 * (G.tac.food || 0))); G.fx.push({ t: G.t, kind: "die", x: e.x, y: e.y }); }
   }
@@ -382,7 +384,7 @@
     // 敵軍移動
     G.enemies.forEach(function (e) {
       if (e.hp <= 0) return;
-      if (e.burn > 0) { e.burn -= dt; e.burnTick -= dt; if (e.burnTick <= 0) { e.burnTick += M.BURN_TICK; hurt(G, e, e.burnD, "burn"); } }
+      if (e.burn > 0) { e.burn -= dt; e.burnTick -= dt; if (e.burnTick <= 0) { e.burnTick += M.BURN_TICK; G._src = "弓"; hurt(G, e, e.burnD, "burn"); } }
       if (e.hp <= 0) return;
       if (e.stun > 0) { e.stun -= dt; return; }
       // 被槍兵／騎兵攔下
@@ -437,7 +439,9 @@
       });
       if (!tgt) return;
       g.cd = genCd(G, g);
-      var d = genAtk(G, g), kind = "hit";
+      var d = genAtk(G, g), kind = "hit"; G._src = g.c.typ;
+      if (g.c.typ === "刺" && tgt.boss) d *= M.SIN_BOSS;
+      if (g.c.typ === "騎" && !tgt.boss) d *= M.CAV_MINION;
       if (T.crit && G.rnd() < T.crit) { d *= 2; kind = "crit"; }
       if (g.c.typ === "弓" && G.fireT > 0) {
         d *= M.FIRE_ATK; kind = "fire";

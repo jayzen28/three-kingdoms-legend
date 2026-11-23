@@ -1467,8 +1467,8 @@ body[data-scr=slotb]{padding-bottom:0}
 .sl-grid.tease2 .sl-reel:not(:nth-child(3)) .sl-sym.wild{animation:slWildGlow .3s infinite alternate}
 @keyframes slTease{to{filter:brightness(1.35)}}
 @keyframes slTease2{to{filter:brightness(1.6) saturate(1.3)}}
-@keyframes slWildGlow{to{box-shadow:inset 0 0 0 3px #ffdf8a,0 0 14px #ff3b2a;filter:brightness(1.4)}}
-.sl-sym.wild{box-shadow:inset 0 0 0 2px rgba(255,223,138,.7)}
+@keyframes slWildGlow{to{filter:brightness(1.5) drop-shadow(0 0 10px #ff3b2a)}}
+.sl-sym.wild img{filter:drop-shadow(0 0 5px rgba(255,120,40,.9))}
 .sl-beams{position:absolute;inset:5px;width:calc(100% - 10px);height:calc(100% - 10px);pointer-events:none;z-index:2}
 .sl-beams .beam{stroke:#ffe9a8;stroke-width:7;stroke-linecap:round;filter:drop-shadow(0 0 4px #ffb02e) drop-shadow(0 0 10px #ff8a00);stroke-dasharray:400;stroke-dashoffset:400;animation:slBeam .45s ease-out forwards,slBeamP .5s .45s ease-in-out 3 alternate}
 @keyframes slBeam{to{stroke-dashoffset:0}}
@@ -1493,35 +1493,46 @@ body[data-scr=slotb]{padding-bottom:0}
 .sl-sp.sp-rock::before{content:"石";position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--kai);font-size:120px;color:#e0d2b6;text-shadow:0 6px 0 #4a3b28,0 0 20px #000;animation:slSpR 1.2s cubic-bezier(.5,0,.8,.4) forwards}
 @keyframes slSpR{0%{transform:translate(-50%,-260%) scale(1.3);opacity:1}35%{transform:translate(-50%,-50%) scale(1);opacity:1}45%{transform:translate(-50%,-46%) scale(1.05,.92)}100%{transform:translate(-50%,-50%);opacity:0}}
 @keyframes slSpTxt{0%{transform:translate(-50%,-50%) scale(1.8);opacity:0}20%{transform:translate(-50%,-50%) scale(1);opacity:1}70%{opacity:1}100%{transform:translate(-50%,-50%) scale(1.1);opacity:0}}
-.sl-cut{position:absolute;left:0;right:0;top:12%;height:52%;z-index:7;pointer-events:none;display:flex;align-items:center;overflow:hidden;
-  background:linear-gradient(100deg,transparent 0,rgba(7,6,10,.85) 12%,rgba(60,14,10,.85) 50%,rgba(7,6,10,.85) 88%,transparent);border-top:2px solid #d4a853;border-bottom:2px solid #d4a853;animation:slCutIn .3s ease-out}
-.sl-cut img{height:150%;margin-left:-4%;object-fit:contain;filter:drop-shadow(0 0 12px rgba(255,200,90,.6));animation:slCutImg 1.4s ease-out forwards}
-.sl-cut .txt{display:flex;flex-direction:column;margin-left:auto;margin-right:6%;text-align:right;animation:slCutTxt .5s .15s ease-out both}
+.sl-cut{position:absolute;left:0;right:0;top:10%;height:56%;z-index:7;pointer-events:none;overflow:hidden;
+  background:linear-gradient(100deg,rgba(7,6,10,.9),rgba(70,16,10,.9) 50%,rgba(7,6,10,.9));border-top:2px solid #d4a853;border-bottom:2px solid #d4a853;animation:slCutIn .3s ease-out}
+.sl-cut .art{position:absolute;left:0;top:0;bottom:0;width:58%;overflow:hidden;animation:slCutImg .9s cubic-bezier(.2,.9,.3,1) both;
+  -webkit-mask-image:linear-gradient(90deg,#000 78%,transparent);mask-image:linear-gradient(90deg,#000 78%,transparent)}
+.sl-cut .art img,.sl-cut .art canvas{width:100%;height:100%;object-fit:cover;object-position:50% 0;display:block}
+.sl-cut .txt{position:absolute;right:5%;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;text-align:right;animation:slCutTxt .5s .15s ease-out both}
 .sl-cut .txt b{font-family:var(--kai);font-size:40px;color:#fff1d2;text-shadow:0 0 12px #ff9a1a,0 3px 0 #5a120d}
 .sl-cut .txt span{font-family:var(--kai);font-size:24px;color:#ecd391}
 .sl-cut.out{animation:slCutOut .4s ease-in forwards}
 @keyframes slCutIn{from{transform:scaleY(0)}}
-@keyframes slCutImg{from{transform:translateX(-40%)}to{transform:translateX(4%)}}
-@keyframes slCutTxt{from{transform:translateX(40%);opacity:0}}
+@keyframes slCutImg{from{transform:translateX(-45%)}}
+@keyframes slCutTxt{from{transform:translate(40%,-50%);opacity:0}}
 @keyframes slCutOut{to{transform:scaleY(0);opacity:0}}
-.sl-jack{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;background:rgba(4,3,6,.88);animation:slJkBg .4s ease-out;cursor:pointer;overflow:hidden}
-.sl-jk-title{position:absolute;top:3%;left:0;right:0;text-align:center;font-family:var(--kai);font-weight:700;font-size:clamp(52px,14vw,96px);color:#ffe39a;letter-spacing:.08em;
-  text-shadow:0 0 22px #ff6a1a,0 4px 0 #4a1006;clip-path:inset(0 100% 0 0);animation:slBrush 1s .2s cubic-bezier(.6,.1,.3,1) forwards;z-index:3}
-@keyframes slBrush{to{clip-path:inset(0 0 0 0)}}
-.sl-jk-pillar{position:absolute;left:50%;top:0;bottom:0;width:60%;transform:translateX(-50%) scaleX(0);background:linear-gradient(90deg,transparent,rgba(255,220,140,.55),rgba(255,255,230,.9),rgba(255,220,140,.55),transparent);filter:blur(6px);animation:slPillar 1.4s .7s ease-out forwards}
-@keyframes slPillar{0%{transform:translateX(-50%) scaleX(0);opacity:1}40%{transform:translateX(-50%) scaleX(1);opacity:1}100%{transform:translateX(-50%) scaleX(.6);opacity:.35}}
-.sl-jk-card{position:absolute;bottom:7%;left:calc(50% + (var(--i) - (var(--n) - 1) / 2) * 34%);transform:translateX(-50%);width:min(72vw,340px);height:56%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;opacity:0;animation:slJkCard .7s calc(1.2s + var(--i) * .35s) cubic-bezier(.2,1.4,.4,1) forwards;z-index:2}
-.sl-jk-card img{width:100%;flex:1;min-height:0;object-fit:contain;object-position:bottom;filter:drop-shadow(0 0 20px rgba(255,200,90,.8))}
-.sl-jk-name{display:flex;align-items:center;gap:8px;margin-top:-8%;padding:6px 16px;background:linear-gradient(90deg,transparent,rgba(60,14,10,.95),transparent);border-top:1px solid #d4a853;border-bottom:1px solid #d4a853}
-.sl-jk-name b{font-family:var(--kai);font-size:30px;color:#fff1d2;text-shadow:0 2px 0 #5a120d}
+.sl-jack{position:fixed;inset:0;z-index:70;background:#050306;animation:slJkBg .4s ease-out;cursor:pointer;overflow:hidden}
+.sl-jk-rays{position:absolute;left:50%;top:34%;width:220vmax;height:220vmax;transform:translate(-50%,-50%);opacity:.5;
+  background:repeating-conic-gradient(from 0deg,rgba(255,200,90,.0) 0 7deg,rgba(255,200,90,.34) 7deg 10deg);animation:slRays 14s linear infinite}
+@keyframes slRays{to{transform:translate(-50%,-50%) rotate(360deg)}}
+.sl-jk-art{position:absolute;left:0;right:0;top:1%;height:71%;opacity:0;animation:slJkArt .7s 1.1s cubic-bezier(.2,1.3,.4,1) forwards;
+  -webkit-mask-image:linear-gradient(#000 90%,transparent);mask-image:linear-gradient(#000 90%,transparent)}
+.sl-jk-art img,.sl-jk-art canvas{width:100%;height:100%;object-fit:contain;object-position:50% 100%;display:block;filter:drop-shadow(0 0 22px rgba(255,200,90,.75))}
+@keyframes slJkArt{from{opacity:0;transform:scale(1.25)}to{opacity:1;transform:none}}
+.sl-jk-pillar{position:absolute;left:50%;top:0;bottom:0;width:70%;transform:translateX(-50%) scaleX(0);background:linear-gradient(90deg,transparent,rgba(255,220,140,.55),rgba(255,255,230,.95),rgba(255,220,140,.55),transparent);filter:blur(6px);animation:slPillar 1.3s .6s ease-out forwards;pointer-events:none}
+@keyframes slPillar{0%{transform:translateX(-50%) scaleX(0);opacity:1}45%{transform:translateX(-50%) scaleX(1);opacity:1}100%{transform:translateX(-50%) scaleX(.5);opacity:0}}
+.sl-jk-name{position:absolute;left:0;right:0;top:70%;display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 16px;opacity:0;animation:slJkUp .5s 1.5s ease-out forwards;
+  background:linear-gradient(90deg,transparent,rgba(60,14,10,.95) 30%,rgba(60,14,10,.95) 70%,transparent);border-top:1px solid #d4a853;border-bottom:1px solid #d4a853}
+.sl-jk-name b{font-family:var(--kai);font-size:32px;color:#fff1d2;text-shadow:0 2px 0 #5a120d}
 .sl-jk-name em{font-style:normal;font-weight:800;font-size:15px;padding:2px 6px;border-radius:3px;color:#1a1208;background:linear-gradient(#fff2b8,#d4a853)}
-.sl-jk-name em.r-UR{background:linear-gradient(90deg,#ff9ad5,#ffe39a,#9ad8ff);}
+.sl-jk-name em.r-UR{background:linear-gradient(90deg,#ff9ad5,#ffe39a,#9ad8ff)}
 .sl-jk-name small{font-size:12px;color:#fff;background:#c0392b;padding:2px 6px;border-radius:3px}
-.sl-jk-tap{position:absolute;bottom:2.5%;left:0;right:0;text-align:center;color:#d8cdb6;font-size:13px;opacity:0;z-index:3}
+@keyframes slJkUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.sl-jk-title{position:absolute;left:3%;right:3%;bottom:5%;height:17%;display:flex;align-items:center;justify-content:center;
+  clip-path:inset(0 100% 0 0);animation:slBrush .9s .15s cubic-bezier(.6,.1,.3,1) forwards,slTitleP 1.6s 1.1s ease-in-out infinite alternate}
+.sl-jk-title img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.sl-jk-title.txt{font-family:var(--kai);font-weight:700;font-size:clamp(56px,17vw,104px);color:#ffe39a;letter-spacing:.06em;text-shadow:0 0 22px #ff6a1a,0 5px 0 #4a1006;line-height:1}
+@keyframes slBrush{to{clip-path:inset(0 0 0 0)}}
+@keyframes slTitleP{to{filter:brightness(1.25) drop-shadow(0 0 14px rgba(255,140,40,.9))}}
+.sl-jk-tap{position:absolute;bottom:1.2%;left:0;right:0;text-align:center;color:#d8cdb6;font-size:13px;opacity:0;z-index:3}
 .sl-jack.tap .sl-jk-tap{opacity:.8;animation:slReady 1.2s ease-in-out infinite}
 .sl-jack.out{opacity:0;transition:opacity .3s}
 @keyframes slJkBg{from{background:rgba(255,240,200,.9)}}
-@keyframes slJkCard{from{opacity:0;transform:translateX(-50%) translateY(30%) scale(.7)}to{opacity:1;transform:translateX(-50%)}}
 .sl-cell{aspect-ratio:1;background:#1c1512;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(212,168,83,.25)}
 .sl-sym{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--kai);font-weight:700;font-size:26px;color:#fff;
   background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--sc) 85%,#fff 15%),color-mix(in srgb,var(--sc) 55%,#000 45%));text-shadow:0 2px 0 rgba(0,0,0,.5)}
@@ -1546,7 +1557,9 @@ body[data-scr=slotb]{padding-bottom:0}
 .sl-rc{position:relative}.sl-rc em{position:absolute;top:-4px;left:50%;transform:translateX(-50%);font-style:normal;font-size:9px;padding:0 3px;background:#c0392b;color:#fff;white-space:nowrap}
 
 /* 拉霸守城：關卡＋排行榜（Jay 2026-11-23） */
-.sl-stage{display:flex;flex-direction:column;align-items:center;padding:8px 0 10px;margin-bottom:8px;border-bottom:1px solid rgba(212,168,83,.3)}
+.sl-stage{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0 10px;border-bottom:1px solid rgba(212,168,83,.3)}
+.sl-stage>div{display:flex;flex-direction:column}
+.sl-stage .sl-start{width:min(48%,200px);align-self:auto;flex:0 0 auto}.sl-stage .sl-start span{font-size:24px}
 .sl-stage b{font-family:var(--kai);font-size:34px;color:#ecd391;text-shadow:0 2px 0 #3a1a08;line-height:1.2}
 .sl-stage small{font-size:12px;color:#b8ab92}
 .lb-box{display:flex;flex-direction:column;gap:3px;padding:4px 0}
@@ -1560,3 +1573,47 @@ body[data-scr=slotb]{padding-bottom:0}
 .lb-gap{text-align:center;color:#8a96aa;line-height:1}
 .du-rank{font-family:var(--kai);color:#ecd391}
 #pf-name{width:auto}
+
+/* 拉霸守城大廳：名單列、篩選、可捲動的武將清單（Jay 2026-11-23） */
+.sl-picks{display:grid;grid-template-columns:repeat(5,1fr);gap:4px}
+.sl-pk{display:flex;flex-direction:column;align-items:center;gap:1px;padding:2px 0;background:none;border:0;box-shadow:none;color:#f0e8d8;font-size:12px}
+.sl-pk .hd{width:52px;height:52px;border-radius:50%;box-shadow:0 0 0 2px #ecd391,0 0 10px rgba(236,211,145,.45);background:#1c1512;overflow:hidden}
+.sl-pk .hd img{width:100%;height:100%;object-fit:cover;display:block}
+.sl-pk small{font-size:10px;color:#a89f8f}
+.sl-pk.empty{opacity:.45}.sl-pk.empty .hd{box-shadow:inset 0 0 0 2px rgba(212,168,83,.5);border-style:dashed}
+.sl-flt span{color:#b8ab92}
+.sl-own{max-height:44vh;overflow-y:auto;padding:6px 2px;background:rgba(0,0,0,.25);border-radius:3px;-webkit-overflow-scrolling:touch}
+details.sl-how summary{font-family:var(--kai);font-weight:700;font-size:16px;color:#ecd391;cursor:pointer;padding:4px 0}
+
+/* 拉霸符號改用圖片＋雕龍金框，機台整體鎏金（Jay 2026-11-23） */
+.sl-syms img{width:30px;height:30px;flex:0 0 auto}
+.sl-cell{background:radial-gradient(circle at 50% 40%,#2a1410,#0d0807);box-shadow:none}
+.sl-sym.pic,.sl-sym.gen{position:relative;background:none;text-shadow:none}
+.sl-sym.pic img{width:100%;height:100%;object-fit:contain;display:block}
+.sl-sym.gen .hd{position:absolute;left:13%;top:13%;width:74%;height:74%;border-radius:50%;object-fit:cover}
+.sl-sym.gen .fr{position:absolute;inset:0;width:100%;height:100%}
+.sl-cell.hit{box-shadow:none;animation:slHit2 .5s ease-out 3}
+@keyframes slHit2{50%{filter:brightness(1.6) drop-shadow(0 0 8px #ffd36b);transform:scale(1.08)}}
+.sl-grid{--cs:calc((min(52vw,214px) - 26px) / 3);width:min(52vw,214px);padding:9px;border-radius:10px;
+  background:linear-gradient(#3a0d0a,#170605);
+  box-shadow:inset 0 0 0 2px #5a120d,inset 0 0 0 3px #f6dc8f,inset 0 0 14px rgba(0,0,0,.9),0 0 0 2px #7a5a1e,0 0 0 4px #e9c46a,0 0 0 6px #6a4a14,0 6px 18px rgba(0,0,0,.7),0 0 22px rgba(233,196,106,.25)}
+.sl-grid::before{content:"";position:absolute;left:14%;right:14%;top:-9px;height:10px;border-radius:6px 6px 0 0;background:linear-gradient(#fff0b8,#c8962e 60%,#7a5a1e);box-shadow:0 0 8px rgba(255,215,120,.6)}
+.sl-reel{background:linear-gradient(#0c0706,#1c0d0a 50%,#0c0706);border-radius:5px;box-shadow:inset 0 0 0 1px rgba(233,196,106,.45),inset 0 12px 12px -6px rgba(0,0,0,.95),inset 0 -12px 12px -6px rgba(0,0,0,.95)}
+.sl-beams{inset:9px;width:calc(100% - 18px);height:calc(100% - 18px)}
+.sl-bot{background:linear-gradient(#1c0b09,#0c0606);border-top:2px solid #d4a853;box-shadow:inset 0 3px 0 rgba(255,225,150,.18),inset 0 10px 24px rgba(120,20,12,.35)}
+.sl-spin{box-shadow:0 0 0 3px #7a5a1e,0 0 0 5px #f1d68a,0 0 0 7px #6a4a14,0 6px 14px rgba(0,0,0,.7),inset 0 3px 6px rgba(255,255,255,.35),inset 0 -8px 12px rgba(60,0,0,.6)}
+
+/* 拉霸效果圖（Gemini 生成，Jay 2026-11-23） */
+.sl-sp{display:flex;align-items:center;justify-content:center;overflow:hidden}
+.sl-sp::before{content:none!important}
+.sl-sp img{width:min(112%,480px);max-width:none;flex:0 0 auto;will-change:transform,opacity}
+.sl-sp.sp-fire{background:radial-gradient(ellipse at 40% 80%,rgba(255,110,30,.5),transparent 70%)}
+.sl-sp.sp-fire img{animation:slFxFire 1.4s ease-out forwards}
+@keyframes slFxFire{0%{transform:translate(-35%,35%) scale(.4);opacity:0}18%{transform:translate(0,0) scale(1);opacity:1}70%{transform:translate(6%,-6%) scale(1.25);opacity:1}100%{transform:translate(12%,-12%) scale(1.45);opacity:0}}
+.sl-sp.sp-thunder img{transform-origin:50% 0;animation:slFxThunder 1.3s linear forwards}
+@keyframes slFxThunder{0%{transform:scaleY(0);opacity:1}8%{transform:scaleY(1.05);opacity:1}14%{opacity:.25}20%{opacity:1;transform:scale(1.12)}30%{opacity:.4}38%{opacity:1}75%{opacity:.9;transform:scale(1.18)}100%{opacity:0;transform:scale(1.25)}}
+.sl-sp.sp-wind{background:linear-gradient(100deg,transparent,rgba(120,255,190,.18),transparent)}
+.sl-sp.sp-wind img{animation:slFxWind 1.4s ease-in-out forwards}
+@keyframes slFxWind{0%{transform:translateX(-90%) scale(.8) rotate(-12deg);opacity:0}25%{opacity:1}50%{transform:translateX(0) scale(1.2) rotate(4deg);opacity:1}100%{transform:translateX(95%) scale(.9) rotate(14deg);opacity:0}}
+.sl-sp.sp-rock img{animation:slFxRock 1.4s cubic-bezier(.6,0,.9,.5) forwards}
+@keyframes slFxRock{0%{transform:translateY(-110%) scale(.7);opacity:1}26%{transform:translateY(4%) scale(1.15);opacity:1}34%{transform:translateY(0) scale(1.05,.95)}80%{transform:translateY(0) scale(1.05);opacity:1}100%{transform:translateY(0) scale(1.1);opacity:0}}

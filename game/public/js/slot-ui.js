@@ -7,39 +7,51 @@
   var SYMC = { "火": "#e8742c", "雷": "#8f7bff", "風": "#4ec87a", "石": "#9a8a74", "令": "#c0392b" };
   var SYMD = { "火": "弓兵射火箭", "雷": "法師落雷", "風": "全軍攻速", "石": "槍兵落石", "令": "萬用・三令請名將" };
   var SPL = { "火": "fire", "雷": "thunder", "風": "wind", "石": "rock" };
+  var SYMF = { "火": "fire", "雷": "thunder", "風": "wind", "石": "rock", "令": "ling" };   // ✅ Jay 2026-11-23：符號改用圖片（Gemini 生成），每格都有雕龍金框
   function S() { return SG._state; }
   var IMG = {};
   function img(src) { if (!IMG[src]) { var i = new Image(); i.src = src; IMG[src] = i; } return IMG[src]; }
   var G = null;
   M.cur = function () { return G; };   // 測試用
 
-  // ===== 大廳：關卡、出征名單、守城榜 =====
-  var pick = null, lbData = null;
+  // ===== 大廳：關卡、出征名單（可篩選）、守城榜 =====
+  // ✅ Jay 2026-11-23：選武將要有篩選器；出征按鈕放最上面，不用滑到底
+  var pick = null, lbData = null, flt = { ff: "全部", ft: "全部" };
   UI.r_slot = function () {
     var st = S(), d = M.data(st), own = M.owned(st);
     if (!pick) pick = M.defaultList(st).map(function (c) { return c.gen; });
     var cnt = {}; pick.forEach(function (n) { var c = SG.GEN[n]; if (c) cnt[c.typ] = (cnt[c.typ] || 0) + 1; });
     var tips = [["弓", "火"], ["法", "雷"], ["槍", "石"]].map(function (x) { return '<span class="' + (cnt[x[0]] ? "" : "off") + '">「' + x[1] + '」要有' + SG.TYPES[x[0]].name + '</span>'; }).join("");
+    var rk = function (c) { var b = SG.best(st, c.id); return b ? SG.RAR.indexOf(b.rar) * 10 + (b.star || 1) : -1; };
+    var shown = own.filter(function (c) { return (flt.ff === "全部" || c.fac === flt.ff) && (flt.ft === "全部" || c.typ === flt.ft); }).sort(function (a, b) { return rk(b) - rk(a); });
+    var chips = function (attr, cur, arr) { return arr.map(function (v) { return '<button class="chip' + (v === cur ? ' on' : '') + '" data-' + attr + '="' + v + '">' + v + '</button>'; }).join(""); };
+    var slots = ""; for (var k = 0; k < M.ROSTER_MAX; k++) { var pc = pick[k] && SG.GEN[pick[k]]; slots += pc ? '<button class="sl-pk" data-g="' + pc.gen + '"><span class="hd" style="--fc:' + FC[FV[pc.fac]] + '"><img src="img/' + pc.art + '_head.webp" alt=""></span><b>' + pc.gen + '</b><small>' + SG.TYPES[pc.typ].name + '</small></button>' : '<span class="sl-pk empty"><span class="hd"></span><b>空位</b><small>&nbsp;</small></span>'; }
     $("#s-slot").innerHTML = UI.strip("st-slot", "拉霸守城", "測試版・一關一關守下去") +
       '<div class="paper sl-lobby">' +
-      '<div class="sl-stage"><small>目前關卡</small><b>第 ' + d.stage + ' 關</b><small>最高紀錄：第 ' + (d.top || 0) + ' 關</small></div>' +
-      '<div class="sl-how"><b>玩法</b><p>黃巾軍分「敵軍先鋒」（張寶領軍）與「敵軍本陣」（張角親征），從五個入口殺向城門；城門被打到三次就失守。守住就過關，下一關敵軍更強。開戰前先把 ' + M.START_DEPLOY + ' 位武將放到營寨（金框「要衝」每條路都打得到）。出征的 ' + M.ROSTER_MAX + ' 位武將會出現在拉霸上，連成一線就上陣，已上陣的就升星。殺敵得軍糧，拉一次 ' + M.SPIN_COST + ' 軍糧。</p>' +
-      '<p>每一局必定有一位 UR／SSR 名將會在「三令齊發」時前來助陣（50% 再來第二位，1% 第三位），沒擁有的武將優先。</p><div class="sl-syms">' + M.SYM.map(function (s) { return '<span><i style="background:' + SYMC[s] + '">' + s + '</i>' + SYMD[s] + '</span>'; }).join("") + '<span><i style="background:#8a96aa">將</i>武將頭像：上陣／升星</span></div></div>' +
-      '<div class="sl-sec">出征名單 <small>' + pick.length + ' / ' + M.ROSTER_MAX + '・點武將加入或移出</small></div>' +
-      '<div class="sl-tips">' + tips + '</div>' +
-      '<div class="sl-own">' + own.map(function (c) {
+      '<div class="sl-stage"><div><small>目前關卡</small><b>第 ' + d.stage + ' 關</b><small>最高紀錄：第 ' + (d.top || 0) + ' 關</small></div>' +
+      '<button class="plaq sl-start" id="sl-start"' + (pick.length ? '' : ' disabled') + '><span>出征</span></button></div>' +
+      '<div class="sl-sec">出征名單 <small>' + pick.length + ' / ' + M.ROSTER_MAX + '・點頭像移出</small></div>' +
+      '<div class="sl-picks">' + slots + '</div><div class="sl-tips">' + tips + '</div>' +
+      '<div class="filters sl-flt"><div><span>陣營</span>' + chips("ff", flt.ff, ["全部"].concat(SG.FACS)) + '</div><div><span>兵種</span>' + chips("ft", flt.ft, ["全部", "槍", "騎", "弓", "刺", "法"]) + '</div></div>' +
+      '<div class="sl-own" id="sl-own">' + (shown.map(function (c) {
         var i = pick.indexOf(c.gen), b = SG.best(st, c.id);
-        return '<button class="sl-oc' + (i >= 0 ? ' on' : '') + '" data-g="' + c.gen + '"><span class="hd" style="--fc:' + FC[FV[c.fac]] + '"><img src="img/' + c.art + '_head.webp" alt="">' + (i >= 0 ? '<em>' + (i + 1) + '</em>' : '') + '</span><b>' + c.gen + '</b><small>' + SG.TYPES[c.typ].name + (b ? '・' + b.rar : '') + '</small></button>';
-      }).join("") + '</div>' +
-      '<button class="plaq sl-start" id="sl-start"' + (pick.length ? '' : ' disabled') + '><span>出征 第 ' + d.stage + ' 關</span></button>' +
+        return '<button class="sl-oc' + (i >= 0 ? ' on' : '') + '" data-g="' + c.gen + '"><span class="hd" style="--fc:' + FC[FV[c.fac]] + '"><img loading="lazy" src="img/' + c.art + '_head.webp" alt="">' + (i >= 0 ? '<em>' + (i + 1) + '</em>' : '') + '</span><b>' + c.gen + '</b><small>' + SG.TYPES[c.typ].name + (b ? '・' + b.rar : '') + '</small></button>';
+      }).join("") || '<div class="dim">沒有符合的武將</div>') + '</div>' +
+      '<details class="sl-how"><summary>玩法說明</summary><p>黃巾軍分「敵軍先鋒」（張寶領軍）與「敵軍本陣」（張角親征），從五個入口殺向城門；城門被打到三次就失守。守住就過關，下一關敵軍更強。開戰前先把 ' + M.START_DEPLOY + ' 位武將放到營寨（金框「要衝」每條路都打得到）。出征的 ' + M.ROSTER_MAX + ' 位武將會出現在拉霸上，連成一線就上陣，已上陣的就升星。殺敵得軍糧，拉一次 ' + M.SPIN_COST + ' 軍糧。</p>' +
+      '<p>兵種：槍兵擋路、連出「石」落石；弓兵連出「火」射火箭；法師連出「雷」落雷；騎兵打小兵傷害 ×' + M.CAV_MINION + '；刺客打敵將傷害 ×' + M.SIN_BOSS + '。</p>' +
+      '<p>每一局必定有一位 UR／SSR 名將會在「三令齊發」時前來助陣（50% 再來第二位，1% 第三位），沒擁有的武將優先。</p><div class="sl-syms">' + M.SYM.map(function (s) { return '<span><img src="img/slot/sym_' + SYMF[s] + '.webp" alt="' + s + '">' + SYMD[s] + '</span>'; }).join("") + '<span><img src="img/slot/sym_frame.webp" alt="">武將頭像：上陣／升星</span></div></details>' +
       '<div class="sl-sec">守城榜 <small>前 20 名・' + P.esc(P.name()) + ' <button class="sm plain" id="sl-rename">改名</button></small></div><div id="sl-lb">' + P.boardHtml("slot", lbData) + '</div></div>';
+    var keep = function (fn) { var box = $("#sl-own"), y = box ? box.scrollTop : 0; fn(); UI.r_slot(); var nb = $("#sl-own"); if (nb) nb.scrollTop = y; };
     $$(".sl-oc").forEach(function (b) {
       b.onclick = function () {
         var n = b.dataset.g, i = pick.indexOf(n);
-        if (i >= 0) pick.splice(i, 1); else if (pick.length < M.ROSTER_MAX) pick.push(n); else return;
-        UI.r_slot();
+        if (i < 0 && pick.length >= M.ROSTER_MAX) { UI.flash("名單已滿，先點上面的頭像移出一位"); return; }
+        keep(function () { if (i >= 0) pick.splice(i, 1); else pick.push(n); });
       };
     });
+    $$(".sl-pk[data-g]").forEach(function (b) { b.onclick = function () { keep(function () { pick.splice(pick.indexOf(b.dataset.g), 1); }); }; });
+    $$(".sl-flt [data-ff]").forEach(function (b) { b.onclick = function () { flt.ff = b.dataset.ff; UI.r_slot(); }; });
+    $$(".sl-flt [data-ft]").forEach(function (b) { b.onclick = function () { flt.ft = b.dataset.ft; UI.r_slot(); }; });
     $("#sl-start").onclick = function () {
       if (!pick.length) return;
       d.list = pick.map(function (n) { return SG.GEN[n].id; }); SG.Store.save(st);
@@ -69,7 +81,7 @@
       '<div class="sl-ctl"><button class="sl-spin" id="sl-spin"><span>開戰</span><small id="sl-cost"></small></button>' +
       '<div class="sl-row2"><button class="sm" id="sl-rep">修城門 ' + M.REPAIR_COST + '</button><label class="sl-auto"><input type="checkbox" id="sl-autob"' + (auto ? ' checked' : '') + '> 自動</label></div></div></div></div>';
     cv = $("#sl-cv"); cx = cv.getContext("2d"); fit();
-    F.build($("#sl-grid"), G.grid, symHtml);
+    F.preload(); F.build($("#sl-grid"), G.grid, symHtml);
     renderRes(); tip("佈陣：點下方武將，再點地圖上的營寨（可先放 " + M.START_DEPLOY + " 位；金框「要衝」每條路都打得到），然後按「開戰」");
     $("#sl-spin").onclick = function () { if (G.phase === "deploy") { if (!M.startBattle(G)) tip("至少要放一位武將"); else { tip(""); renderRes(); } } else doSpin(); };
     $("#sl-autob").onchange = function () { auto = this.checked; };
@@ -125,8 +137,8 @@
   }
 
   function symHtml(s) {
-    if (s >= M.GEN0) { var c = G.list[s - M.GEN0]; return '<span class="sl-sym gen"><img src="img/' + c.art + '_head.webp" alt=""></span>'; }
-    var n = M.SYM[s]; return '<span class="sl-sym' + (s === M.WILD ? ' wild' : '') + '" style="--sc:' + SYMC[n] + '">' + n + '</span>';
+    if (s >= M.GEN0) { var c = G.list[s - M.GEN0]; return '<span class="sl-sym gen"><img class="hd" src="img/' + c.art + '_head.webp" alt=""><img class="fr" src="img/slot/sym_frame.webp" alt=""></span>'; }
+    var n = M.SYM[s]; return '<span class="sl-sym pic' + (s === M.WILD ? ' wild' : '') + '"><img src="img/slot/sym_' + SYMF[n] + '.webp" alt="' + n + '"></span>';
   }
 
   function doSpin() {
@@ -268,24 +280,35 @@
       c.font = "700 " + Math.round(12 * s + 4) + "px 'LXGW WenKai TC', serif"; c.textAlign = "center"; c.fillStyle = "#ecd391"; c.fillText((e.big ? "大將・" : "先鋒・") + e.name, x, y - r - 9);
       bar(c, x, y - r - 7, 56 * s, e.hp / e.max, "#e05858");
     } else {
-      var im = img("img/bf/" + e.img + ".webp"), h = (e.k === "cav" ? 38 : 32) * s, w = im.naturalWidth ? h * im.naturalWidth / im.naturalHeight : h / 2;
-      if (im.complete && im.naturalWidth) c.drawImage(im, x - w / 2, y - h * 0.85, w, h);
+      // ✅ Jay 2026-11-23：小兵改用 3D 風角色（Gemini 生成，依兵種）
+      var im = img("img/slot/u_e_" + e.k + ".webp"), h = (e.k === "cav" ? 44 : e.k === "shield" ? 40 : 36) * s, w = im.naturalWidth ? h * im.naturalWidth / im.naturalHeight : h / 2;
+      var bob = e.stun > 0 ? 0 : Math.abs(Math.sin(G.t * 9 + e.id * 1.7)) * 2 * s;
+      c.fillStyle = "rgba(0,0,0,.35)"; c.beginPath(); c.ellipse(x, y + 2 * s, w * 0.32, 4 * s, 0, 0, 7); c.fill();
+      if (im.complete && im.naturalWidth) c.drawImage(im, x - w / 2, y - h * 0.88 - bob, w, h);
       bar(c, x, y - h * 0.9, Math.max(18 * s, w), e.hp / e.max, "#e05858");
     }
     if (e.burn > 0) { c.fillStyle = "rgba(232,116,44," + (0.5 + 0.4 * Math.sin(G.t * 12 + e.id)) + ")"; c.beginPath(); c.arc(x, y - 6 * s, 5 * s, 0, 7); c.fill(); }
     if (e.stun > 0) { c.font = "700 " + Math.round(10 * s + 3) + "px sans-serif"; c.textAlign = "center"; c.fillStyle = "#c9c0ff"; c.fillText("暈", x, y - 26 * s); }
   }
+  // ✅ Jay 2026-11-23：我方用該兵種的 3D 風代表角色，頭上是武將頭像
+  var UA = { "槍": "spear", "騎": "cav", "弓": "bow", "刺": "sin", "法": "mage" };
   function drawGen(c, g) {
-    var s = view.s, p = M.SLOTS[g.slot], x = W2(p[0]), y = H2(p[1]), r = 16 * s;
-    var isSel = sel && sel.gen === g.id;
+    var s = view.s, p = M.SLOTS[g.slot], x = W2(p[0]), y = H2(p[1]), r = 10 * s;
+    var isSel = sel && sel.gen === g.id, ring = g.guest ? "#ecd391" : (FC[FV[g.c.fac]] || "#d4a853");
     if (isSel) { c.fillStyle = "rgba(236,211,145,.08)"; c.strokeStyle = "rgba(236,211,145,.6)"; c.lineWidth = 1.5; c.beginPath(); c.arc(x, y, M.genRng(G, g) * s, 0, Math.PI * 2); c.fill(); c.stroke(); }
-    if (G.windT > 0 && g.down <= 0) { c.strokeStyle = "rgba(78,200,122,.8)"; c.lineWidth = 2; c.beginPath(); c.arc(x, y, r + 5 * s, G.t * 8, G.t * 8 + 4); c.stroke(); }
-    if (G.fireT > 0 && g.c.typ === "弓" && g.down <= 0) { c.strokeStyle = "rgba(232,116,44,.9)"; c.lineWidth = 3; c.beginPath(); c.arc(x, y, r + 3 * s, 0, Math.PI * 2); c.stroke(); }
-    token(c, g.c.art, x, y, r, g.guest ? "#ecd391" : (FC[FV[g.c.fac]] || "#d4a853"), g.down > 0);
-    if (g.down > 0) { c.font = "700 " + Math.round(9 * s + 4) + "px sans-serif"; c.textAlign = "center"; c.fillStyle = "#f0e8d8"; c.fillText(Math.ceil(g.down), x, y + 4); }
-    else bar(c, x, y - r - 6, r * 2, g.hp / g.max, "#4ec87a");
-    c.font = "700 " + Math.round(6 * s + 4) + "px sans-serif"; c.textAlign = "center"; c.fillStyle = "#ecd391"; c.fillText("★".repeat(g.star), x, y + r + 9 * s);
-    c.font = "700 " + Math.round(6 * s + 4) + "px 'LXGW WenKai TC', serif"; c.fillStyle = "#f0e8d8"; c.fillText(g.c.typ, x + r * 0.9, y - r * 0.6);
+    // 腳下的陣營圈
+    c.fillStyle = "rgba(0,0,0,.4)"; c.strokeStyle = ring; c.lineWidth = 2; c.beginPath(); c.ellipse(x, y + 6 * s, 15 * s, 7 * s, 0, 0, 7); c.fill(); c.stroke();
+    if (G.windT > 0 && g.down <= 0) { c.strokeStyle = "rgba(78,200,122,.85)"; c.lineWidth = 2; c.beginPath(); c.ellipse(x, y + 6 * s, 19 * s, 9 * s, 0, G.t * 8, G.t * 8 + 4); c.stroke(); }
+    if (G.fireT > 0 && g.c.typ === "弓" && g.down <= 0) { c.strokeStyle = "rgba(232,116,44,.9)"; c.lineWidth = 3; c.beginPath(); c.ellipse(x, y + 6 * s, 17 * s, 8 * s, 0, 0, 7); c.stroke(); }
+    var im = img("img/slot/u_a_" + UA[g.c.typ] + ".webp"), h = (g.c.typ === "騎" ? 46 : 38) * s, w = im.naturalWidth ? h * im.naturalWidth / im.naturalHeight : h / 2;
+    var atk = g.cd > 0 && g.down <= 0 ? Math.max(0, 1 - (M.TYPE[g.c.typ].cd - g.cd) / 0.18) : 0;   // 剛出手時往前頂一下
+    if (im.complete && im.naturalWidth) { c.save(); if (g.down > 0) c.globalAlpha = 0.35; c.drawImage(im, x - w / 2, y - h * 0.8 - atk * 4 * s, w, h); c.restore(); }
+    var hy = y - h * 0.8 - r - 3 * s;
+    token(c, g.c.art, x, hy, r, ring, g.down > 0);
+    if (g.down > 0) { c.font = "700 " + Math.round(8 * s + 4) + "px sans-serif"; c.textAlign = "center"; c.fillStyle = "#f0e8d8"; c.fillText(Math.ceil(g.down), x, hy + 4); }
+    else bar(c, x, hy - r - 6, 26 * s, g.hp / g.max, "#4ec87a");
+    c.font = "700 " + Math.round(6 * s + 4) + "px sans-serif"; c.textAlign = "center"; c.fillStyle = "#ecd391"; c.strokeStyle = "rgba(0,0,0,.8)"; c.lineWidth = 3;
+    c.strokeText("★".repeat(g.star), x, y + 19 * s); c.fillText("★".repeat(g.star), x, y + 19 * s);
   }
   function drawFx(c) {
     var t = G.t, s = view.s;

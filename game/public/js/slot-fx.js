@@ -40,6 +40,8 @@
     rock: function () { tone(70, 0, 0.4, "sine", 0.6, 35); noise(0.05, 0.4, 0.25, 150); }
   };
 
+  F.preload = function () { ["sym_fire", "sym_thunder", "sym_wind", "sym_rock", "sym_ling", "sym_frame", "fx_fire", "fx_thunder", "fx_wind", "fx_rock", "title_mjzz", "u_e_spear", "u_e_cav", "u_e_shield", "u_e_bow", "u_e_mage", "u_a_spear", "u_a_cav", "u_a_bow", "u_a_sin", "u_a_mage"].forEach(function (n) { var i = new Image(); i.src = "img/slot/" + n + ".webp" + (n === "title_mjzz" ? "?v=1" : ""); }); };
+
   // ===== 轉輪 =====
   // 盤面 9 格：索引 i 在第 i%3 排（直的）、第 floor(i/3) 列
   F.build = function (box, grid, symHtml) {
@@ -126,29 +128,33 @@
   }
   function splash(field, k) {
     var e = document.createElement("div"); e.className = "sl-sp sp-" + k; field.appendChild(e);
+    var im = document.createElement("img"); im.src = "img/slot/fx_" + k + ".webp"; im.alt = ""; e.appendChild(im);   // ✅ Jay 2026-11-23：效果圖用 Gemini 生成
     if (k === "fire") F.snd.fire(); else if (k === "thunder") F.snd.thunder(); else if (k === "wind") F.snd.wind(); else if (k === "rock") { F.snd.rock(); field.classList.remove("shake"); void field.offsetWidth; field.classList.add("shake"); }
-    setTimeout(function () { e.remove(); }, 1300);
+    setTimeout(function () { e.remove(); }, 1500);
   }
+  // ✅ Jay 2026-11-23：升星／出陣的圖不能被壓扁 → 用半身卡圖（一定有臉），等比例裁切
   function cutIn(field, c) {
     var e = document.createElement("div"); e.className = "sl-cut";
-    e.innerHTML = '<img src="img/' + c.art + '_full.webp" alt=""><div class="txt"><b>' + c.name + '</b><span>' + c.msg + '</span></div>';
+    e.innerHTML = '<div class="art"><img src="img/' + c.art + '_card.webp" alt=""></div><div class="txt"><b>' + c.name + '</b><span>' + c.msg + '</span></div>';
     field.appendChild(e); F.snd.whoosh();
     setTimeout(function () { e.classList.add("out"); }, 1100); setTimeout(function () { e.remove(); }, 1500);
   }
 
   // ===== 名將助陣 =====
+  // ✅ Jay 2026-11-23：「名將助陣」四個字放下面，不能擋到臉；一定要看得到武將的臉 → 整張立繪完整顯示（不裁切）
   F.jackpot = function (guests) {
     return new Promise(function (done) {
-      var o = document.createElement("div"); o.className = "sl-jack";
-      o.innerHTML = '<div class="sl-jk-title">名將助陣</div><div class="sl-jk-pillar"></div>' +
-        guests.map(function (g, i) {
-          return '<div class="sl-jk-card" style="--i:' + i + ';--n:' + guests.length + '"><img src="img/' + g.art + '_full.webp" alt=""><div class="sl-jk-name"><em class="r-' + g.rar + '">' + g.rar + '</em><b>' + g.name + '</b>' + (g.notOwn ? '<small>未擁有</small>' : '') + '</div></div>';
-        }).join("") + '<div class="sl-jk-tap">點一下繼續</div>';
+      var g = guests[0], o = document.createElement("div"); o.className = "sl-jack";
+      o.innerHTML = '<div class="sl-jk-rays"></div><div class="sl-jk-art"><img src="img/' + g.art + '_full.webp" alt=""></div><div class="sl-jk-pillar"></div>' +
+        '<div class="sl-jk-name"><em class="r-' + g.rar + '">' + g.rar + '</em><b>' + g.name + '</b>' + (g.notOwn ? '<small>未擁有</small>' : '') + '</div>' +
+        '<div class="sl-jk-title"><img src="img/slot/title_mjzz.webp?v=1" alt="名將助陣" onerror="this.parentNode.classList.add(\'txt\');this.parentNode.textContent=\'名將助陣\'"></div>' +
+        '<div class="sl-jk-tap">點一下繼續</div>';
       document.body.appendChild(o);
       F.snd.gong(); setTimeout(F.snd.rise, 700); setTimeout(function () { F.snd.win(true); F.snd.coins(20); }, 1500);
-      var ok = false; setTimeout(function () { ok = true; o.classList.add("tap"); }, 1800);
-      o.onclick = function () { if (!ok) return; o.classList.add("out"); setTimeout(function () { o.remove(); done(); }, 300); };
-      setTimeout(function () { if (document.body.contains(o)) o.onclick(); }, 6000);
+      var ok = false, closed = false; setTimeout(function () { ok = true; o.classList.add("tap"); }, 1800);
+      var close = function () { if (closed) return; closed = true; o.classList.add("out"); setTimeout(function () { o.remove(); done(); }, 300); };
+      o.onclick = function () { if (ok) close(); };
+      setTimeout(close, 6000);
     });
   };
 })(window.SG);
