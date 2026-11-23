@@ -38,7 +38,22 @@
   }
   // ✅ Jay 2026-11-23 第六輪：路線不要每次都像樹枝 → 六種路型輪流（蛇行、繞湖、之字山道、雙翼、三路並進、分進合擊），打完一輪再左右鏡射
   var G0 = [200, 486];
+  // ✅ Jay 2026-11-23：路要多拐彎、不要一直往下匯流，安排武將位置才有技術性；「要衝」保留，但不用每次都放兩個
   var LAYOUTS = [
+    { name: "九曲道", art: "map_6", ez: 0.85, keyN: 1, key: [[199, 346], [200, 452]], paths: [
+      [[-12, 56], [330, 56], [330, 146], [76, 146], [76, 251], [334, 251], [334, 346], [199, 346], [200, 452], G0],
+      [[330, -12], [330, 56], [330, 146], [76, 146], [76, 251], [334, 251], [334, 346], [199, 346], [200, 452], G0],
+      [[-12, 56], [330, 56], [330, 146], [76, 146], [76, 251], [334, 251], [334, 346], [199, 346], [200, 452], G0],
+      [[330, -12], [330, 56], [330, 146], [76, 146], [76, 251], [334, 251], [334, 346], [199, 346], [200, 452], G0],
+      [[-12, 411], [144, 411], [144, 346], [199, 346], [200, 452], G0]], names: ["左上側", "右上", "左上側", "右上", "左下"],
+      slots: [[237, 391], [370, 52], [50, 110], [238, 190], [51, 380], [370, 290], [30, 246], [154, 290], [171, 100], [118, 190], [262, 290], [294, 110]] },
+    { name: "回馬道", art: "map_7", key: [[199, 322], [200, 452]], paths: [
+      [[51, -12], [51, 393], [121, 393], [121, 195], [281, 195], [281, 322], [199, 322], [200, 452], G0],
+      [[121, -12], [121, 195], [281, 195], [281, 322], [199, 322], [200, 452], G0],
+      [[412, 195], [281, 195], [281, 322], [199, 322], [200, 452], G0],
+      [[412, 322], [281, 322], [199, 322], [200, 452], G0],
+      [[-12, 244], [51, 244], [51, 393], [121, 393], [121, 195], [281, 195], [281, 322], [199, 322], [200, 452], G0]], names: ["左上", "正上", "右側", "右下側", "左側"],
+      slots: [[163, 379], [237, 379], [160, 52], [348, 160], [196, 240], [348, 290], [248, 160], [152, 160], [324, 370], [85, 360], [240, 298], [160, 312]] },
     // ✅ 手繪地圖：路線與營寨位置照 img/slot/map_0.webp 對過（圖以 artK 倍畫在世界座標上，城牆頂約在 y=450）
     { name: "蛇行道", art: "map_0", artK: 1.11, key: [[198, 374], [200, 452]], paths: [
       [[308, -12], [306, 96], [90, 176], [90, 316], [142, 346], [198, 374], [200, 452], G0],
@@ -90,7 +105,7 @@
     var r = mrnd(stage + 1000), R = function (a, b) { return Math.round(a + (b - a) * r()); };
     var n = LAYOUTS.length, idx = (stage - 1) % n, mir = Math.floor((stage - 1) / n) % 2 === 1, L = LAYOUTS[idx], src = L;
     var fx = function (q) { return [mir ? M.W - q[0] : q[0], q[1]]; };
-    var rot = Math.floor((stage - 1) / (2 * n)) % 5, rotA = function (a) { return a.slice(rot).concat(a.slice(0, rot)); };   // ★ 六張圖輪完、鏡像再輪完之後（第 13 關起）同一張圖再輪，但各入口出的兵換位置
+    var rot = Math.floor((stage - 1) / (2 * n)) % 5, rotA = function (a) { return a.slice(rot).concat(a.slice(0, rot)); };   // ★ 八張圖輪完、鏡像再輪完之後（第 17 關起）同一張圖再輪，但各入口出的兵換位置
     var paths = rotA(src.paths).map(function (p) { return p.map(fx); }), key = src.key.map(fx), lake = L.lake ? [mir ? M.W - L.lake[0] : L.lake[0], L.lake[1], L.lake[2], L.lake[3]] : null;
     var names = rotA(src.names).map(function (s) { return mir ? s.replace(/[左右]/g, function (c) { return c === "左" ? "右" : "左"; }) : s; });
     var pts = paths.map(cut), all = []; pts.forEach(function (P) { for (var i = 0; i < P.length; i += 2) all.push(P[i]); });
@@ -99,7 +114,9 @@
     // 要衝：所有路線最後共用的那一段，兩側各一
     var K0 = key[0], K1 = key[1], kx = K0[0] + (K1[0] - K0[0]) * 0.4, ky = K0[1] + (K1[1] - K0[1]) * 0.4, tl = Math.hypot(K1[0] - K0[0], K1[1] - K0[1]), nx = (K1[1] - K0[1]) / tl, ny = -(K1[0] - K0[0]) / tl;
     var slots = [[Math.round(kx - nx * 37), Math.round(ky - ny * 37)], [Math.round(kx + nx * 37), Math.round(ky + ny * 37)]];
-    if (L.slots) slots = L.slots.map(fx);   // 手繪地圖：營寨位置是對著圖擺的，前兩個是要衝
+    slots = slots.filter(function (q) { return near(q[0], q[1]) >= 30; });   // 要衝旁邊如果有別條路就不放，所以有的圖只有一個
+    var nk = slots.length;
+    if (L.slots) { slots = L.slots.map(fx); nk = L.keyN === undefined ? 2 : L.keyN; }   // 手繪地圖：營寨位置是對著圖擺的，前 keyN 個是要衝
     // 其他營寨：沿每條路兩側 40 的位置取候選，再挑分散的 10 個
     var cand = [];
     pts.forEach(function (P) {
@@ -128,7 +145,7 @@
       deco.push({ x: x, y: y, k: r() < 0.82 ? "tree" + (1 + Math.floor(r() * 4)) : "rock", s: 0.8 + r() * 0.5 });
     }
     deco.sort(function (a, b) { return a.y - b.y; });
-    return { stage: stage, name: L.name, layout: idx, mirror: mir, paths: paths, pts: pts, slots: slots, key: [0, 1], names: names, deco: deco, lake: lake, theme: (stage - 1) % 4, art: L.art || null, artK: L.artK || 1, dim: L.dim || 0, ez: L.ez || 1 };
+    return { stage: stage, name: L.name, layout: idx, mirror: mir, paths: paths, pts: pts, slots: slots, key: slots.slice(0, nk).map(function (q, i) { return i; }), names: names, deco: deco, lake: lake, theme: (stage - 1) % 4, art: L.art || null, artK: L.artK || 1, dim: L.dim || 0, ez: L.ez || 1 };
   };
   M.useMap = function (map) { M.MAP = map; M.PATHS = map.paths; M.PTS = map.pts; M.SLOTS = map.slots; M.KEY = map.key; M.GATE_NAMES = map.names; };
   M.useMap(M.genMap(1));
