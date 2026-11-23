@@ -32,7 +32,8 @@
       '<div class="paper sl-lobby">' +
       '<div class="sl-stage"><div><small>選擇關卡・' + nm.name + '</small><div class="sl-pick"><button class="sm plain" id="sl-prev"' + (d.stage > 1 ? '' : ' disabled') + '>◀</button><b>第 ' + d.stage + ' 關</b><button class="sm plain" id="sl-next"' + (d.stage < maxSt ? '' : ' disabled') + '>▶</button></div><small>最高紀錄：第 ' + (d.top || 0) + ' 關' + (d.stage > 1 ? '・<a id="sl-first">回第 1 關</a>' : '') + '</small></div>' +
       '<button class="plaq sl-start" id="sl-start"' + (pick.length ? '' : ' disabled') + '><span>出征</span></button></div>' +
-      '<div class="sl-foes">本關敵軍：' + M.kinds(d.stage).map(function (k) { return M.ENEMY[k].name.replace("黃巾", ""); }).join("、") + (d.stage <= M.UNLOCK.length ? '<small>（' + (d.stage === 1 ? '第 1 關只有一種兵，之後每關多一種' : '這一關新增「' + M.ENEMY[M.UNLOCK[d.stage - 1]].name + '」') + '）</small>' : '') + '</div>' +
+      '<div class="sl-chap"><b>第' + "一二三四"[nm.plan.ch] + '章・' + nm.plan.chName + (nm.plan.big ? '<em>大關</em>' : '') + '</b><span>先鋒 ' + nm.plan.van.join("、") + '・本陣 ' + nm.plan.main.join("、") + '</span></div>' +
+      '<div class="sl-foes">本關敵軍：' + M.FACTIONS[nm.plan.fac].name + '・' + M.kinds(d.stage).map(function (k) { return M.enemyName(k, nm.plan.fac); }).join("、") + (d.stage <= M.UNLOCK.length ? '<small>（' + (d.stage === 1 ? '第 1 關只有一種兵，之後每關多一種' : '這一關新增「' + M.enemyName(M.UNLOCK[d.stage - 1], nm.plan.fac) + '」') + '）</small>' : '') + '</div>' +
       '<div class="sl-sec">出征名單 <small>' + pick.length + ' / ' + M.ROSTER_MAX + '・點頭像移出</small></div>' +
       '<div class="sl-picks">' + slots + '</div><div class="sl-tips">' + tips + '</div>' +
       '<div class="filters sl-flt"><div><span>陣營</span>' + chips("ff", flt.ff, ["全部"].concat(SG.FACS)) + '</div><div><span>兵種</span>' + chips("ft", flt.ft, ["全部", "槍", "騎", "弓", "刺", "法"]) + '</div></div>' +
@@ -40,11 +41,12 @@
         var i = pick.indexOf(c.gen), sk = M.SKILL[c.gen];
         return '<button class="sl-oc' + (i >= 0 ? ' on' : '') + '" data-g="' + c.gen + '"><span class="hd" style="--fc:' + FC[FV[c.fac]] + '"><img loading="lazy" src="img/' + c.art + '_head.webp" alt="">' + (i >= 0 ? '<em>' + (i + 1) + '</em>' : '') + '</span><b>' + c.gen + '</b><small>' + SG.TYPES[c.typ].name + (sk ? '・' + sk.name : '') + '</small></button>';
       }).join("") || '<div class="dim">沒有符合的武將</div>') + '</div>' +
-      '<details class="sl-how"><summary>玩法說明</summary><p>黃巾軍分「敵軍先鋒」（張寶領軍）與「敵軍本陣」（張角親征），從五個入口殺向城門；有敵軍走到城門就算被打一次，三次就失守。守住就過關，下一關敵軍更強。開戰前先把 ' + M.START_DEPLOY + ' 位武將放到營寨（金框「要衝」每條路都會經過）。出征的 ' + M.ROSTER_MAX + ' 位武將會出現在拉霸上，連成一線就上陣，已上陣的就升星。殺敵得軍糧，拉一次 ' + M.SPIN_COST + ' 軍糧。</p>' +
+      '<details class="sl-how"><summary>玩法說明</summary><p>每一關敵軍分「敵軍先鋒」與「敵軍本陣」兩波，各有敵將領軍，從五個入口殺向城門；有敵軍走到城門就算被打一次，三次就失守。守住就過關，下一關敵軍更強。開戰前先把 ' + M.START_DEPLOY + ' 位武將放到營寨（金框「要衝」每條路都會經過）。出征的 ' + M.ROSTER_MAX + ' 位武將會出現在拉霸上，連成一線就上陣，已上陣的就升星。殺敵得軍糧，拉一次 ' + M.SPIN_COST + ' 軍糧。</p>' +
       '<p>試玩版：只開放這 10 位武將，不管有沒有抽到都能選。同兵種的武將一樣強，差別在特技；強弱靠拉霸升星跟特技。</p>' +
       '<p>特技：武將每出手一次就集一點氣，集滿自動放（地圖左下角可以切成手動，集滿後點那位武將）。' + own.map(function (c) { var k = M.SKILL[c.gen]; return k ? '<br><b>' + c.gen + '「' + k.name + '」</b>（' + k.kind + '）' + k.desc : ''; }).join("") + '</p>' +
-      '<p>武將不會倒下。敵將會放招：「遲緩」讓武將攻速減半，「麻痹」讓武將暫時不能出手；血量被打到一半時會放大招（張寶「妖術迷陣」、張角「黃天當立」），之後每隔一陣子再放一次。</p>' +
-      '<p>敵軍：第 1 關只有槍兵，之後每過一關多一種。' + M.UNLOCK.map(function (k) { return '<br><b>' + M.ENEMY[k].name + '</b>：' + M.ENEMY[k].tip; }).join("") + '</p>' +
+      '<p>章節：每 5 關一章，照三國故事換敵人——黃巾之亂、討伐董卓、官渡之戰、南蠻平定，第 5、10、15、20 關是大關，敵將兩位一起來。四章打完從頭再輪，敵軍更強。</p>' +
+      '<p>武將不會倒下。敵將會放招：「遲緩」讓武將攻速減半，「麻痹」讓武將暫時不能出手；血量被打到一半時會放大招，之後每隔一陣子再放一次。每位敵將的招式都不一樣：' + Object.keys(M.BOSS_SK).map(function (n) { var X = M.BOSS_SK[n]; return '<br><b>' + n + '</b>：' + X.sk.name + '；大招「' + X.ult.name + '」' + X.ult.desc + (X.rev ? '；倒下後會復活一次（七擒七縱）' : ''); }).join("") + '</p>' +
+      '<p>敵軍：第 1 關只有槍兵，之後每過一關多一種；每章換一個勢力（名字、樣子不同，能力一樣）。' + M.UNLOCK.map(function (k) { return '<br><b>' + ["yt", "xl", "hb", "nm"].map(function (f) { return M.enemyName(k, f); }).join("／") + '</b>：' + M.ENEMY[k].tip; }).join("") + '</p>' +
       '<p>兵種：槍兵擋路、連出「石」在自己前面落石；弓兵連出「火」射火箭；法師連出「雷」落雷；騎兵打小兵傷害 ×' + M.CAV_MINION + '；刺客出手快一倍、先打敵將，打敵將傷害 ×' + M.SIN_BOSS + '。</p>' +
       '<p>一局大約 3 分鐘，地圖右下角的「×2」可以加速。每一局會有一位沒出征的武將在「三令齊發」時前來助陣（50% 再來第二位）。</p><div class="sl-syms">' + M.SYM.map(function (s) { return '<span><img src="img/slot/sym_' + SYMF[s] + '.webp?v=2" alt="' + s + '">' + SYMD[s] + '</span>'; }).join("") + '<span><img src="img/slot/sym_frame.webp?v=2" alt="">武將頭像：上陣／升星</span></div></details>' +
       '<div class="sl-sec">守城榜 <small>前 20 名・' + P.esc(P.name()) + ' <button class="sm plain" id="sl-rename">改名</button></small></div><div id="sl-lb">' + P.boardHtml("slot", lbData) + '</div></div>';
@@ -171,7 +173,9 @@
       var per = {}, top = -1; G.enemies.forEach(function (e) { if (!e.boss) per[e.path] = (per[e.path] || 0) + 1; }); Object.keys(per).forEach(function (k) { if (top < 0 || per[k] > per[top]) top = +k; });
       var has = {}; G.gens.forEach(function (g) { has[g.c.typ] = 1; });
       if (rdy) { out = "「" + rdy.c.gen + "」已在上面待命：點她，再點空營寨上陣。"; hi = true; }
-      else if (boss && boss.castT > 0 && boss.ultN) { out = boss.name + "放了大招「" + M.BOSS_SK[boss.name].ult + "」：" + M.BOSS_SK[boss.name].ultDesc + "。"; hi = true; }
+      else if (boss && boss.castT > 0 && boss.ultN && M.BOSS_SK[boss.name]) { out = boss.name + "放了大招「" + M.BOSS_SK[boss.name].ult.name + "」：" + M.BOSS_SK[boss.name].ult.desc + "。"; hi = true; }
+      else if (boss && boss.armorT > 0) { out = boss.name + "正在減傷，這幾秒打她只有一半傷害；可以先清小兵。"; }
+      else if (boss && boss.dashT > 0) { out = boss.name + "往前猛衝，連落石都會被撞碎！"; }
       else if (man) { out = man.c.gen + "的特技集滿了，點她放「" + M.SKILL[man.c.gen].name + "」。"; hi = true; }
       else if (G.lives <= 1 && G.food >= M.REPAIR_COST) { out = "城門快撐不住了！軍糧夠，快按「修城門」。"; hi = true; }
       else if (stun) out = stun.c.gen + "中了「麻痹」，幾秒內不能出手也不能放特技。";
@@ -286,9 +290,9 @@
       else if (f.kind === "boss") { showBan((f.big ? "大將 " : "先鋒大將 ") + f.name + " 出陣！", true); F.snd.gong(); }
       else if (f.kind === "gate") { shake = 1; F.snd.gate(); }
       else if (f.kind === "ready") renderRes();
-      else if (f.kind === "newenemy" && (G.seenK2 = G.seenK2 || {}) && !G.seenK2[f.k]) { G.seenK2[f.k] = 1; if (f.k !== "spear" || G.stage === 1) tip("敵軍「" + M.ENEMY[f.k].name + "」：" + M.ENEMY[f.k].tip, 2500); }
+      else if (f.kind === "newenemy" && (G.seenK2 = G.seenK2 || {}) && !G.seenK2[f.k]) { G.seenK2[f.k] = 1; if (f.k !== "spear" || G.stage === 1) tip("敵軍「" + M.enemyName(f.k, G.fac) + "」：" + M.ENEMY[f.k].tip, 2500); }
       else if (f.kind === "skill") { if (f.id === "zhouyu") F.snd.fire(); else if (f.id === "zhangfei") F.snd.rock(); else if (f.id === "simayi") F.snd.thunder(); else F.snd.whoosh(); }
-      else if (f.kind === "bossult") { showBan(f.name + "「" + f.sk + "」！", true); shake = 1; F.snd.gong(); F.snd.thunder(); }
+      else if (f.kind === "bossult") { showBan(f.name + "「" + f.sk + "」！", true); shake = 1; F.snd.gong(); F.snd.thunder(); if (f.rev) tip(f.name + "「七擒七縱」：倒下後以一半的血量復活了！這次打倒就不會再起來。", 1500); }
     });
     if (G.fx.length > 400) G.fx.splice(0, G.fx.length - 300);
     hud(); draw();
@@ -455,12 +459,12 @@
     var bob = e.stun > 0 ? 0 : Math.abs(Math.sin(G.t * 9 + e.id * 1.7)) * 2 * s;
     if (e.boss) {
       // ✅ Jay 2026-11-23：敵方 Boss 用符合角色的 3D 風角色
-      var bi = img("img/slot/u_" + (e.big ? "boss2" : "boss1") + ".webp"), bh = (e.big ? 74 : 62) * s, bw = bi.naturalWidth ? bh * bi.naturalWidth / bi.naturalHeight : bh * 0.8;
+      var bi = img("img/slot/b_" + e.art + ".webp"), bh = (e.big ? 74 : 62) * s, bw = bi.naturalWidth ? bh * bi.naturalWidth / bi.naturalHeight : bh * 0.8;
       c.fillStyle = "rgba(192,57,43,.35)"; c.strokeStyle = "#ff5a4a"; c.lineWidth = 2; c.beginPath(); c.ellipse(x, y + 2 * s, bw * 0.34, 7 * s, 0, 0, 7); c.fill(); c.stroke();
       // ✅ Jay 2026-11-23：敵將要有動作：走路左右晃、出手往前撲、施法浮起發光（大招更大）
       var KT = M.SPEED * 2, cast = e.castT > 0, ult = cast && e.castT > 0.4, hitA = e.hitAt !== undefined ? (G.t - e.hitAt) / (0.25 * KT) : 9;
       var rot = cast || e.stun > 0 ? 0 : Math.sin(G.t * 7 + e.id) * 0.05, lift = cast ? (ult ? 12 : 6) * s * (0.6 + 0.4 * Math.sin(performance.now() / 70)) : 0, zs = cast ? (ult ? 1.22 : 1.1) : 1;
-      var lunge = hitA >= 0 && hitA < 1 ? Math.sin(hitA * Math.PI) * 10 * s : 0, glow = e.big ? "#ffd84a" : "#b36bff";
+      var lunge = hitA >= 0 && hitA < 1 ? Math.sin(hitA * Math.PI) * 10 * s : 0, glow = (M.BOSS_SK[e.name] || {}).col || (e.big ? "#ffd84a" : "#b36bff");
       if (cast) { c.save(); c.globalAlpha = 0.35 + 0.25 * Math.sin(performance.now() / 60); c.fillStyle = glow; c.beginPath(); c.ellipse(x, y + 2 * s, bw * (ult ? 0.9 : 0.6), (ult ? 20 : 13) * s, 0, 0, 7); c.fill(); c.restore(); }
       if (bi.complete && bi.naturalWidth) {
         c.save(); c.translate(x, y + lunge - lift); c.rotate(rot); c.scale(zs, zs); if (cast) { c.shadowColor = glow; c.shadowBlur = (ult ? 26 : 14) * s; }
@@ -471,7 +475,7 @@
       var nm = (e.big ? "大將・" : "先鋒・") + e.name; c.strokeText(nm, x, y - bh * 0.9 - 9); c.fillText(nm, x, y - bh * 0.9 - 9);
       bar(c, x, y - bh * 0.9 - 6, 60 * s, e.hp / e.max, "#e05858");
     } else {
-      var im = img("img/slot/u_e_" + e.k + ".webp"), h = ({ cav: 44, shield: 40, brute: 52, ram: 48, dash: 34 }[e.k] || 36) * s, w = im.naturalWidth ? h * im.naturalWidth / im.naturalHeight : h / 2;
+      var im = img("img/slot/" + (M.FACTIONS[G.fac] || M.FACTIONS.yt).img + e.k + ".webp"), h = ({ cav: 44, shield: 40, brute: 52, ram: 48, dash: 34 }[e.k] || 36) * s, w = im.naturalWidth ? h * im.naturalWidth / im.naturalHeight : h / 2;
       if (e.k === "ram") bob = 0;
       c.fillStyle = "rgba(0,0,0,.35)"; c.beginPath(); c.ellipse(x, y + 2 * s, w * 0.32, 4 * s, 0, 0, 7); c.fill();
       if (im.complete && im.naturalWidth) c.drawImage(im, x - w / 2, y - h * 0.88 - bob, w, h);
@@ -577,11 +581,11 @@
         c.globalAlpha = 1;
       } else if (f.kind === "bosscast" && age < 0.5) {
         c.globalAlpha = 1 - age / 0.5; c.strokeStyle = f.d === "stun" ? "#ffe066" : "#b36bff"; c.lineWidth = 4; c.setLineDash([8 * s, 6 * s]); c.lineDashOffset = -age * 200;
-        c.beginPath(); c.moveTo(W2(f.x), H2(f.y) - 34 * s); c.lineTo(W2(f.x1), H2(f.y1) - 24 * s); c.stroke(); c.setLineDash([]);
+        if (f.x1 !== undefined) { c.beginPath(); c.moveTo(W2(f.x), H2(f.y) - 34 * s); c.lineTo(W2(f.x1), H2(f.y1) - 24 * s); c.stroke(); } c.setLineDash([]);
         c.textAlign = "center"; c.lineWidth = 3; c.strokeStyle = "rgba(0,0,0,.85)"; c.fillStyle = f.d === "stun" ? "#ffe066" : "#d7b3ff"; c.font = "700 " + Math.round(9 * s + 5) + "px 'LXGW WenKai TC', serif";
         c.strokeText(f.sk, W2(f.x), H2(f.y) - 84 * s); c.fillText(f.sk, W2(f.x), H2(f.y) - 84 * s); c.globalAlpha = 1;
       } else if (f.kind === "bossult" && age < 1) {   // 大招：整個戰場閃一下顏色，從敵將身上擴散幾圈
-        var col = f.name === "張角" ? "255,210,60" : "150,80,255";
+        var hc = ((M.BOSS_SK[f.name] || {}).col || "#9650ff").replace("#", ""), col = [0, 2, 4].map(function (i) { return parseInt(hc.substr(i, 2), 16); }).join(",");
         c.fillStyle = "rgba(" + col + "," + (0.34 * (1 - age)) + ")"; c.fillRect(0, 0, W, H);
         c.lineWidth = 6; for (var u = 0; u < 3; u++) { var ua = age - u * 0.15; if (ua < 0) continue; c.strokeStyle = "rgba(" + col + "," + Math.max(0, 0.9 - ua) + ")"; c.beginPath(); c.arc(W2(f.x), H2(f.y) - 20 * s, ua * 520 * s, 0, 7); c.stroke(); }
       } else if (f.kind === "die" && age < 0.4) {

@@ -40,72 +40,95 @@
   var G0 = [200, 486];
   // ✅ Jay 2026-11-23：路要多拐彎、不要一直往下匯流，安排武將位置才有技術性；「要衝」保留，但不用每次都放兩個
   var LAYOUTS = [
-    { name: "九曲道", art: "map_6", ez: 0.85, keyN: 1, key: [[199, 346], [200, 452]], paths: [
+    { name: "九曲道", ez: 0.75, art: "map_6", keyN: 1, key: [[199, 346], [200, 452]], paths: [
       [[-12, 56], [330, 56], [330, 146], [76, 146], [76, 251], [334, 251], [334, 346], [199, 346], [200, 452], G0],
       [[330, -12], [330, 56], [330, 146], [76, 146], [76, 251], [334, 251], [334, 346], [199, 346], [200, 452], G0],
       [[-12, 56], [330, 56], [330, 146], [76, 146], [76, 251], [334, 251], [334, 346], [199, 346], [200, 452], G0],
       [[330, -12], [330, 56], [330, 146], [76, 146], [76, 251], [334, 251], [334, 346], [199, 346], [200, 452], G0],
       [[-12, 411], [144, 411], [144, 346], [199, 346], [200, 452], G0]], names: ["左上側", "右上", "左上側", "右上", "左下"],
       slots: [[237, 391], [370, 52], [50, 110], [238, 190], [51, 380], [370, 290], [30, 246], [154, 290], [171, 100], [118, 190], [262, 290], [294, 110]] },
-    { name: "回馬道", art: "map_7", key: [[199, 322], [200, 452]], paths: [
+    { name: "回馬道", ez: 1.3, art: "map_7", key: [[199, 322], [200, 452]], paths: [
       [[51, -12], [51, 393], [121, 393], [121, 195], [281, 195], [281, 322], [199, 322], [200, 452], G0],
       [[121, -12], [121, 195], [281, 195], [281, 322], [199, 322], [200, 452], G0],
       [[412, 195], [281, 195], [281, 322], [199, 322], [200, 452], G0],
       [[412, 322], [281, 322], [199, 322], [200, 452], G0],
       [[-12, 244], [51, 244], [51, 393], [121, 393], [121, 195], [281, 195], [281, 322], [199, 322], [200, 452], G0]], names: ["左上", "正上", "右側", "右下側", "左側"],
       slots: [[163, 379], [237, 379], [160, 52], [348, 160], [196, 240], [348, 290], [248, 160], [152, 160], [324, 370], [85, 360], [240, 298], [160, 312]] },
-    // ✅ 手繪地圖：路線與營寨位置照 img/slot/map_0.webp 對過（圖以 artK 倍畫在世界座標上，城牆頂約在 y=450）
-    { name: "蛇行道", art: "map_0", artK: 1.11, key: [[198, 374], [200, 452]], paths: [
-      [[308, -12], [306, 96], [90, 176], [90, 316], [142, 346], [198, 374], [200, 452], G0],
-      [[90, -12], [90, 176], [90, 316], [142, 346], [198, 374], [200, 452], G0],
-      [[412, 276], [304, 278], [198, 374], [200, 452], G0],
-      [[-12, 316], [90, 316], [142, 346], [198, 374], [200, 452], G0],
-      [[-12, 176], [90, 176], [90, 316], [142, 346], [198, 374], [200, 452], G0]], names: ["右上", "左上", "右側", "左側", "左上側"],
-      slots: [[162, 405], [236, 405], [45, 139], [47, 87], [47, 270], [133, 231], [142, 138], [353, 67], [318, 247], [264, 353], [145, 309], [203, 302]] },
-    { name: "繞湖道", art: "map_1", key: [[199, 356], [200, 452]], paths: [
-      [[120, -12], [120, 185], [120, 290], [199, 356], [200, 452], G0],
-      [[300, -12], [300, 185], [300, 292], [199, 356], [200, 452], G0],
-      [[412, 65], [300, 65], [300, 185], [300, 292], [199, 356], [200, 452], G0],
-      [[-12, 185], [120, 185], [120, 290], [199, 356], [200, 452], G0],
-      [[120, -12], [120, 185], [300, 185], [300, 292], [199, 356], [200, 452], G0]], names: ["左上", "右上", "右上側", "左側", "左上"],
-      slots: [[160, 391], [240, 391], [80, 49], [179, 105], [252, 142], [342, 125], [56, 222], [344, 266], [313, 344], [104, 350]] },
-    { name: "之字山道", art: "map_2", key: [[200, 322], [200, 452]], paths: [
-      [[412, 73], [80, 73], [80, 195], [322, 195], [322, 318], [200, 322], [200, 452], G0],
-      [[80, -12], [80, 73], [80, 195], [322, 195], [322, 318], [200, 322], [200, 452], G0],
-      [[-12, 195], [80, 195], [322, 195], [322, 318], [200, 322], [200, 452], G0],
-      [[412, 73], [322, 73], [322, 195], [322, 318], [200, 322], [200, 452], G0],
-      [[322, -12], [322, 195], [322, 318], [200, 322], [200, 452], G0]], names: ["右上側", "左上", "左側", "右上側", "右上"],
-      slots: [[162, 378], [233, 378], [41, 56], [41, 149], [184, 156], [286, 151], [356, 122], [53, 234], [146, 239], [264, 239], [361, 293], [322, 373]] },
-    { name: "城內街市", art: "map_3", key: [[201, 386], [200, 452]], paths: [
-      [[112, -12], [112, 342], [201, 386], [200, 452], G0],
-      [[291, -12], [291, 342], [201, 386], [200, 452], G0],
-      [[-12, 120], [291, 120], [291, 342], [201, 386], [200, 452], G0],
-      [[412, 244], [112, 244], [112, 342], [201, 386], [200, 452], G0],
-      [[412, 120], [291, 120], [291, 244], [112, 244], [112, 342], [201, 386], [200, 452], G0]], names: ["左上", "右上", "左側", "右側", "右上側"],
-      slots: [[164, 415], [238, 415], [70, 52], [330, 155], [70, 244], [205, 210], [330, 312], [250, 52], [150, 316], [236, 282], [171, 80], [89, 374]] },
-    { name: "邊塞關隘", art: "map_4", artK: 1.1, key: [[196, 397], [200, 452]], paths: [
-      [[86, -12], [86, 340], [196, 397], [200, 452], G0],
-      [[196, -12], [196, 397], [200, 452], G0],
-      [[315, -12], [315, 340], [196, 397], [200, 452], G0],
-      [[-12, 157], [86, 157], [86, 340], [196, 397], [200, 452], G0],
-      [[412, 157], [315, 157], [315, 340], [196, 397], [200, 452], G0]], names: ["左上", "正上", "右上", "左側", "右側"],
-      slots: [[161, 412], [235, 412], [36, 56], [244, 56], [156, 136], [364, 121], [276, 175], [364, 242], [34, 279], [244, 268], [141, 322], [349, 367]] },
-    { name: "雪原關山", art: "map_5", dim: 0.16, ez: 0.75,   // ez：這張圖左右兩路離城門很近，敵軍兵力打折（★）
-      key: [[199, 386], [200, 452]], paths: [
-      [[44, -12], [63, 49], [196, 203], [104, 312], [199, 386], [200, 452], G0],
-      [[361, -12], [339, 54], [196, 203], [291, 312], [199, 386], [200, 452], G0],
-      [[199, -12], [196, 203], [291, 312], [199, 386], [200, 452], G0],
-      [[-12, 312], [104, 312], [199, 386], [200, 452], G0],
-      [[412, 312], [291, 312], [199, 386], [200, 452], G0]], names: ["左上", "右上", "正上", "左側", "右側"],
-      slots: [[160, 420], [238, 420], [240, 51], [39, 95], [276, 237], [53, 281], [361, 95], [349, 361], [119, 185], [131, 76], [92, 364]] }
+    // ✅ Jay 2026-11-24：舊的六張往下匯流的圖換掉，照章節主題重畫成多拐彎的路
+    { name: "虎牢關", ez: 0.58, art: "map_8", key: [[200, 378], [200, 452]], paths: [
+      [[-12, 55], [140, 55], [140, 130], [30, 130], [30, 235], [150, 235], [150, 355], [200, 378], [200, 452], G0],
+      [[412, 55], [247, 55], [247, 130], [362, 130], [362, 235], [250, 235], [250, 355], [200, 378], [200, 452], G0],
+      [[200, -12], [200, 228], [150, 235], [150, 355], [200, 378], [200, 452], G0],
+      [[-12, 300], [150, 300], [150, 355], [200, 378], [200, 452], G0],
+      [[412, 300], [250, 300], [250, 355], [200, 378], [200, 452], G0]], names: ["左上", "右上", "正上", "左側", "右側"],
+      slots: [[163, 398], [238, 398], [209, 290], [80, 200], [159, 198], [274, 202], [40, 97], [115, 99], [350, 97], [50, 340], [109, 345], [350, 345]], keyN: 2 },
+    { name: "洛陽城", ez: 1.2, art: "map_9", key: [[200, 330], [200, 452]], paths: [
+      [[-12, 70], [340, 70], [340, 330], [200, 330], [200, 452], G0],
+      [[200, -12], [200, 70], [340, 70], [340, 330], [200, 330], [200, 452], G0],
+      [[-12, 250], [60, 250], [60, 150], [260, 150], [260, 250], [200, 250], [200, 330], [200, 452], G0],
+      [[412, 200], [340, 200], [340, 330], [200, 330], [200, 452], G0],
+      [[60, -12], [60, 150], [260, 150], [260, 250], [200, 250], [200, 330], [200, 452], G0]], names: ["左上側", "正上", "左側", "右側", "左上"],
+      slots: [[163, 380], [237, 380], [97, 109], [216, 108], [300, 100], [192, 189], [100, 210], [300, 246], [52, 290], [160, 286], [236, 290], [335, 371]], keyN: 2 },
+    { name: "官渡河畔", ez: 1.29, art: "map_10", key: [[200, 380], [200, 452]], paths: [
+      [[40, -12], [40, 113], [200, 113], [200, 60], [360, 60], [360, 300], [125, 300], [125, 380], [200, 380], [200, 452], G0],
+      [[280, -12], [280, 60], [360, 60], [360, 300], [125, 300], [125, 380], [200, 380], [200, 452], G0],
+      [[412, 150], [360, 150], [360, 300], [125, 300], [125, 380], [200, 380], [200, 452], G0],
+      [[-12, 250], [125, 250], [125, 300], [125, 380], [200, 380], [200, 452], G0],
+      [[-12, 113], [40, 113], [200, 113], [200, 60], [360, 60], [360, 300], [125, 300], [125, 380], [200, 380], [200, 452], G0]], names: ["左上", "右上", "右側", "左側", "左上側"],
+      slots: [[237, 408], [122, 420], [234, 98], [124, 158], [320, 160], [197, 260], [296, 258], [54, 289], [161, 341], [348, 340], [79, 50]], keyN: 2 },
+    { name: "烏巢糧倉", ez: 0.98, art: "map_11", key: [[200, 380], [200, 452]], paths: [
+      [[-12, 410], [70, 410], [70, 70], [200, 70], [200, 210], [330, 210], [330, 380], [200, 380], [200, 452], G0],
+      [[200, -12], [200, 70], [200, 210], [330, 210], [330, 380], [200, 380], [200, 452], G0],
+      [[412, 120], [330, 120], [330, 210], [330, 380], [200, 380], [200, 452], G0],
+      [[-12, 230], [70, 230], [70, 70], [200, 70], [200, 210], [330, 210], [330, 380], [200, 380], [200, 452], G0],
+      [[412, 300], [330, 300], [330, 380], [200, 380], [200, 452], G0]], names: ["左下", "正上", "右上側", "左側", "右側"],
+      slots: [[162, 408], [283, 419], [29, 93], [162, 108], [108, 212], [212, 248], [29, 285], [242, 48], [279, 169], [350, 79], [371, 212], [371, 333]], keyN: 2 },
+    { name: "南蠻叢林", ez: 0.78, art: "map_12", key: [[200, 400], [200, 452]], paths: [
+      [[340, -12], [340, 350], [250, 350], [250, 180], [150, 180], [150, 400], [200, 400], [200, 452], G0],
+      [[60, -12], [60, 400], [150, 400], [200, 400], [200, 452], G0],
+      [[412, 250], [340, 250], [340, 350], [250, 350], [250, 180], [150, 180], [150, 400], [200, 400], [200, 452], G0],
+      [[-12, 200], [60, 200], [60, 400], [150, 400], [200, 400], [200, 452], G0],
+      [[200, -12], [200, 180], [150, 180], [150, 400], [200, 400], [200, 452], G0]], names: ["右上", "左上", "右側", "左側", "正上"],
+      slots: [[238, 415], [190, 357], [104, 52], [238, 51], [158, 148], [298, 194], [96, 265], [210, 262], [300, 314], [110, 360], [328, 388]], keyN: 2 },
+    { name: "瀘水", ez: 1.29, art: "map_13", key: [[200, 370], [200, 452]], paths: [   // 畫出來的右側只有上段一條路，所以右邊兩個入口走同一條
+      [[-12, 295], [90, 295], [90, 90], [310, 90], [310, 295], [225, 295], [225, 215], [172, 215], [172, 370], [200, 370], [200, 452], G0],
+      [[412, 165], [310, 165], [310, 295], [225, 295], [225, 215], [172, 215], [172, 370], [200, 370], [200, 452], G0],
+      [[200, -12], [200, 90], [310, 90], [310, 295], [225, 295], [225, 215], [172, 215], [172, 370], [200, 370], [200, 452], G0],
+      [[-12, 178], [90, 178], [90, 90], [310, 90], [310, 295], [225, 295], [225, 215], [172, 215], [172, 370], [200, 370], [200, 452], G0],
+      [[412, 165], [310, 165], [310, 295], [225, 295], [225, 215], [172, 215], [172, 370], [200, 370], [200, 452], G0]], names: ["左側", "右側", "正上", "左上側", "右側"],
+      slots: [[162, 404], [237, 402], [152, 46], [300, 46], [350, 129], [46, 146], [200, 175], [258, 254], [133, 268], [350, 242], [50, 339], [325, 340]], keyN: 2 }
   ];
+  // ★ ez（敵兵血量倍率）用模擬校過，讓每張圖差不多難；回馬道本身最好守，最多只加到 1.3
   M.LAYOUTS = LAYOUTS;
+  // ✅ Jay 2026-11-24：章節照三國劇情換勢力（敵將、小兵都換），敵將變化要多一點
+  // ★ 每章 5 關：兩張圖 A、B 照 A → B → A 鏡像 → B 鏡像 → A（入口換位）輪；第 5 關是大關（敵將兩位一起來）；四章打完從頭再輪，難度繼續往上
+  M.CHAPTERS = [
+    { id: "yt", name: "黃巾之亂", fac: "yt", maps: ["九曲道", "回馬道"], stages: [
+      { van: ["波才"], main: ["張寶"] }, { van: ["馬元義"], main: ["張梁"] }, { van: ["張寶"], main: ["張角"] }, { van: ["張梁"], main: ["張角"] },
+      { van: ["張寶", "張梁"], main: ["張角"], big: true }] },
+    { id: "xl", name: "討伐董卓", fac: "xl", maps: ["虎牢關", "洛陽城"], stages: [
+      { van: ["李傕"], main: ["華雄"] }, { van: ["郭汜"], main: ["李儒"] }, { van: ["華雄"], main: ["呂布"] }, { van: ["李儒"], main: ["董卓"] },
+      { van: ["李傕", "郭汜"], main: ["呂布", "董卓"], big: true }] },
+    { id: "hb", name: "官渡之戰", fac: "hb", maps: ["官渡河畔", "烏巢糧倉"], stages: [
+      { van: ["審配"], main: ["袁術"] }, { van: ["高覽"], main: ["顏良"] }, { van: ["顏良"], main: ["文醜"] }, { van: ["文醜"], main: ["袁紹"] },
+      { van: ["顏良", "文醜"], main: ["袁紹"], big: true }] },
+    { id: "nm", name: "南蠻平定", fac: "nm", maps: ["南蠻叢林", "瀘水"], stages: [
+      { van: ["木鹿大王"], main: ["兀突骨"] }, { van: ["兀突骨"], main: ["祝融"] }, { van: ["木鹿大王"], main: ["孟獲"] }, { van: ["祝融"], main: ["孟獲"] },
+      { van: ["兀突骨", "木鹿大王"], main: ["孟獲", "祝融"], big: true }] }
+  ];
+  M.stagePlan = function (stage) {
+    stage = stage || 1;
+    var nc = M.CHAPTERS.length, ci = Math.floor((stage - 1) / 5) % nc, k = (stage - 1) % 5, loop = Math.floor((stage - 1) / (5 * nc));
+    var C = M.CHAPTERS[ci], S = C.stages[k], q = [[0, false, 0], [1, false, 0], [0, true, 0], [1, true, 0], [0, false, 2]][k];
+    return { stage: stage, ch: ci, chName: C.name, k: k, loop: loop, big: !!S.big, map: C.maps[q[0]], mirror: q[1] !== (loop % 2 === 1), rot: (q[2] + loop) % 5, van: S.van, main: S.main, fac: C.fac };
+  };
   M.genMap = function (stage) {
     stage = stage || 1;
     var r = mrnd(stage + 1000), R = function (a, b) { return Math.round(a + (b - a) * r()); };
-    var n = LAYOUTS.length, idx = (stage - 1) % n, mir = Math.floor((stage - 1) / n) % 2 === 1, L = LAYOUTS[idx], src = L;
+    var plan = M.stagePlan(stage), idx = 0; LAYOUTS.forEach(function (l, i) { if (l.name === plan.map) idx = i; });
+    var mir = plan.mirror, L = LAYOUTS[idx], src = L;
     var fx = function (q) { return [mir ? M.W - q[0] : q[0], q[1]]; };
-    var rot = Math.floor((stage - 1) / (2 * n)) % 5, rotA = function (a) { return a.slice(rot).concat(a.slice(0, rot)); };   // ★ 八張圖輪完、鏡像再輪完之後（第 17 關起）同一張圖再輪，但各入口出的兵換位置
+    var rot = plan.rot, rotA = function (a) { return a.slice(rot).concat(a.slice(0, rot)); };
     var paths = rotA(src.paths).map(function (p) { return p.map(fx); }), key = src.key.map(fx), lake = L.lake ? [mir ? M.W - L.lake[0] : L.lake[0], L.lake[1], L.lake[2], L.lake[3]] : null;
     var names = rotA(src.names).map(function (s) { return mir ? s.replace(/[左右]/g, function (c) { return c === "左" ? "右" : "左"; }) : s; });
     var pts = paths.map(cut), all = []; pts.forEach(function (P) { for (var i = 0; i < P.length; i += 2) all.push(P[i]); });
@@ -145,7 +168,7 @@
       deco.push({ x: x, y: y, k: r() < 0.82 ? "tree" + (1 + Math.floor(r() * 4)) : "rock", s: 0.8 + r() * 0.5 });
     }
     deco.sort(function (a, b) { return a.y - b.y; });
-    return { stage: stage, name: L.name, layout: idx, mirror: mir, paths: paths, pts: pts, slots: slots, key: slots.slice(0, nk).map(function (q, i) { return i; }), names: names, deco: deco, lake: lake, theme: (stage - 1) % 4, art: L.art || null, artK: L.artK || 1, dim: L.dim || 0, ez: L.ez || 1 };
+    return { stage: stage, plan: plan, name: L.name, layout: idx, mirror: mir, paths: paths, pts: pts, slots: slots, key: slots.slice(0, nk).map(function (q, i) { return i; }), names: names, deco: deco, lake: lake, theme: (stage - 1) % 4, art: L.art || null, artK: L.artK || 1, dim: L.dim || 0, ez: L.ez || 1 };
   };
   M.useMap = function (map) { M.MAP = map; M.PATHS = map.paths; M.PTS = map.pts; M.SLOTS = map.slots; M.KEY = map.key; M.GATE_NAMES = map.names; };
   M.useMap(M.genMap(1));
@@ -189,12 +212,36 @@
   };
   M.SK_ATK = 1.3; M.SK_ATK_T = 4; M.SK_SPD = 1.5; M.SK_SPD_T = 4; M.SK_RAGE_T = 3; M.SK_PSN_T = 4; M.SK_PSN_D = 0.3; M.SK_PSN_SLOW = 0.7; M.SK_FIRE_T = 2.5; M.SK_FIRE_D = 0.8; M.SK_FIRE_R = 48; M.SK_SLOW = 0.5; M.SK_SLOW_T = 3;
   // ✅ Jay 2026-11-23：武將不會死；敵將的招式是上 DEBUFF（遲緩＝攻速減半、麻痹＝不能出手）
-  // ★ 小招每隔 cd 秒對最近的武將放；大招在血量掉到一半時放一次，之後每 BOSS_ULT_CD 秒再放一次
+  // ★ 小招每隔 cd 秒放一次；大招在血量掉到一半時放一次，之後每 BOSS_ULT_CD 秒再放一次。時間是引擎秒（一般速度下實際是 2 倍）
+  // ★ 第二章以後的敵將、招式、數值都是開發配的。hp／walk＝兵力、走路時間的倍率；rev＝倒下後復活一次
+  // ★ hp 用模擬校過：每位敵將跟張寶（先鋒）／張角（本陣）一樣難打（招式越兇，兵力越少）
+  // 招式：slow／stun＝最近一位武將遲緩／麻痹；stun2＝最近兩位麻痹；volley＝射程內最多三位遲緩；slowAll／stunAll＝全軍；
+  //      summon＝召兵（數量、兵種）；heal＝回血（比例）；healMin＝敵兵全部回血；armor＝受到的傷害減半；dash＝往前猛衝、撞碎落石；haste＝敵兵全部加速
   M.BOSS_SK = {
-    "張寶": { cd: 4, sk: "妖術", deb: "slow", t: 2, ult: "妖術迷陣", ultDesc: "全軍麻痹 3 秒，並召來黃巾兵" },
-    "張角": { cd: 4, sk: "落雷", deb: "stun", t: 1.5, ult: "黃天當立", ultDesc: "全軍遲緩 8 秒，黃巾兵全部加速" }
+    "波才": { hp: 1.26, col: "#ff8a3a", sk: { a: "slow", t: 2, name: "縱火" }, ult: { name: "黃巾蜂起", desc: "召來大批黃巾兵", acts: [["summon", 10]] } },
+    "馬元義": { hp: 0.73, col: "#ffd84a", walk: 0.85, sk: { a: "dash", t: 1.2, name: "疾馳" }, ult: { name: "內應", desc: "全軍麻痹 2 秒，並往前猛衝", acts: [["stunAll", 1], ["dash", 2]] } },
+    "張寶": { col: "#b36bff", sk: { a: "slow", t: 2, name: "妖術" }, ult: { name: "妖術迷陣", desc: "全軍麻痹 3 秒，並召來援兵", acts: [["stunAll", 1.5], ["summon", 6]] } },
+    "張梁": { hp: 0.93, col: "#c8a830", sk: { a: "stun2", t: 1, name: "地裂" }, ult: { name: "地公將軍", desc: "8 秒內受到的傷害減半，並召來援兵", acts: [["armor", 4], ["summon", 6]] } },
+    "張角": { col: "#ffd84a", sk: { a: "stun", t: 1.5, name: "落雷" }, ult: { name: "黃天當立", desc: "全軍遲緩 8 秒，敵兵全部加速", acts: [["slowAll", 4], ["haste", 4]] } },
+    "華雄": { hp: 0.83, col: "#ff5a3a", walk: 0.85, sk: { a: "stun", t: 2, name: "斬將" }, ult: { name: "關前叫陣", desc: "8 秒內受到的傷害減半，全軍遲緩 6 秒", acts: [["armor", 4], ["slowAll", 3]] } },
+    "李傕": { hp: 1.1, col: "#d04040", walk: 0.85, sk: { a: "summon", n: 3, k: "cav", name: "劫掠" }, ult: { name: "西涼鐵騎", desc: "召來大批騎兵，敵兵全部加速", acts: [["summon", 8, "cav"], ["haste", 4]] } },
+    "郭汜": { hp: 0.98, col: "#d04040", walk: 0.85, sk: { a: "volley", t: 2, name: "亂箭" }, ult: { name: "縱兵大掠", desc: "敵兵全部加速，並召來援兵", acts: [["haste", 5], ["summon", 6]] } },
+    "李儒": { hp: 1.14, col: "#7dff9a", sk: { a: "slow", t: 3.5, name: "鴆毒" }, ult: { name: "毒計", desc: "全軍遲緩 10 秒", acts: [["slowAll", 5]] } },
+    "呂布": { hp: 0.57, col: "#ff3030", walk: 0.8, sk: { a: "stun2", t: 1.5, name: "方天畫戟" }, ult: { name: "天下無雙", desc: "往前猛衝、撞碎落石，全軍麻痹 3 秒", acts: [["dash", 3], ["stunAll", 1.5]] } },
+    "董卓": { hp: 0.59, col: "#a040ff", walk: 1.1, sk: { a: "heal", p: 0.04, name: "酒池肉林" }, ult: { name: "暴政", desc: "回血、10 秒內受到的傷害減半，敵兵全部加速", acts: [["heal", 0.15], ["armor", 5], ["haste", 4]] } },
+    "審配": { hp: 0.73, col: "#6aaeed", sk: { a: "armor", t: 3, name: "固守" }, ult: { name: "死守鄴城", desc: "回血，並召來盾兵", acts: [["heal", 0.12], ["summon", 6, "shield"]] } },
+    "高覽": { hp: 0.65, col: "#6aaeed", walk: 0.85, sk: { a: "dash", t: 1.2, name: "突進" }, ult: { name: "奇襲", desc: "兩位武將麻痹 4 秒，並召來援兵", acts: [["stun2", 2], ["summon", 5]] } },
+    "顏良": { hp: 0.67, col: "#4ec0ff", walk: 0.85, sk: { a: "stun", t: 1.5, name: "大刀" }, ult: { name: "河北名將", desc: "往前猛衝、撞碎落石，6 秒內受到的傷害減半", acts: [["dash", 2.5], ["armor", 3]] } },
+    "文醜": { hp: 0.89, col: "#4ec0ff", sk: { a: "volley", t: 2, name: "連弩" }, ult: { name: "勇冠三軍", desc: "8 秒內受到的傷害減半，全軍麻痹 2 秒", acts: [["armor", 4], ["stunAll", 1]] } },
+    "袁術": { hp: 1.1, col: "#ffd84a", sk: { a: "heal", p: 0.03, name: "玉璽" }, ult: { name: "仲家皇帝", desc: "敵兵全部回血 30% 並加速", acts: [["healMin", 0.3], ["haste", 5]] } },
+    "袁紹": { hp: 0.91, col: "#6aaeed", sk: { a: "volley", t: 2.5, name: "強弩齊射" }, ult: { name: "四世三公", desc: "全軍遲緩 8 秒，並召來強弩手", acts: [["slowAll", 4], ["summon", 8, "bow"]] } },
+    "祝融": { hp: 0.93, col: "#ff6a2a", sk: { a: "stun2", t: 1, name: "飛刀" }, ult: { name: "火神祝融", desc: "全軍麻痹 3 秒，並召來援兵", acts: [["stunAll", 1.5], ["summon", 5]] } },
+    "兀突骨": { hp: 0.89, col: "#c89a5a", walk: 1.1, sk: { a: "armor", t: 3, name: "藤甲" }, ult: { name: "藤甲軍", desc: "12 秒內受到的傷害減半，並召來藤甲兵", acts: [["armor", 6], ["summon", 6, "shield"]] } },
+    "木鹿大王": { hp: 1.36, col: "#7dff9a", sk: { a: "summon", n: 3, k: "cav", name: "驅獸" }, ult: { name: "百獸奔騰", desc: "召來大批猛獸，敵兵全部加速", acts: [["summon", 8, "cav"], ["haste", 4]] } },
+    "孟獲": { hp: 0.61, col: "#ff8a3a", rev: true, sk: { a: "stun", t: 1.5, name: "蠻王之怒" }, ult: { name: "南蠻王", desc: "全軍遲緩 8 秒，並召來援兵", acts: [["slowAll", 4], ["summon", 6]] } }
   };
-  M.BOSS_ULT_HP = 0.5; M.BOSS_ULT_CD = 10; M.BOSS_RNG = 140; M.ULT_STUN = 1.5; M.ULT_SLOW = 4; M.ULT_HASTE = 1.5; M.ULT_SUMMON = 6;
+  M.BOSS_CD0 = 4; M.BOSS_SPLIT = 0.75; M.ARMOR = 0.5; M.DASH = 3;
+  M.BOSS_ULT_HP = 0.5; M.BOSS_ULT_CD = 10; M.BOSS_RNG = 140; M.ULT_HASTE = 1.5;
   // 射程、攻擊間隔（引擎秒；一般速度下實際秒數是 2 倍）、可擋幾個敵人
   // ★ 節奏調慢後武將的出手頻率維持原本的實際秒數（槍兵每秒 1 下），慢下來的是敵軍行軍
   M.TYPE = {
@@ -208,20 +255,29 @@
   // ✅ Jay 2026-11-23：敵兵不同兵種要有不同數值、種類更多變；第 1 關只有一種兵、第 2 關兩種……（★ 每過一關多開一種，數值與特性是開發配的）
   // cnt＝同一批出兵時的數量倍率（血厚的少一點）；noblock＝擋不住；armor＝弓兵、法師對他的傷害倍率；heal＝幫周圍補血；gate＝到城門扣幾次；solo＝數量不乘倍率
   M.ENEMY = {
-    spear: { name: "黃巾槍兵", hp: 819, atk: 62, spd: 30, food: 4, cnt: 1, tip: "最普通的黃巾兵，人多。" },
+    spear: { name: "黃巾槍兵", hp: 819, atk: 62, spd: 30, food: 4, cnt: 1, tip: "最普通的兵，人多。" },
     cav: { name: "黃巾騎兵", hp: 620, atk: 83, spd: 58, food: 5, cnt: 0.8, tip: "跑得快、血少。我方騎兵打小兵傷害 ×1.5，最適合對付。" },
     bow: { name: "黃巾弓兵", hp: 520, atk: 52, spd: 34, food: 3, cnt: 1.3, tip: "血最少，但一來就是一大群。法師的濺射、「雷」最好清。" },
     shield: { name: "黃巾盾兵", hp: 1300, atk: 70, spd: 26, food: 7, cnt: 0.7, armor: 0.5, tip: "盾牌擋箭：弓兵、法師打他只有一半傷害，要靠槍兵、騎兵、刺客。" },
-    mage: { name: "黃巾道士", hp: 760, atk: 73, spd: 26, food: 6, cnt: 0.6, heal: 0.06, tip: "每隔幾秒幫周圍的黃巾兵補血，越早打掉越好。" },
+    mage: { name: "黃巾道士", hp: 760, atk: 73, spd: 26, food: 6, cnt: 0.6, heal: 0.06, tip: "每隔幾秒幫周圍的敵兵補血，越早打掉越好。" },
     dash: { name: "黃巾死士", hp: 480, atk: 60, spd: 66, food: 5, cnt: 0.7, noblock: true, tip: "衝得很快，槍兵、騎兵擋不住。用「石」的落石擋，或靠火力打掉。" },
     brute: { name: "黃巾力士", hp: 2600, atk: 180, spd: 22, food: 9, cnt: 0.5, tip: "走得慢、血很厚，砸落石也特別快。" },
-    ram: { name: "衝車", hp: 6500, atk: 300, spd: 16, food: 20, cnt: 1, solo: true, noblock: true, gate: 2, tip: "非常慢、非常硬，擋不住；撞到城門一次扣 2。落石可以拖住它。" }
+    ram: { name: "衝車", hp: 6500, atk: 300, spd: 16, food: 20, cnt: 1, solo: true, noblock: true, gate: 2, tip: "非常慢、非常硬，擋不住；到城門一次扣 2。落石可以拖住它。" }
   };
+  // ✅ Jay 2026-11-24：小兵跟著章節換勢力（能力一樣，名字、造型不同）
+  M.FACTIONS = {
+    yt: { name: "黃巾軍", img: "u_e_", names: { spear: "黃巾槍兵", cav: "黃巾騎兵", bow: "黃巾弓兵", shield: "黃巾盾兵", mage: "黃巾道士", dash: "黃巾死士", brute: "黃巾力士", ram: "衝車" } },
+    xl: { name: "西涼軍", img: "u_xl_", names: { spear: "西涼槍兵", cav: "西涼鐵騎", bow: "西涼弓手", shield: "西涼盾兵", mage: "西涼巫醫", dash: "西涼死士", brute: "西涼力士", ram: "西涼衝車" } },
+    hb: { name: "河北軍", img: "u_hb_", names: { spear: "河北槍兵", cav: "河北騎兵", bow: "強弩手", shield: "大盾兵", mage: "河北軍醫", dash: "先登死士", brute: "大戟士", ram: "河北衝車" } },
+    nm: { name: "南蠻軍", img: "u_nm_", names: { spear: "蠻族槍兵", cav: "猛獸騎", bow: "吹箭手", shield: "藤甲兵", mage: "蠻族巫師", dash: "蠻族刺客", brute: "蠻族巨漢", ram: "戰象" } }
+  };
+  M.enemyName = function (k, fac) { return ((M.FACTIONS[fac] || M.FACTIONS.yt).names[k]) || M.ENEMY[k].name; };
   M.UNLOCK = ["spear", "cav", "bow", "shield", "mage", "dash", "brute", "ram"];
   M.kinds = function (stage) { return M.UNLOCK.slice(0, Math.max(1, Math.min(M.UNLOCK.length, stage || 1))); };
   M.HEAL_CD = 1.5; M.HEAL_R = 50;
   M.HP_GROW = 1.12;
   M.MINION_HP = 0.43; M.MINION_N = 3; M.MINION_FOOD = 1 / 3;   // ✅ Jay 2026-11-23：小兵血量減 2/3、數量加一倍。★ 武將不會死之後再調：數量再多一半、血量 ×1.3、軍糧總量不變
+  // boss1＝先鋒（第一波）、boss2＝本陣（第二波）；實際是哪位敵將看關卡安排（M.stagePlan）
   M.BOSSES = { boss1: { gen: "張寶", hp: 35000, atk: 260, walk: 28, food: 80 }, boss2: { gen: "張角", hp: 112000, atk: 400, walk: 40, food: 120 } };
   M.BOSS = M.BOSSES.boss2;
   M.WAVE_NAMES = ["敵軍先鋒", "敵軍本陣"];
@@ -286,7 +342,7 @@
     var G = {
       t: 0, rnd: rnd, lives: M.LIVES, food: M.FOOD0, wave: 0, phase: "deploy", waveT: 0, queue: [], over: false, won: false,
       gens: [], reserve: [], enemies: [], rocks: [], zones: [], fx: [], tac: {}, fireT: 0, windT: 0, atkBuffT: 0, spdBuffT: 0, eSlowT: 0, hasteT: 0, autoSkill: true, nid: 1, kills: 0, spins: 0, grid: [], hits: [], S: S,
-      list: list, stage: stage, sm: M.stageMul(stage)
+      list: list, stage: stage, sm: M.stageMul(stage), plan: M.MAP.plan, fac: M.MAP.plan.fac
     };
     G.sm.hp *= M.MAP.ez;
     list.forEach(function (c) { var s = genStats(c, S); G.reserve.push({ c: c, base: s }); });
@@ -392,7 +448,11 @@
     var K = M.WAVE_K[G.wave - 1];
     var ok = M.kinds(G.stage);
     M.WAVES[G.wave - 1].forEach(function (e, ei) {
-      if (M.BOSSES[e[2]]) { G.queue.push({ at: e[0] * K, gate: e[1], k: e[2], lvl: e[5] }); return; }
+      if (M.BOSSES[e[2]]) {   // 大關會有兩位敵將，第二位晚 8 秒、從別的入口來
+        var BL = e[2] === "boss1" ? G.plan.van : G.plan.main;
+        BL.forEach(function (nm, j) { G.queue.push({ at: (e[0] + j * 8) * K, gate: (e[1] + j * 2) % M.PATHS.length, k: e[2], gen: nm, n: BL.length, lvl: e[5] }); });
+        return;
+      }
       var k = e[2], D0 = M.ENEMY[k];
       if (ok.indexOf(k) < 0) { if (M.UNLOCK.indexOf(k) >= 5) return; k = ok[ei % ok.length]; }   // 還沒開放：新兵種整批不出；原本五種換成已開放的
       var D = M.ENEMY[k], n = D.solo ? e[3] : Math.max(1, Math.round(e[3] / D0.cnt * M.MINION_N * D.cnt)), gap = Math.max(0.25, e[3] * e[4] * K / n);
@@ -404,15 +464,15 @@
   function spawn(G, q) {
     var e, lvl = q.lvl || G.wave, mul = Math.pow(M.HP_GROW, lvl - 1);
     if (M.BOSSES[q.k]) {
-      var B = M.BOSSES[q.k], bc = SG.GEN[B.gen];
-      e = { boss: true, big: q.k === "boss2", name: B.gen, art: bc && bc.art, hp: B.hp * G.sm.hp, atk: B.atk * G.sm.atk, spd: M.PTS[q.gate].len / B.walk, food: B.food };   // 不管路多長，Boss 都走一樣久
-      G.fx.push({ t: G.t, kind: "boss", name: B.gen, art: e.art, big: e.big });
+      var B = M.BOSSES[q.k], nm = q.gen || B.gen, X = M.BOSS_SK[nm] || {}, bc = SG.GEN[nm], sh = q.n > 1 ? M.BOSS_SPLIT : 1;
+      e = { boss: true, big: q.k === "boss2", name: nm, art: bc && bc.art, rev: !!X.rev, hp: B.hp * (X.hp || 1) * sh * G.sm.hp, atk: B.atk * G.sm.atk, spd: M.PTS[q.gate].len / (B.walk * (X.walk || 1)), food: Math.round(B.food * sh) };   // 不管路多長，Boss 都走一樣久
+      G.fx.push({ t: G.t, kind: "boss", name: nm, art: e.art, big: e.big });
     } else {
       var d = M.ENEMY[q.k];
-      e = { k: q.k, name: d.name, noblock: d.noblock, armor: d.armor, heal: d.heal, gate: d.gate, healT: M.HEAL_CD * G.rnd(), hp: d.hp * M.MINION_HP * mul * G.sm.hp, atk: d.atk * Math.pow(1.1, lvl - 1) * G.sm.atk, spd: d.spd * (0.92 + G.rnd() * 0.16) * Math.max(0.85, Math.min(1.9, M.PTS[q.gate].len / 520)), food: d.food * M.MINION_FOOD };
+      e = { k: q.k, name: M.enemyName(q.k, G.fac), noblock: d.noblock, armor: d.armor, heal: d.heal, gate: d.gate, healT: M.HEAL_CD * G.rnd(), hp: d.hp * M.MINION_HP * mul * G.sm.hp, atk: d.atk * Math.pow(1.1, lvl - 1) * G.sm.atk, spd: d.spd * (0.92 + G.rnd() * 0.16) * Math.max(0.85, Math.min(1.9, M.PTS[q.gate].len / 520)), food: d.food * M.MINION_FOOD };
     }
     e.id = G.nid++; e.max = e.hp; e.path = q.gate; e.s = q.s0 || 0; e.cd = 0; e.stun = 0; e.burn = 0; e.burnD = 0; e.burnTick = 0; e.psn = 0; e.psnD = 0; e.psnTick = 0; e.block = null;
-    if (e.boss) { e.skT = M.BOSS_SK[e.name].cd; e.castT = 0; e.ultDone = false; e.ultT = 0; }
+    if (e.boss) { e.skT = (M.BOSS_SK[e.name] || {}).cd || M.BOSS_CD0; e.castT = 0; e.ultDone = false; e.ultT = 0; e.armorT = 0; e.dashT = 0; }
     var p = posAt(e.path, e.s); e.x = p.x; e.y = p.y;
     if (!e.boss) { G.seenK = G.seenK || {}; if (!G.seenK[e.k]) { G.seenK[e.k] = 1; G.fx.push({ t: G.t, kind: "newenemy", k: e.k }); } }
     G.enemies.push(e);
@@ -508,8 +568,14 @@
   function hurt(G, e, d, kind) {
     if (e.hp <= 0) return;
     if (e.armor && (G._src === "弓" || G._src === "法")) d *= e.armor;   // 盾兵擋箭
+    if (e.armorT > 0) d *= M.ARMOR;                                       // 敵將的減傷
     if (G.stat && G._src) { var k0 = G._src + (e.boss ? "B" : "M"); G.stat[k0] = (G.stat[k0] || 0) + Math.min(d, e.hp); }
     e.hp -= d; G.fx.push({ t: G.t, kind: "dmg", x: e.x, y: e.y, v: Math.round(d), c: kind });
+    if (e.hp <= 0 && e.rev && !e.revived) {   // 孟獲：七擒七縱，倒下後復活一次
+      e.revived = true; e.hp = e.max * 0.5; e.ultDone = false; e.castT = 0.9; e.castAt = G.t; e.ultN = (e.ultN || 0) + 1;
+      G.fx.push({ t: G.t, kind: "bossult", name: e.name, sk: "七擒七縱", x: e.x, y: e.y, rev: true });
+      return;
+    }
     if (e.hp <= 0) { G.kills++; G.foodF = (G.foodF || 0) + e.food * (1 + 0.4 * (G.tac.food || 0)); var fi = Math.floor(G.foodF); G.foodF -= fi; G.food += fi; G.fx.push({ t: G.t, kind: "die", x: e.x, y: e.y }); }
   }
 
@@ -518,26 +584,42 @@
     if (kind === "slow") g.slowT = Math.max(g.slowT, t); else g.stunT = Math.max(g.stunT, t);
     var p = M.SLOTS[g.slot]; G.fx.push({ t: G.t, kind: "debuff", d: kind, x: p[0], y: p[1], gid: g.id });
   }
-  function bossSkill(G, e) {   // 小招：最近的一位武將
-    var B = M.BOSS_SK[e.name], near = null, nd = M.BOSS_RNG;
-    G.gens.forEach(function (g) { var sp = M.SLOTS[g.slot], d = Math.hypot(sp[0] - e.x, sp[1] - e.y); if (d < nd) { nd = d; near = g; } });
-    if (!near) return false;
-    var np = M.SLOTS[near.slot];
-    debuff(G, near, B.deb, B.t); e.castT = 0.35; e.castAt = G.t;
-    G.fx.push({ t: G.t, kind: "bosscast", name: e.name, sk: B.sk, d: B.deb, x: e.x, y: e.y, x1: np[0], y1: np[1] });
+  function nearGens(G, e, n, rng) {
+    return G.gens.map(function (g) { var sp = M.SLOTS[g.slot]; return { g: g, d: Math.hypot(sp[0] - e.x, sp[1] - e.y) }; })
+      .filter(function (o) { return o.d < rng; }).sort(function (a, b) { return a.d - b.d; }).slice(0, n).map(function (o) { return o.g; });
+  }
+  function bossSummon(G, e, n, k) {
+    for (var i = 0; i < n; i++) spawn(G, { gate: e.path, k: k || "spear", lvl: G.wave === 1 ? 5 : 10, s0: Math.max(0, e.s - 8 - i * 9) });
+  }
+  // 一個招式動作；需要對象的（slow／stun／stun2／volley）找不到武將就回傳 false
+  function bossAct(G, e, a, v, v2, fx) {
+    var L;
+    if (a === "slow" || a === "stun") { L = nearGens(G, e, 1, M.BOSS_RNG); if (!L.length) return false; debuff(G, L[0], a, v); }
+    else if (a === "stun2") { L = nearGens(G, e, 2, M.BOSS_RNG); if (!L.length) return false; L.forEach(function (g) { debuff(G, g, "stun", v); }); }
+    else if (a === "volley") { L = nearGens(G, e, 3, M.BOSS_RNG * 1.3); if (!L.length) return false; L.forEach(function (g) { debuff(G, g, "slow", v); }); }
+    else if (a === "slowAll" || a === "stunAll") G.gens.forEach(function (g) { debuff(G, g, a === "slowAll" ? "slow" : "stun", v); });
+    else if (a === "summon") bossSummon(G, e, v, v2);
+    else if (a === "heal") { if (e.hp >= e.max * 0.98) return false; e.hp = Math.min(e.max, e.hp + e.max * v); G.fx.push({ t: G.t, kind: "heal", x: e.x, y: e.y }); }
+    else if (a === "healMin") G.enemies.forEach(function (o) { if (!o.boss && o.hp > 0) o.hp = Math.min(o.max, o.hp + o.max * v); });
+    else if (a === "armor") e.armorT = Math.max(e.armorT, v);
+    else if (a === "dash") { if (e.s >= M.PTS[e.path].len - 30) return false; e.dashT = Math.max(e.dashT, v); }
+    else if (a === "haste") G.hasteT = Math.max(G.hasteT, v);
+    if (L && fx) { var p = M.SLOTS[L[0].slot]; fx.x1 = p[0]; fx.y1 = p[1]; fx.d = a === "slow" || a === "volley" ? "slow" : "stun"; }
     return true;
   }
-  function bossUlt(G, e) {     // 大招：全軍
-    var B = M.BOSS_SK[e.name];
+  function bossSkill(G, e) {   // 小招
+    var X = M.BOSS_SK[e.name], K = X && X.sk; if (!K) return false;
+    var fx = { t: G.t, kind: "bosscast", name: e.name, sk: K.name, x: e.x, y: e.y };
+    if (!bossAct(G, e, K.a, K.t !== undefined ? K.t : K.n !== undefined ? K.n : K.p, K.k, fx)) return false;
+    e.castT = 0.35; e.castAt = G.t;
+    G.fx.push(fx);
+    return true;
+  }
+  function bossUlt(G, e) {     // 大招
+    var X = M.BOSS_SK[e.name]; if (!X || !X.ult) return;
     e.castT = 0.9; e.castAt = G.t; e.ultN = (e.ultN || 0) + 1;
-    if (e.name === "張寶") {
-      G.gens.forEach(function (g) { debuff(G, g, "stun", M.ULT_STUN); });
-      for (var i = 0; i < M.ULT_SUMMON; i++) spawn(G, { gate: e.path, k: "spear", lvl: 5, s0: Math.max(0, e.s - 8 - i * 9) });
-    } else {
-      G.gens.forEach(function (g) { debuff(G, g, "slow", M.ULT_SLOW); });
-      G.hasteT = Math.max(G.hasteT, M.ULT_SLOW);
-    }
-    G.fx.push({ t: G.t, kind: "bossult", name: e.name, sk: B.ult, x: e.x, y: e.y });
+    X.ult.acts.forEach(function (A) { bossAct(G, e, A[0], A[1], A[2]); });
+    G.fx.push({ t: G.t, kind: "bossult", name: e.name, sk: X.ult.name, x: e.x, y: e.y });
   }
   function typeMul(g, e) { return g.c.typ === "刺" && e.boss ? M.SIN_BOSS : g.c.typ === "騎" && !e.boss ? M.CAV_MINION : 1; }
   function prog(e) { return e.s / M.PTS[e.path].len; }
@@ -627,20 +709,22 @@
       e.cd -= dt;
       if (e.block) return;
       if (e.boss) {
+        e.armorT = Math.max(0, e.armorT - dt); e.dashT = Math.max(0, e.dashT - dt);
         if (e.castT > 0) { e.castT -= dt; return; }      // 施法中站著不動
         var atGate = e.s >= M.PTS[e.path].len - 6;
         // 大招：血量掉到一半放一次，之後每隔一段時間再放
         if (!e.ultDone && e.hp <= e.max * M.BOSS_ULT_HP) { e.ultDone = true; e.ultT = M.BOSS_ULT_CD; bossUlt(G, e); return; }
         if (e.ultDone) { e.ultT -= dt; if (e.ultT <= 0) { e.ultT = M.BOSS_ULT_CD; bossUlt(G, e); return; } }
-        e.skT -= dt; if (e.skT <= 0) { if (bossSkill(G, e)) { e.skT = M.BOSS_SK[e.name].cd; return; } e.skT = 0.5; }
+        e.skT -= dt; if (e.skT <= 0) { if (bossSkill(G, e)) { e.skT = (M.BOSS_SK[e.name] || {}).cd || M.BOSS_CD0; return; } e.skT = 0.5; }
+        if (e.dashT > 0) G.rocks.forEach(function (k) { if (k.hp > 0 && Math.hypot(k.x - e.x, k.y - e.y) < 26) { k.hp = 0; G.fx.push({ t: G.t, kind: "rockbreak", x: k.x, y: k.y }); } });
         if (e.cd <= 0) {   // 每 3 秒攻擊一次：到城門前扣城門，被落石擋住就打落石
-          var rk = G.rocks.find(function (k) { return Math.hypot(k.x - e.x, k.y - e.y) < 22; });
+          var rk = G.rocks.find(function (k) { return k.hp > 0 && Math.hypot(k.x - e.x, k.y - e.y) < 22; });
           if (atGate) { e.cd = M.BOSS_CD; e.hitAt = G.t; G.lives -= 1; G.fx.push({ t: G.t, kind: "gate" }); G.fx.push({ t: G.t, kind: "bosshit", x: e.x, y: e.y }); return; }
           if (rk) { e.cd = M.BOSS_CD; e.hitAt = G.t; rk.hp -= e.atk; G.fx.push({ t: G.t, kind: "bosshit", x: rk.x, y: rk.y }); if (rk.hp <= 0) G.fx.push({ t: G.t, kind: "rockbreak", x: rk.x, y: rk.y }); return; }
         }
         if (atGate) return;
-        if (G.rocks.some(function (k) { return Math.hypot(k.x - e.x, k.y - e.y) < 22; })) return;
-        var bs = Math.min(M.PTS[e.path].len - 5, e.s + e.spd * sf * dt), bp = posAt(e.path, bs); e.s = bs; e.x = bp.x; e.y = bp.y;
+        if (G.rocks.some(function (k) { return k.hp > 0 && Math.hypot(k.x - e.x, k.y - e.y) < 22; })) return;
+        var bs = Math.min(M.PTS[e.path].len - 5, e.s + e.spd * sf * (e.dashT > 0 ? M.DASH : 1) * dt), bp = posAt(e.path, bs); e.s = bs; e.x = bp.x; e.y = bp.y;
         return;
       }
       // 落石擋路
