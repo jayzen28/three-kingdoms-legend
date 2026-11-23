@@ -1648,3 +1648,6 @@ details.sl-how summary{font-family:var(--kai);font-weight:700;font-size:16px;col
 .sl-buff .m{box-shadow:inset 3px 0 0 #b99bff}.sl-buff .e{box-shadow:inset 3px 0 0 #e05858;color:#ffb4a8}
 #nav button{letter-spacing:0}
 .sl-foes{margin:8px 0 2px;font-size:13px;color:#e9dcb8}.sl-foes small{color:#a8966e;margin-left:4px}
+.sl-pick{display:flex;align-items:center;gap:6px}.sl-pick button{padding:2px 8px;font-size:15px;min-width:30px}.sl-pick button:disabled{opacity:.3}
+#sl-first{color:#ecd391;text-decoration:underline;cursor:pointer}
+.sl-pick b{font-size:28px;white-space:nowrap}.sl-stage .sl-start{width:min(42%,180px)}

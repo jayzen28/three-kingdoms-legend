@@ -26,10 +26,11 @@
     var shown = own.filter(function (c) { return (flt.ff === "全部" || c.fac === flt.ff) && (flt.ft === "全部" || c.typ === flt.ft); }).sort(function (a, b) { return rk(b) - rk(a); });
     var chips = function (attr, cur, arr) { return arr.map(function (v) { return '<button class="chip' + (v === cur ? ' on' : '') + '" data-' + attr + '="' + v + '">' + v + '</button>'; }).join(""); };
     var slots = ""; for (var k = 0; k < M.ROSTER_MAX; k++) { var pc = pick[k] && SG.GEN[pick[k]]; slots += pc ? '<button class="sl-pk" data-g="' + pc.gen + '"><span class="hd" style="--fc:' + FC[FV[pc.fac]] + '"><img src="img/' + pc.art + '_head.webp" alt=""></span><b>' + pc.gen + '</b><small>' + SG.TYPES[pc.typ].name + '</small></button>' : '<span class="sl-pk empty"><span class="hd"></span><b>空位</b><small>&nbsp;</small></span>'; }
+    var maxSt = Math.max(d.stage || 1, (d.top || 0) + 1);
     var nm = M.genMap(d.stage || 1); if (nm.art) img("img/slot/" + nm.art + ".webp?v=2");   // 先把這一關的手繪地圖載進來
     $("#s-slot").innerHTML = UI.strip("st-slot", "烽火", "試玩版・拉霸守城，一關一關守下去") +
       '<div class="paper sl-lobby">' +
-      '<div class="sl-stage"><div><small>目前關卡</small><b>第 ' + d.stage + ' 關</b><small>最高紀錄：第 ' + (d.top || 0) + ' 關</small></div>' +
+      '<div class="sl-stage"><div><small>選擇關卡・' + nm.name + '</small><div class="sl-pick"><button class="sm plain" id="sl-prev"' + (d.stage > 1 ? '' : ' disabled') + '>◀</button><b>第 ' + d.stage + ' 關</b><button class="sm plain" id="sl-next"' + (d.stage < maxSt ? '' : ' disabled') + '>▶</button></div><small>最高紀錄：第 ' + (d.top || 0) + ' 關' + (d.stage > 1 ? '・<a id="sl-first">回第 1 關</a>' : '') + '</small></div>' +
       '<button class="plaq sl-start" id="sl-start"' + (pick.length ? '' : ' disabled') + '><span>出征</span></button></div>' +
       '<div class="sl-foes">本關敵軍：' + M.kinds(d.stage).map(function (k) { return M.ENEMY[k].name.replace("黃巾", ""); }).join("、") + (d.stage <= M.UNLOCK.length ? '<small>（' + (d.stage === 1 ? '第 1 關只有一種兵，之後每關多一種' : '這一關新增「' + M.ENEMY[M.UNLOCK[d.stage - 1]].name + '」') + '）</small>' : '') + '</div>' +
       '<div class="sl-sec">出征名單 <small>' + pick.length + ' / ' + M.ROSTER_MAX + '・點頭像移出</small></div>' +
@@ -58,6 +59,10 @@
     $$(".sl-pk[data-g]").forEach(function (b) { b.onclick = function () { keep(function () { pick.splice(pick.indexOf(b.dataset.g), 1); }); }; });
     $$(".sl-flt [data-ff]").forEach(function (b) { b.onclick = function () { flt.ff = b.dataset.ff; UI.r_slot(); }; });
     $$(".sl-flt [data-ft]").forEach(function (b) { b.onclick = function () { flt.ft = b.dataset.ft; UI.r_slot(); }; });
+    var goSt = function (n) { d.stage = Math.max(1, Math.min(maxSt, n)); SG.Store.save(st); UI.r_slot(); };
+    $("#sl-prev").onclick = function () { goSt(d.stage - 1); };
+    $("#sl-next").onclick = function () { goSt(d.stage + 1); };
+    var f1 = $("#sl-first"); if (f1) f1.onclick = function () { goSt(1); };
     $("#sl-start").onclick = function () {
       if (!pick.length) return;
       d.list = pick.map(function (n) { return SG.GEN[n].id; }); SG.Store.save(st);
