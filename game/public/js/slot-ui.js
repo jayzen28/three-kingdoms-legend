@@ -101,7 +101,8 @@
         if (!M.startBattle(G)) { tip("至少要放一位武將"); return; }
         tip(""); renderRes();
         if (SG.Audio && SG.Audio.play) SG.Audio.play(G.stage % 2 ? "slot1" : "slot2", true);   // ★ 單數關〈先鋒來襲〉、雙數關〈黃天當立〉
-      } else doSpin();
+      } else if (G.phase === "tactic") showTactics();
+      else doSpin();
     };
     $("#sl-autob").onchange = function () { auto = this.checked; };
     $("#sl-x2").onclick = function () { fast = !fast; this.classList.toggle("on", fast); };   // ✅ Jay 2026-11-23：一般速度是原本的一半，「×2」切回兩倍速
@@ -272,7 +273,7 @@
     if (!$("#modal").classList.contains("show") && !paused) {
       M.step(G, dt * (fast ? 1 : M.SPEED));
       if (auto && !spinning && G.phase === "fight" && M.canSpin(G)) doSpin();
-      if (G.phase === "tactic" && !G.offerShown) showTactics();
+      if (G.phase === "tactic") showTactics();   // 視窗不在就重開（這段只在視窗沒開時才會跑到）
     }
     G.fx.forEach(function (f) {
       if (f.seen) return; f.seen = 1;
@@ -310,7 +311,7 @@
     G.offerShown = true;
     UI.modal('<h2>擊退' + M.WAVE_NAMES[G.wave - 1] + '！</h2><p class="dim">選一張軍略（軍糧 +30）</p><div class="sl-tacs">' +
       G.offer.map(function (t) { return '<button class="sl-tac" data-t="' + t.id + '"><b>' + t.name + '</b><span>' + t.desc + '</span></button>'; }).join("") + '</div>');
-    UI.back = function () { };   // 一定要選
+    var stay = function () { UI.back = stay; }; UI.back = stay;   // 一定要選：點視窗外面不會關掉（原本點第二下會關掉，遊戲就卡住）
     $$(".sl-tac").forEach(function (b) { b.onclick = function () { UI.back = null; UI.close(); G.offerShown = false; M.chooseTactic(G, b.dataset.t); renderRes(); last = performance.now(); }; });
   }
 
