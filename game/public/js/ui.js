@@ -374,7 +374,7 @@
       '<button class="orb" id="h-task"><img src="img/ui_ic_task.webp" alt=""><span>每日任務</span>' + (canClaim ? '<i class="badge"></i>' : '') + '</button>' +
       '<button class="orb" id="h-rec"><img src="img/ui_ic_tea.webp" alt=""><span>茶館招募</span></button>' +
       '<button class="orb" id="h-book"><img src="img/ui_ic_book.webp" alt=""><span>收集冊</span></button>' +
-      '<button class="orb sl-orb" id="h-slot"><b>拉</b><span>拉霸守城</span></button>' +
+      '<button class="orb sl-orb" id="h-slot"><b>烽</b><span>烽火</span></button>' +
       '<button class="orb gear" id="h-set"><b>設</b><span>設定</span></button></div>' +
       '<div class="go">' + stat + '<button class="plaq" id="h-go"><span>出戰</span></button>' +
       '<div class="nxt">' + (next ? '下一戰　' + next.id + '　' + next.name : '第一章已全數通關') + '</div></div>' +

@@ -1,4 +1,4 @@
-/* 拉霸守城（測試版 2）：地圖塔防＋3×3 計策拉霸
+/* 烽火（拉霸守城，試玩版）：地圖塔防＋3×3 計策拉霸
    ✅ Jay 2026-11-23：
    - 直式：上方地圖、下方拉霸；測試版 1 張地圖、5 個入口、10 波、最後一波 Boss
    - 敵軍從多個入口、不同時間出不同兵種，目標都是城門；城門被打到三次就輸
@@ -47,30 +47,34 @@
       [[-12, 316], [90, 316], [142, 346], [198, 374], [200, 452], G0],
       [[-12, 176], [90, 176], [90, 316], [142, 346], [198, 374], [200, 452], G0]], names: ["右上", "左上", "右側", "左側", "左上側"],
       slots: [[162, 405], [236, 405], [45, 139], [47, 87], [47, 270], [133, 231], [142, 138], [353, 67], [318, 247], [264, 353], [145, 309], [203, 302]] },
-    { name: "繞湖道", key: [[200, 345], [200, 452]], lake: [200, 222, 60, 50], paths: [
-      [[200, -12], [200, 95], [112, 150], [100, 235], [138, 310], [200, 345], [200, 452], G0],
-      [[330, -12], [330, 80], [288, 150], [300, 235], [262, 310], [200, 345], [200, 452], G0],
-      [[70, -12], [70, 80], [112, 150], [100, 235], [138, 310], [200, 345], [200, 452], G0],
-      [[-12, 235], [100, 235], [138, 310], [200, 345], [200, 452], G0],
-      [[412, 235], [300, 235], [262, 310], [200, 345], [200, 452], G0]], names: ["正上", "右上", "左上", "左側", "右側"] },
-    { name: "之字山道", key: [[200, 350], [200, 452]], paths: [
-      [[412, 70], [120, 70], [120, 185], [300, 185], [300, 305], [200, 350], [200, 452], G0],
-      [[120, -12], [120, 70], [120, 185], [300, 185], [300, 305], [200, 350], [200, 452], G0],
+    { name: "繞湖道", art: "map_1", key: [[199, 356], [200, 452]], paths: [
+      [[120, -12], [120, 185], [120, 290], [199, 356], [200, 452], G0],
+      [[300, -12], [300, 185], [300, 292], [199, 356], [200, 452], G0],
+      [[412, 65], [300, 65], [300, 185], [300, 292], [199, 356], [200, 452], G0],
+      [[-12, 185], [120, 185], [120, 290], [199, 356], [200, 452], G0],
+      [[120, -12], [120, 185], [300, 185], [300, 292], [199, 356], [200, 452], G0]], names: ["左上", "右上", "右上側", "左側", "左上"],
+      slots: [[160, 391], [240, 391], [80, 49], [179, 105], [252, 142], [342, 125], [56, 222], [344, 266], [313, 344], [104, 350]] },
+    { name: "之字山道", art: "map_2", key: [[200, 350], [200, 452]], paths: [
+      [[412, 70], [300, 70], [300, 185], [300, 305], [200, 350], [200, 452], G0],
+      [[120, -12], [120, 185], [300, 185], [300, 305], [200, 350], [200, 452], G0],
       [[-12, 185], [120, 185], [300, 185], [300, 305], [200, 350], [200, 452], G0],
-      [[412, 305], [300, 305], [200, 350], [200, 452], G0],
-      [[300, -12], [300, 185], [300, 305], [200, 350], [200, 452], G0]], names: ["右上側", "左上", "左側", "右側", "右上"] },
-    { name: "雙翼道", key: [[200, 380], [200, 452]], paths: [
-      [[70, -12], [70, 270], [120, 340], [200, 380], [200, 452], G0],
-      [[330, -12], [330, 270], [280, 340], [200, 380], [200, 452], G0],
-      [[-12, 180], [70, 180], [70, 270], [120, 340], [200, 380], [200, 452], G0],
-      [[412, 180], [330, 180], [330, 270], [280, 340], [200, 380], [200, 452], G0],
-      [[200, -12], [200, 150], [236, 240], [200, 320], [200, 380], [200, 452], G0]], names: ["左上", "右上", "左側", "右側", "正上"] },
-    { name: "三路並進", key: [[200, 385], [200, 452]], paths: [
-      [[90, -12], [90, 300], [200, 385], [200, 452], G0],
-      [[200, -12], [200, 300], [200, 385], [200, 452], G0],
-      [[310, -12], [310, 300], [200, 385], [200, 452], G0],
-      [[-12, 150], [90, 150], [90, 300], [200, 385], [200, 452], G0],
-      [[412, 150], [310, 150], [310, 300], [200, 385], [200, 452], G0]], names: ["左上", "正上", "右上", "左側", "右側"] }
+      [[412, 70], [300, 70], [300, 185], [300, 305], [200, 350], [200, 452], G0],
+      [[300, -12], [300, 185], [300, 305], [200, 350], [200, 452], G0]], names: ["右上側", "左上", "左側", "右上側", "右上"],
+      slots: [[163, 391], [237, 391], [80, 50], [340, 125], [52, 225], [224, 225], [348, 265], [180, 110], [195, 309], [313, 343], [256, 145], [136, 225]] },
+    { name: "城內街市", art: "map_3", key: [[199, 356], [200, 452]], paths: [
+      [[120, -12], [120, 185], [120, 290], [199, 356], [200, 452], G0],
+      [[300, -12], [300, 185], [300, 292], [199, 356], [200, 452], G0],
+      [[412, 65], [300, 65], [300, 185], [120, 185], [120, 290], [199, 356], [200, 452], G0],
+      [[-12, 185], [120, 185], [300, 185], [300, 292], [199, 356], [200, 452], G0],
+      [[300, -12], [300, 185], [120, 185], [120, 290], [199, 356], [200, 452], G0]], names: ["左上", "右上", "右上側", "左側", "右上"],
+      slots: [[162, 390], [240, 390], [80, 49], [242, 51], [179, 107], [257, 142], [342, 122], [56, 222], [344, 266], [313, 342]] },
+    { name: "邊塞關隘", art: "map_4", artK: 1.1, key: [[196, 397], [200, 452]], paths: [
+      [[86, -12], [86, 340], [196, 397], [200, 452], G0],
+      [[196, -12], [196, 397], [200, 452], G0],
+      [[315, -12], [315, 340], [196, 397], [200, 452], G0],
+      [[-12, 157], [86, 157], [86, 340], [196, 397], [200, 452], G0],
+      [[412, 157], [315, 157], [315, 340], [196, 397], [200, 452], G0]], names: ["左上", "正上", "右上", "左側", "右側"],
+      slots: [[161, 412], [235, 412], [36, 56], [244, 56], [156, 136], [364, 121], [276, 175], [364, 242], [34, 279], [244, 268], [141, 322], [349, 367]] }
   ];
   M.LAYOUTS = LAYOUTS;
   M.genMap = function (stage) {
@@ -78,8 +82,9 @@
     var r = mrnd(stage + 1000), R = function (a, b) { return Math.round(a + (b - a) * r()); };
     var n = LAYOUTS.length, idx = (stage - 1) % n, mir = Math.floor((stage - 1) / n) % 2 === 1, L = LAYOUTS[idx], src = L;
     var fx = function (q) { return [mir ? M.W - q[0] : q[0], q[1]]; };
-    var paths = src.paths.map(function (p) { return p.map(fx); }), key = src.key.map(fx), lake = L.lake ? [mir ? M.W - L.lake[0] : L.lake[0], L.lake[1], L.lake[2], L.lake[3]] : null;
-    var names = src.names.map(function (s) { return mir ? s.replace(/[左右]/g, function (c) { return c === "左" ? "右" : "左"; }) : s; });
+    var rot = Math.floor((stage - 1) / (2 * n)) % 5, rotA = function (a) { return a.slice(rot).concat(a.slice(0, rot)); };   // ★ 第 11 關起同一張圖再輪一次，但各入口出的兵換位置
+    var paths = rotA(src.paths).map(function (p) { return p.map(fx); }), key = src.key.map(fx), lake = L.lake ? [mir ? M.W - L.lake[0] : L.lake[0], L.lake[1], L.lake[2], L.lake[3]] : null;
+    var names = rotA(src.names).map(function (s) { return mir ? s.replace(/[左右]/g, function (c) { return c === "左" ? "右" : "左"; }) : s; });
     var pts = paths.map(cut), all = []; pts.forEach(function (P) { for (var i = 0; i < P.length; i += 2) all.push(P[i]); });
     var near = function (x, y) { var m = 1e9; all.forEach(function (q) { var d = Math.hypot(q.x - x, q.y - y); if (d < m) m = d; }); return m; };
     var inLake = function (x, y, pad) { return lake && Math.pow((x - lake[0]) / (lake[2] + pad), 2) + Math.pow((y - lake[1]) / (lake[3] + pad), 2) < 1; };
@@ -130,7 +135,7 @@
 
   // ===== 數值（★ 全部暫定） =====
   M.LIVES = 3;
-  M.STAGE_HP = 1.03; M.STAGE_ATK = 1.015; M.STAGE1 = 0.85;
+  M.STAGE_HP = 1.04; M.STAGE_ATK = 1.015; M.STAGE1 = 1;   // ★ 武將不會死之後重新抓的難度：每關敵軍兵力 ×1.04
   M.stageMul = function (n) { return { hp: M.STAGE1 * Math.pow(M.STAGE_HP, n - 1), atk: Math.pow(M.STAGE_ATK, n - 1) }; };
   M.SPIN_COST = 10;
   M.FOOD0 = 80;
@@ -138,8 +143,33 @@
   M.START_DEPLOY = 3;
   M.ROSTER_MAX = 5;
   M.STAR_ATK = [1, 1.5, 2.1, 2.8, 3.6];
-  M.STAR_HP = [1, 1.4, 1.9, 2.5, 3.2];
-  M.REVIVE = 4;
+  // ✅ Jay 2026-11-23：不看卡片三圍。同兵種的武將基礎一樣強，差別只在招式；強弱靠拉霸（升星、符號）跟特技
+  // ✅ 正式規則：SR 以上武將才能上場，要有 5 名 SR 以上才開放這個模式。★ 試玩版先不擋
+  M.BASE_ATK = { "槍": 540, "騎": 670, "刺": 615, "弓": 430, "法": 385 };
+  M.NEED_SR = 5;
+  // ✅ 試玩版：只有這 10 位可以選，不管有沒有卡
+  M.TRIAL = ["曹操", "張飛", "關羽", "呂布", "甘寧", "賈詡", "黃忠", "孫尚香", "周瑜", "司馬懿"];
+  // ✅ 特技：出手累積集氣，集滿就放（自動或手動）。★ 招式內容與數值是開發先配的；時間是引擎秒（一般速度下實際是 2 倍）
+  M.SKILL = {
+    "曹操": { id: "caocao", name: "挾天子", need: 10, kind: "團隊", desc: "全軍攻擊 +30%，持續 8 秒" },
+    "張飛": { id: "zhangfei", name: "當陽怒吼", need: 10, kind: "攻擊", desc: "周圍敵軍受 150% 傷害並嚇停 3 秒" },
+    "關羽": { id: "guanyu", name: "斬六將", need: 12, kind: "攻擊", desc: "連斬 6 刀，每刀 200%" },
+    "呂布": { id: "lvbu", name: "無雙", need: 12, kind: "個人", desc: "自己攻擊、攻速都變 2 倍，持續 6 秒" },
+    "甘寧": { id: "ganning", name: "百騎劫營", need: 20, kind: "攻擊", desc: "突襲全場最強的敵人（敵將優先），800% 傷害" },
+    "賈詡": { id: "jiaxu", name: "毒計", need: 20, kind: "攻擊", desc: "大範圍敵軍中毒 8 秒：持續掉血、走路變慢" },
+    "黃忠": { id: "huangzhong", name: "百步穿楊", need: 10, kind: "攻擊", desc: "一箭貫穿整條路上的敵軍，300% 傷害" },
+    "孫尚香": { id: "sunshangxiang", name: "弓腰姬", need: 10, kind: "團隊", desc: "全軍攻速 +50%，持續 8 秒" },
+    "周瑜": { id: "zhouyu", name: "火燒赤壁", need: 8, kind: "攻擊", desc: "在敵軍最多的地方放火海，燒 5 秒" },
+    "司馬懿": { id: "simayi", name: "鬼謀", need: 8, kind: "團隊", desc: "全場敵軍走路變慢一半，持續 6 秒" }
+  };
+  M.SK_ATK = 1.3; M.SK_ATK_T = 4; M.SK_SPD = 1.5; M.SK_SPD_T = 4; M.SK_RAGE_T = 3; M.SK_PSN_T = 4; M.SK_PSN_D = 0.3; M.SK_PSN_SLOW = 0.7; M.SK_FIRE_T = 2.5; M.SK_FIRE_D = 0.8; M.SK_FIRE_R = 48; M.SK_SLOW = 0.5; M.SK_SLOW_T = 3;
+  // ✅ Jay 2026-11-23：武將不會死；敵將的招式是上 DEBUFF（遲緩＝攻速減半、麻痹＝不能出手）
+  // ★ 小招每隔 cd 秒對最近的武將放；大招在血量掉到一半時放一次，之後每 BOSS_ULT_CD 秒再放一次
+  M.BOSS_SK = {
+    "張寶": { cd: 4, sk: "妖術", deb: "slow", t: 2, ult: "妖術迷陣", ultDesc: "全軍麻痹 3 秒，並召來黃巾兵" },
+    "張角": { cd: 4, sk: "落雷", deb: "stun", t: 1.5, ult: "黃天當立", ultDesc: "全軍遲緩 8 秒，黃巾兵全部加速" }
+  };
+  M.BOSS_ULT_HP = 0.5; M.BOSS_ULT_CD = 10; M.BOSS_RNG = 140; M.ULT_STUN = 1.5; M.ULT_SLOW = 4; M.ULT_HASTE = 1.5; M.ULT_SUMMON = 6;
   // 射程、攻擊間隔（引擎秒；一般速度下實際秒數是 2 倍）、可擋幾個敵人
   // ★ 節奏調慢後武將的出手頻率維持原本的實際秒數（槍兵每秒 1 下），慢下來的是敵軍行軍
   M.TYPE = {
@@ -158,8 +188,8 @@
     mage: { name: "黃巾道士", img: "sol_e_mage", hp: 760, atk: 73, spd: 26, food: 6 }
   };
   M.HP_GROW = 1.12;
-  M.MINION_HP = 1 / 3; M.MINION_N = 2; M.MINION_FOOD = 0.5;   // ✅ Jay 2026-11-23：小兵血量減 2/3、數量加一倍（★ 每隻給的軍糧減半，總量不變）
-  M.BOSSES = { boss1: { gen: "張寶", hp: 14000, atk: 260, walk: 28, food: 80 }, boss2: { gen: "張角", hp: 45000, atk: 400, walk: 40, food: 120 } };
+  M.MINION_HP = 0.43; M.MINION_N = 3; M.MINION_FOOD = 1 / 3;   // ✅ Jay 2026-11-23：小兵血量減 2/3、數量加一倍。★ 武將不會死之後再調：數量再多一半、血量 ×1.3、軍糧總量不變
+  M.BOSSES = { boss1: { gen: "張寶", hp: 35000, atk: 260, walk: 28, food: 80 }, boss2: { gen: "張角", hp: 112000, atk: 400, walk: 40, food: 120 } };
   M.BOSS = M.BOSSES.boss2;
   M.WAVE_NAMES = ["敵軍先鋒", "敵軍本陣"];
   M.SYM = ["火", "雷", "風", "石", "令"];   // 5 以後是出征名單上的武將
@@ -188,7 +218,7 @@
   M.WAVE_K = [22 / 62, 38 / 96];   // ★ 出兵時間壓縮：整局（一般速度）約 3 分鐘，配合 BGM 長度
   M.TACTICS = [
     { id: "bowrng", name: "強弓", desc: "弓兵射程 +20%" },
-    { id: "spearhp", name: "堅陣", desc: "槍兵兵力 +40%" },
+    { id: "spearhp", name: "堅陣", desc: "槍兵多擋 1 個敵人" },
     { id: "cavatk", name: "鐵騎", desc: "騎兵攻擊 +30%" },
     { id: "magerng", name: "奇門", desc: "法師範圍 +20%" },
     { id: "allatk", name: "勵軍", desc: "全體攻擊 +12%" },
@@ -203,32 +233,24 @@
 
   // ===== 存檔 =====
   M.data = function (S) { S.slotm = S.slotm || {}; var d = S.slotm; d.best = d.best || 0; d.stage = d.stage || 1; d.top = d.top || 0; d.runs = d.runs || 0; d.wins = d.wins || 0; d.list = d.list || null; return d; };
-  M.owned = function (S) {
-    var out = [], seen = {};
-    function add(c) { if (c && c.art && !seen[c.gen]) { seen[c.gen] = 1; out.push(c); } }
-    (S.team || []).forEach(function (id) { add(SG.CARD_BY_ID[id]); });
-    Object.keys(S.inv || {}).forEach(function (id) { add(SG.CARD_BY_ID[id]); });
-    return out;
-  };
+  M.owned = function () { return M.TRIAL.map(function (n) { return SG.GEN[n]; }).filter(function (c) { return c && c.art; }); };
   M.defaultList = function (S) {
-    var own = M.owned(S), d = M.data(S);
+    var own = M.owned(), d = M.data(S);
     var keep = (d.list || []).map(function (id) { return SG.CARD_BY_ID[id]; }).filter(function (c) { return c && own.indexOf(c) >= 0; });
-    own.forEach(function (c) { if (keep.length < M.ROSTER_MAX && keep.indexOf(c) < 0) keep.push(c); });
-    ["關羽", "黃忠", "諸葛亮", "周泰", "張遼", "甄姬", "孫尚香", "趙雲"].forEach(function (n) { var c = SG.GEN[n]; if (keep.length < M.ROSTER_MAX && c && keep.indexOf(c) < 0) keep.push(c); });
+    ["關羽", "黃忠", "周瑜", "張飛", "甘寧"].forEach(function (n) { var c = SG.GEN[n]; if (keep.length < M.ROSTER_MAX && c && keep.indexOf(c) < 0) keep.push(c); });
     return keep.slice(0, M.ROSTER_MAX);
   };
 
   // ===== 引擎 =====
   function genStats(c, S) {
-    var b = (S && SG.best(S, c.id)) || { rar: c.vers[0], star: 1 }, u = SG.unitStats(c, b.rar, 1);
-    return { hp: u.hp, atk: u.atk, rar: b.rar };
+    return { atk: M.BASE_ATK[c.typ] };
   }
   M.newGame = function (list, S, rnd, stage) {
     rnd = rnd || Math.random; stage = stage || 1;
     M.useMap(M.genMap(stage));
     var G = {
       t: 0, rnd: rnd, lives: M.LIVES, food: M.FOOD0, wave: 0, phase: "deploy", waveT: 0, queue: [], over: false, won: false,
-      gens: [], reserve: [], enemies: [], rocks: [], fx: [], tac: {}, fireT: 0, windT: 0, nid: 1, kills: 0, spins: 0, grid: [], hits: [], S: S,
+      gens: [], reserve: [], enemies: [], rocks: [], zones: [], fx: [], tac: {}, fireT: 0, windT: 0, atkBuffT: 0, spdBuffT: 0, eSlowT: 0, hasteT: 0, autoSkill: true, nid: 1, kills: 0, spins: 0, grid: [], hits: [], S: S,
       list: list, stage: stage, sm: M.stageMul(stage)
     };
     list.forEach(function (c) { var s = genStats(c, S); G.reserve.push({ c: c, base: s }); });
@@ -286,9 +308,11 @@
   function genAtk(G, g) {
     var a = g.base.atk * M.STAR_ATK[g.star - 1] * (1 + 0.12 * (G.tac.allatk || 0));
     if (g.c.typ === "騎") a *= 1 + 0.3 * (G.tac.cavatk || 0);
+    if (G.atkBuffT > 0) a *= M.SK_ATK;
+    if (g.rageT > 0) a *= 2;
     return a;
   }
-  function genMax(G, g) { var h = g.base.hp * M.STAR_HP[g.star - 1]; if (g.c.typ === "槍") h *= 1 + 0.4 * (G.tac.spearhp || 0); return h; }
+  M.genAtk = genAtk;
   function genRng(G, g) {
     var r = M.TYPE[g.c.typ].rng;
     if (g.c.typ === "弓") r *= 1 + 0.2 * (G.tac.bowrng || 0);
@@ -300,6 +324,9 @@
     var cd = M.TYPE[g.c.typ].cd;
     if (g.c.typ === "刺") cd /= 1 + 0.4 * (G.tac.sinspd || 0);
     if (G.windT > 0) cd /= M.WIND;
+    if (G.spdBuffT > 0) cd /= M.SK_SPD;
+    if (g.rageT > 0) cd /= 2;
+    if (g.slowT > 0) cd *= 2;
     return cd;
   }
 
@@ -310,8 +337,7 @@
     if (G.phase === "deploy" && G.deployLeft <= 0) return false;
     if (G.phase !== "deploy" && !G.reserve[ri].ready) return false;
     var r = G.reserve.splice(ri, 1)[0];
-    var g = { id: G.nid++, c: r.c, base: r.base, slot: si, star: r.star || 1, cd: 0, down: 0, guest: !!r.guest, notOwn: !!r.notOwn };
-    g.max = genMax(G, g); g.hp = g.max;
+    var g = { id: G.nid++, c: r.c, base: r.base, slot: si, star: r.star || 1, cd: 0, ch: 0, slowT: 0, stunT: 0, rageT: 0, guest: !!r.guest };
     G.gens.push(g);
     if (G.phase === "deploy") G.deployLeft--;
     G.fx.push({ t: G.t, kind: "in", x: M.SLOTS[si][0], y: M.SLOTS[si][1] });
@@ -345,8 +371,9 @@
       var d = M.ENEMY[q.k];
       e = { k: q.k, img: d.img, name: d.name, hp: d.hp * M.MINION_HP * mul * G.sm.hp, atk: d.atk * Math.pow(1.1, lvl - 1) * G.sm.atk, spd: d.spd * (0.92 + G.rnd() * 0.16) * Math.max(0.85, Math.min(1.9, M.PTS[q.gate].len / 520)), food: d.food * M.MINION_FOOD };
     }
-    e.id = G.nid++; e.max = e.hp; e.path = q.gate; e.s = 0; e.cd = 0; e.stun = 0; e.burn = 0; e.burnD = 0; e.burnTick = 0; e.block = null;
-    var p = posAt(e.path, 0); e.x = p.x; e.y = p.y;
+    e.id = G.nid++; e.max = e.hp; e.path = q.gate; e.s = q.s0 || 0; e.cd = 0; e.stun = 0; e.burn = 0; e.burnD = 0; e.burnTick = 0; e.psn = 0; e.psnD = 0; e.psnTick = 0; e.block = null;
+    if (e.boss) { e.skT = M.BOSS_SK[e.name].cd; e.castT = 0; e.ultDone = false; e.ultT = 0; }
+    var p = posAt(e.path, e.s); e.x = p.x; e.y = p.y;
     G.enemies.push(e);
   }
 
@@ -367,7 +394,7 @@
     (hits || []).forEach(function (h) { out.push(trigger(G, h)); });
     return out;
   };
-  function ofType(G, t) { return G.gens.filter(function (g) { return g.c.typ === t && g.down <= 0; }); }
+  function ofType(G, t) { return G.gens.filter(function (g) { return g.c.typ === t; }); }
   function trigger(G, h) {
     var sym = M.SYM[h.sym] || "";
     if (h.jackpot) return jackpot(G);
@@ -394,7 +421,7 @@
     if (h.sym >= M.GEN0) {   // 武將連線：還沒上陣的可以上陣；已上陣的升星
       var c = G.list[h.sym - M.GEN0], f = G.gens.find(function (g) { return g.c === c; }), r = G.reserve.find(function (x) { return x.c === c; });
       if (f) {
-        if (f.star < 5) { f.star++; f.max = genMax(G, f); } f.hp = f.max; f.down = 0;
+        if (f.star < 5) f.star++;
         var p = M.SLOTS[f.slot]; G.fx.push({ t: G.t, kind: "up", x: p[0], y: p[1], star: f.star }); return { sym: c.gen, up: c.gen, star: f.star };
       }
       if (r) { if (r.ready) { r.star = Math.min(5, (r.star || 1) + 1); return { sym: c.gen, ready: c.gen, star: r.star }; } r.ready = true; G.fx.push({ t: G.t, kind: "ready", name: c.gen }); return { sym: c.gen, ready: c.gen }; }
@@ -402,19 +429,14 @@
     }
     return { sym: sym };
   }
-  // 三個「令」：100% 一位 UR/SSR 助陣（玩家沒有的優先），50% 第二位，1% 第三位
+  // 三個「令」＝名將助陣。✅ 試玩版只有 10 位武將，所以助陣的是沒被選去出征的那幾位（★）
   function jackpot(G) {
-    var S = G.S, taken = {};
+    var taken = {};
     G.list.forEach(function (c) { taken[c.gen] = 1; }); G.gens.forEach(function (g) { taken[g.c.gen] = 1; }); G.reserve.forEach(function (r) { taken[r.c.gen] = 1; });
-    var pool = SG.CARDS.filter(function (c) { return c.art && !taken[c.gen] && (c.vers.indexOf("UR") >= 0 || c.vers.indexOf("SSR") >= 0); });
-    var seen = {}; pool = pool.filter(function (c) { if (seen[c.gen]) return false; seen[c.gen] = 1; return true; });
-    var n = 1, got = [];
-    for (var k = 0; k < n && pool.length; k++) {
-      var notOwn = pool.filter(function (c) { return !(S && SG.best(S, c.id)); }), from = notOwn.length ? notOwn : pool;
-      var c = from[Math.floor(G.rnd() * from.length)];
-      pool.splice(pool.indexOf(c), 1);
-      var rar = c.vers.indexOf("UR") >= 0 ? "UR" : "SSR", u = SG.unitStats(c, rar, 1);
-      G.reserve.push({ c: c, base: { hp: u.hp, atk: u.atk, rar: rar }, ready: true, guest: true, notOwn: !(S && SG.best(S, c.id)) });
+    var pool = M.owned().filter(function (c) { return !taken[c.gen]; }), got = [];
+    if (pool.length) {
+      var c = pool[Math.floor(G.rnd() * pool.length)];
+      G.reserve.push({ c: c, base: genStats(c), ready: true, guest: true });
       got.push(c.gen);
     }
     G.fx.push({ t: G.t, kind: "jackpot", names: got });
@@ -439,7 +461,6 @@
     if (G.phase !== "tactic") return false;
     G.tac[id] = (G.tac[id] || 0) + 1;
     if (id === "repair") G.lives = Math.min(M.LIVES, G.lives + 1);
-    G.gens.forEach(function (g) { var old = g.max; g.max = genMax(G, g); g.hp = Math.min(g.max, g.hp + (g.max - old)); });
     G.phase = "fight"; G.offer = null; nextWave(G); return true;
   };
 
@@ -450,53 +471,134 @@
     if (e.hp <= 0) { G.kills++; G.foodF = (G.foodF || 0) + e.food * (1 + 0.4 * (G.tac.food || 0)); var fi = Math.floor(G.foodF); G.foodF -= fi; G.food += fi; G.fx.push({ t: G.t, kind: "die", x: e.x, y: e.y }); }
   }
 
+  // ===== 特技與敵將招式 =====
+  function debuff(G, g, kind, t) {
+    if (kind === "slow") g.slowT = Math.max(g.slowT, t); else g.stunT = Math.max(g.stunT, t);
+    var p = M.SLOTS[g.slot]; G.fx.push({ t: G.t, kind: "debuff", d: kind, x: p[0], y: p[1], gid: g.id });
+  }
+  function bossSkill(G, e) {   // 小招：最近的一位武將
+    var B = M.BOSS_SK[e.name], near = null, nd = M.BOSS_RNG;
+    G.gens.forEach(function (g) { var sp = M.SLOTS[g.slot], d = Math.hypot(sp[0] - e.x, sp[1] - e.y); if (d < nd) { nd = d; near = g; } });
+    if (!near) return false;
+    var np = M.SLOTS[near.slot];
+    debuff(G, near, B.deb, B.t); e.castT = 0.35; e.castAt = G.t;
+    G.fx.push({ t: G.t, kind: "bosscast", name: e.name, sk: B.sk, d: B.deb, x: e.x, y: e.y, x1: np[0], y1: np[1] });
+    return true;
+  }
+  function bossUlt(G, e) {     // 大招：全軍
+    var B = M.BOSS_SK[e.name];
+    e.castT = 0.9; e.castAt = G.t; e.ultN = (e.ultN || 0) + 1;
+    if (e.name === "張寶") {
+      G.gens.forEach(function (g) { debuff(G, g, "stun", M.ULT_STUN); });
+      for (var i = 0; i < M.ULT_SUMMON; i++) spawn(G, { gate: e.path, k: "spear", lvl: 5, s0: Math.max(0, e.s - 8 - i * 9) });
+    } else {
+      G.gens.forEach(function (g) { debuff(G, g, "slow", M.ULT_SLOW); });
+      G.hasteT = Math.max(G.hasteT, M.ULT_SLOW);
+    }
+    G.fx.push({ t: G.t, kind: "bossult", name: e.name, sk: B.ult, x: e.x, y: e.y });
+  }
+  function typeMul(g, e) { return g.c.typ === "刺" && e.boss ? M.SIN_BOSS : g.c.typ === "騎" && !e.boss ? M.CAV_MINION : 1; }
+  function prog(e) { return e.s / M.PTS[e.path].len; }
+  // 放特技；沒有對象就先不放（集氣留著）
+  function castSkill(G, g) {
+    var K = M.SKILL[g.c.gen]; if (!K) return false;
+    var sp = M.SLOTS[g.slot], a = genAtk(G, g), r = genRng(G, g), live = G.enemies.filter(function (e) { return e.hp > 0 && e.y >= 0; });
+    if (!live.length) return false;
+    var near = function (m) { return live.filter(function (e) { return Math.hypot(e.x - sp[0], e.y - sp[1]) <= r * m; }); };
+    var fx = { t: G.t, kind: "skill", gid: g.id, gen: g.c.gen, id: K.id, name: K.name, x: sp[0], y: sp[1], r: r }, L, tg;
+    G._src = g.c.typ;
+    if (K.id === "caocao") { if (!near(1.5).length) return false; G.atkBuffT = Math.max(G.atkBuffT, M.SK_ATK_T); }
+    else if (K.id === "sunshangxiang") { if (!near(1.2).length) return false; G.spdBuffT = Math.max(G.spdBuffT, M.SK_SPD_T); }
+    else if (K.id === "simayi") { G.eSlowT = Math.max(G.eSlowT, M.SK_SLOW_T); }
+    else if (K.id === "lvbu") { if (!near(1.1).length) return false; g.rageT = Math.max(g.rageT, M.SK_RAGE_T); }
+    else if (K.id === "zhangfei") {
+      L = near(1.6); if (!L.length) return false; fx.r = r * 1.6;
+      L.forEach(function (e) { hurt(G, e, a * 1.5, "skill"); e.stun = Math.max(e.stun, e.boss ? 0.5 : 1.5); });
+    } else if (K.id === "guanyu") {
+      if (!near(1.3).length) return false; fx.hits = [];
+      for (var k = 0; k < 6; k++) {
+        tg = null; near(1.3).forEach(function (e) { if (e.hp > 0 && (!tg || prog(e) > prog(tg))) tg = e; });
+        if (!tg) break; fx.hits.push([tg.x, tg.y]); hurt(G, tg, a * 2 * typeMul(g, tg), "skill");
+      }
+    } else if (K.id === "ganning") {
+      tg = null; live.forEach(function (e) { if (!tg || (e.boss ? 1e9 : 0) + e.hp > (tg.boss ? 1e9 : 0) + tg.hp) tg = e; });
+      fx.x1 = tg.x; fx.y1 = tg.y; hurt(G, tg, a * 8 * typeMul(g, tg), "skill");
+    } else if (K.id === "jiaxu") {
+      L = near(2); if (!L.length) return false; fx.r = r * 2;
+      L.forEach(function (e) { e.psn = M.SK_PSN_T; e.psnD = Math.max(e.psnD, a * M.SK_PSN_D); });
+    } else if (K.id === "huangzhong") {
+      L = near(1.6); if (!L.length) return false;
+      tg = L[0]; L.forEach(function (e) { if (prog(e) > prog(tg)) tg = e; });
+      var far = tg; L.forEach(function (e) { if (e.path === tg.path) { hurt(G, e, a * 3, "skill"); if (prog(e) < prog(far)) far = e; } });
+      fx.x1 = tg.x; fx.y1 = tg.y; fx.x2 = far.x; fx.y2 = far.y;
+    } else if (K.id === "zhouyu") {
+      L = near(1.5); if (!L.length) return false;
+      var bn = -1; L.forEach(function (e) { var n = 0; live.forEach(function (o) { if (Math.hypot(o.x - e.x, o.y - e.y) < M.SK_FIRE_R) n++; }); if (n > bn || (n === bn && prog(e) > prog(tg))) { bn = n; tg = e; } });
+      G.zones.push({ x: tg.x, y: tg.y, r: M.SK_FIRE_R, t: M.SK_FIRE_T, d: a * M.SK_FIRE_D, tick: 0 }); fx.x1 = tg.x; fx.y1 = tg.y;
+    }
+    G.fx.push(fx);
+    return true;
+  }
+  // 手動放特技（集滿才有用；沒有對象時會等到有對象再放）
+  M.skillReady = function (g) { var K = M.SKILL[g.c.gen]; return !!K && g.ch >= K.need; };
+  M.cast = function (G, gid) { var g = G.gens.find(function (x) { return x.id === gid; }); if (!g || !M.skillReady(g)) return false; g.want = true; return true; };
+
   // ===== 每一幀 =====
   M.step = function (G, dt) {
     if (G.over || G.phase !== "fight") return;
     G.t += dt; G.waveT += dt;
-    G.fireT = Math.max(0, G.fireT - dt); G.windT = Math.max(0, G.windT - dt);
+    ["fireT", "windT", "atkBuffT", "spdBuffT", "eSlowT", "hasteT"].forEach(function (k) { G[k] = Math.max(0, G[k] - dt); });
     while (G.queue.length && G.queue[0].at <= G.waveT) spawn(G, G.queue.shift());
 
-    // 武將：倒下的回復、攔截名額
+    // 攔截名額
     var blocks = {};
-    G.gens.forEach(function (g) { if (g.down > 0) { g.down -= dt; if (g.down <= 0) { g.hp = g.max; } } blocks[g.id] = 0; });
-    G.enemies.forEach(function (e) { if (e.block) { var b = G.gens.find(function (g) { return g.id === e.block; }); if (!b || b.down > 0 || e.hp <= 0) e.block = null; else blocks[b.id]++; } });
+    G.gens.forEach(function (g) { blocks[g.id] = 0; g.slowT = Math.max(0, g.slowT - dt); g.stunT = Math.max(0, g.stunT - dt); g.rageT = Math.max(0, g.rageT - dt); });
+    G.enemies.forEach(function (e) { if (e.block) { var b = G.gens.find(function (g) { return g.id === e.block; }); if (!b || e.hp <= 0) e.block = null; else blocks[b.id]++; } });
+
+    // 火海
+    G.zones.forEach(function (z) {
+      z.t -= dt; z.tick -= dt;
+      if (z.tick <= 0) { z.tick += 0.5; G._src = "法"; G.enemies.forEach(function (e) { if (e.hp > 0 && Math.hypot(e.x - z.x, e.y - z.y) <= z.r) hurt(G, e, z.d, "burn"); }); }
+    });
+    G.zones = G.zones.filter(function (z) { return z.t > 0; });
 
     // 敵軍移動
     G.enemies.forEach(function (e) {
       if (e.hp <= 0) return;
       if (e.burn > 0) { e.burn -= dt; e.burnTick -= dt; if (e.burnTick <= 0) { e.burnTick += M.BURN_TICK; G._src = "弓"; hurt(G, e, e.burnD, "burn"); } }
+      if (e.psn > 0) { e.psn -= dt; e.psnTick -= dt; if (e.psnTick <= 0) { e.psnTick += 0.5; G._src = "刺"; hurt(G, e, e.psnD, "psn"); } }
       if (e.hp <= 0) return;
       if (e.stun > 0) { e.stun -= dt; return; }
-      // 被槍兵／騎兵攔下
+      var sf = (G.eSlowT > 0 ? M.SK_SLOW : 1) * (e.psn > 0 ? M.SK_PSN_SLOW : 1) * (!e.boss && G.hasteT > 0 ? M.ULT_HASTE : 1);
+      // 被槍兵／騎兵攔下（武將不會受傷，攔住的敵人就停在原地）
       if (!e.block && !e.boss) {
         G.gens.forEach(function (g) {
-          if (e.block || g.down > 0) return; var T = M.TYPE[g.c.typ]; if (!T.block || blocks[g.id] >= T.block) return;
+          if (e.block) return; var T = M.TYPE[g.c.typ]; if (!T.block) return;
+          var cap = T.block + (g.c.typ === "槍" ? (G.tac.spearhp || 0) : 0); if (blocks[g.id] >= cap) return;
           var sp = M.SLOTS[g.slot]; if (Math.hypot(e.x - sp[0], e.y - sp[1]) <= genRng(G, g) * 0.8) { e.block = g.id; blocks[g.id]++; }
         });
       }
       e.cd -= dt;
-      if (e.block) {
-        var b = G.gens.find(function (g) { return g.id === e.block; });
-        if (e.cd <= 0) { e.cd = 0.5; b.hp -= e.atk; G.fx.push({ t: G.t, kind: "hurt", gid: b.id }); if (b.hp <= 0) { b.hp = 0; b.down = M.REVIVE; G.fx.push({ t: G.t, kind: "down", x: M.SLOTS[b.slot][0], y: M.SLOTS[b.slot][1] }); } }
-        return;
-      }
-      if (e.boss) {   // Boss：每 3 秒攻擊一次；到城門前每次攻擊扣一次城門
+      if (e.block) return;
+      if (e.boss) {
+        if (e.castT > 0) { e.castT -= dt; return; }      // 施法中站著不動
         var atGate = e.s >= M.PTS[e.path].len - 6;
-        if (e.cd <= 0) {
-          var near = null; G.gens.forEach(function (g) { if (g.down > 0) return; var sp = M.SLOTS[g.slot]; if (Math.hypot(sp[0] - e.x, sp[1] - e.y) < 70 && !near) near = g; });
+        // 大招：血量掉到一半放一次，之後每隔一段時間再放
+        if (!e.ultDone && e.hp <= e.max * M.BOSS_ULT_HP) { e.ultDone = true; e.ultT = M.BOSS_ULT_CD; bossUlt(G, e); return; }
+        if (e.ultDone) { e.ultT -= dt; if (e.ultT <= 0) { e.ultT = M.BOSS_ULT_CD; bossUlt(G, e); return; } }
+        e.skT -= dt; if (e.skT <= 0) { if (bossSkill(G, e)) { e.skT = M.BOSS_SK[e.name].cd; return; } e.skT = 0.5; }
+        if (e.cd <= 0) {   // 每 3 秒攻擊一次：到城門前扣城門，被落石擋住就打落石
           var rk = G.rocks.find(function (k) { return Math.hypot(k.x - e.x, k.y - e.y) < 22; });
-          if (atGate) { e.cd = M.BOSS_CD; G.lives -= 1; G.fx.push({ t: G.t, kind: "gate" }); G.fx.push({ t: G.t, kind: "bosshit", x: e.x, y: e.y }); return; }
-          if (rk) { e.cd = M.BOSS_CD; rk.hp -= e.atk; G.fx.push({ t: G.t, kind: "bosshit", x: rk.x, y: rk.y }); if (rk.hp <= 0) G.fx.push({ t: G.t, kind: "rockbreak", x: rk.x, y: rk.y }); return; }
-          if (near) { e.cd = M.BOSS_CD; near.hp -= e.atk; var np0 = M.SLOTS[near.slot]; G.fx.push({ t: G.t, kind: "bosshit", x: np0[0], y: np0[1] }); if (near.hp <= 0) { near.hp = 0; near.down = M.REVIVE; } }
+          if (atGate) { e.cd = M.BOSS_CD; e.hitAt = G.t; G.lives -= 1; G.fx.push({ t: G.t, kind: "gate" }); G.fx.push({ t: G.t, kind: "bosshit", x: e.x, y: e.y }); return; }
+          if (rk) { e.cd = M.BOSS_CD; e.hitAt = G.t; rk.hp -= e.atk; G.fx.push({ t: G.t, kind: "bosshit", x: rk.x, y: rk.y }); if (rk.hp <= 0) G.fx.push({ t: G.t, kind: "rockbreak", x: rk.x, y: rk.y }); return; }
         }
         if (atGate) return;
         if (G.rocks.some(function (k) { return Math.hypot(k.x - e.x, k.y - e.y) < 22; })) return;
-        var bs = Math.min(M.PTS[e.path].len - 5, e.s + e.spd * dt), bp = posAt(e.path, bs); e.s = bs; e.x = bp.x; e.y = bp.y;
+        var bs = Math.min(M.PTS[e.path].len - 5, e.s + e.spd * sf * dt), bp = posAt(e.path, bs); e.s = bs; e.x = bp.x; e.y = bp.y;
         return;
       }
       // 落石擋路
-      var ns = e.s + e.spd * dt, np = posAt(e.path, ns), rock = null;
+      var ns = e.s + e.spd * sf * dt, np = posAt(e.path, ns), rock = null;
       G.rocks.forEach(function (k) { if (!rock && k.hp > 0 && Math.hypot(np.x - k.x, np.y - k.y) < 14 && Math.hypot(np.x - k.x, np.y - k.y) < Math.hypot(e.x - k.x, e.y - k.y)) rock = k; });
       if (rock) { if (e.cd <= 0) { e.cd = 0.5; rock.hp -= e.atk; if (rock.hp <= 0) G.fx.push({ t: G.t, kind: "rockbreak", x: rock.x, y: rock.y }); } return; }
       e.s = ns; e.x = np.x; e.y = np.y;
@@ -507,23 +609,23 @@
     });
     G.rocks = G.rocks.filter(function (k) { return k.hp > 0; });
 
-    // 武將攻擊
+    // 武將：放特技、出手
     G.gens.forEach(function (g) {
-      if (g.down > 0) return;
+      if (g.stunT > 0) return;                      // 麻痹：不能出手也不能放招
+      var K = M.SKILL[g.c.gen];
+      if (K && g.ch >= K.need && (G.autoSkill || g.want) && castSkill(G, g)) { g.ch = 0; g.want = false; g.skAt = G.t; }
       g.cd -= dt; if (g.cd > 0) return;
       var sp = M.SLOTS[g.slot], r = genRng(G, g), T = M.TYPE[g.c.typ], tgt = null, best = -1;
       G.enemies.forEach(function (e) {
         if (e.hp <= 0 || e.y < 0) return;
         if (Math.hypot(e.x - sp[0], e.y - sp[1]) > r) return;
-        var prog = e.s / M.PTS[e.path].len + (e.block === g.id ? 1 : 0);   // 優先打自己擋住的、再來是最接近城門的
-        if (e.boss && g.c.typ === "刺") prog += 2;                                // ★ 刺客看到敵將就先打敵將（配合「打敵將 ×2」）
-        if (prog > best) { best = prog; tgt = e; }
+        var pr = prog(e) + (e.block === g.id ? 1 : 0);   // 優先打自己擋住的、再來是最接近城門的
+        if (e.boss && g.c.typ === "刺") pr += 2;          // ★ 刺客看到敵將就先打敵將（配合「打敵將 ×2」）
+        if (pr > best) { best = pr; tgt = e; }
       });
       if (!tgt) return;
-      g.cd = genCd(G, g); g.atkT = G.t;
-      var d = genAtk(G, g), kind = "hit"; G._src = g.c.typ;
-      if (g.c.typ === "刺" && tgt.boss) d *= M.SIN_BOSS;
-      if (g.c.typ === "騎" && !tgt.boss) d *= M.CAV_MINION;
+      g.cd = genCd(G, g); g.atkT = G.t; if (K) g.ch = Math.min(K.need, g.ch + 1);
+      var d = genAtk(G, g) * typeMul(g, tgt), kind = "hit"; G._src = g.c.typ;
       if (g.c.typ === "弓" && G.fireT > 0) {
         d *= M.FIRE_ATK; kind = "fire";
         tgt.burn = M.BURN_T * (1 + 0.5 * (G.tac.firelong || 0)); tgt.burnD = Math.max(tgt.burnD, d * M.BURN_P); tgt.burnTick = M.BURN_TICK;

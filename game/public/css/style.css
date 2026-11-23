@@ -1640,3 +1640,10 @@ details.sl-how summary{font-family:var(--kai);font-weight:700;font-size:16px;col
 
 /* 第六輪：轉輪不模糊（Jay 2026-11-23） */
 .sl-strip.blur .sl-sym,.sl-cell.roll .sl-sym{filter:none;transform:none}
+
+/* 烽火：特技自動／手動切換、增益列 */
+.sl-skb{position:absolute;left:8px;bottom:8px;z-index:5;padding:5px 10px 5px;border-radius:16px;font-size:11px;line-height:1.15;color:#cdbb92;background:rgba(14,10,10,.82);border:1px solid #7a5a1e;box-shadow:0 2px 6px rgba(0,0,0,.6);display:flex;flex-direction:column;align-items:center}
+.sl-skb b{font-size:14px;color:#ecd391;font-family:var(--kai)}
+.sl-skb.man{border-color:#e05858}.sl-skb.man b{color:#ff9a8a}
+.sl-buff .m{box-shadow:inset 3px 0 0 #b99bff}.sl-buff .e{box-shadow:inset 3px 0 0 #e05858;color:#ffb4a8}
+#nav button{letter-spacing:0}
