@@ -551,7 +551,7 @@
   };
   DU.over = function () {
     if (!G || G.recorded) return; G.recorded = true;
-    if (GHOST) { clearInterval(GHOST.timer); return netOver({ win: G.winner === 0 }); }
+    if (GHOST) { clearInterval(GHOST.timer); SG.Profile.lb("duel", { win: G.winner === 0 }).catch(function () { }); return netOver({ win: G.winner === 0 }); }
     var st = S(), win = G.winner === 0; st.duel.rec = st.duel.rec || { w: 0, l: 0 }; st.duel.rec[win ? "w" : "l"]++;
     if (win && opp && opp.id) { st.duel.beat = st.duel.beat || {}; st.duel.beat[opp.id] = 1; }
     UI.save();
@@ -567,25 +567,27 @@
   // ===== 線上對戰 =====
   // ✅ Jay 2026-11-20：房間代碼和隨機配對兩種都要；帳號先不管（伺服器只檢查牌組張數規則）
   var LS = function (k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } };
-  DU.pid = function () { var p = LS("sgl_pid"); if (!p) { p = Math.random().toString(36).slice(2) + Date.now().toString(36); LS("sgl_pid", p); } return p; };
-  DU.nick = function () { return LS("sgl_nick") || "主公"; };
+  DU.pid = function () { return SG.Profile.pid(); };
+  DU.nick = function () { return SG.Profile.name(); };
   var wsBase = function () { return (location.protocol === "https:" ? "wss://" : "ws://") + location.host; };
   DU.netLobby = function () {
     var st = S(), r = st.duel.net || { w: 0, l: 0 }, back = null;
     try { back = JSON.parse(LS("sgl_room")); } catch (e) {}
     if (back && Date.now() - back.at > 15 * 60000) { back = null; LS("sgl_room", null); }
     return '<h2>線上對戰 <small>戰績 ' + r.w + ' 勝 ' + r.l + ' 敗</small></h2><div class="paper">' +
-      '<div class="row"><span class="dim">暱稱</span><input id="du-nick" class="dnick" maxlength="8" value="' + esc(DU.nick()) + '"><span class="grow"></span></div>' +
+      '<div class="row"><span class="dim">名號</span><b>' + esc(DU.nick()) + '</b><button class="sm plain" id="du-rename">改名</button><span class="grow"></span><span class="du-rank" id="du-rank"></span></div>' +
       (back ? '<div class="row"><button class="gold" id="du-back">回到對戰（房間 ' + back.room + '）</button></div>' : '') +
       '<div class="row"><button class="pri" data-net="rand">隨機配對</button><button data-net="host">開房間</button><button data-net="join">輸入代碼</button></div>' +
-      '<p class="dim">開房間會拿到 4 位數代碼，給朋友輸入就能對戰。每回合 90 秒。</p></div>';
+      '<p class="dim">開房間會拿到 4 位數代碼，給朋友輸入就能對戰。每回合 90 秒。「隨機配對」才算排位。</p></div>' +
+      '<h2>排位榜 <small>前 20 名</small></h2><div id="du-lb">' + SG.Profile.boardHtml("duel", null) + '</div>';
   };
   DU.bindNetLobby = function (okDeck) {
-    var nick = $("#du-nick"); if (nick) nick.onchange = function () { LS("sgl_nick", nick.value.trim().slice(0, 8) || "主公"); };
+    var rn = $("#du-rename"); if (rn) rn.onclick = function () { SG.Profile.ask(function () { UI.r_duel && UI.r_duel(); }, true); };
+    SG.Profile.lb("duel").then(function (d) { var b = $("#du-lb"); if (b) b.innerHTML = SG.Profile.boardHtml("duel", d); var k = $("#du-rank"); if (k && d.me) k.textContent = SG.Profile.rankTxt(d.me); else if (k) k.textContent = "伍長 III・0★"; })
+      .catch(function () { var b = $("#du-lb"); if (b) b.innerHTML = SG.Profile.boardHtml("duel", { err: 1 }); });
     var need = function () { if (!okDeck) { UI.flash("牌組要剛好 " + D.DECK + " 張才能出戰"); return false; } return true; };
     $$("[data-net]").forEach(function (b) {
       b.onclick = function () {
-        if (nick) LS("sgl_nick", nick.value.trim().slice(0, 8) || "主公");
         if (!need()) return;
         if (b.dataset.net === "rand") DU.match();
         else if (b.dataset.net === "host") DU.host();

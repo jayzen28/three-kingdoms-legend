@@ -1,36 +1,38 @@
-/* 拉霸守城（測試版 2）：大廳（#s-slot）與對戰畫面（#s-slotb） */
+/* 拉霸守城：大廳（#s-slot）與對戰畫面（#s-slotb）；轉輪特效在 slot-fx.js */
 (function (SG) {
-  var UI = SG.UI, M = SG.Slot;
+  var UI = SG.UI, M = SG.Slot, F = SG.SlotFX, P = SG.Profile;
   var $ = function (s, r) { return (r || document).querySelector(s); }, $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
   var FV = { "魏": "wei", "蜀": "shu", "吳": "wu", "群雄": "qun", "黃巾": "yt" };
   var FC = { wei: "#6aaeed", shu: "#4ec87a", wu: "#e05858", qun: "#b07cd8", yt: "#c8a830" };
-  var SYMC = { "火": "#e8742c", "雷": "#8f7bff", "風": "#4ec87a", "石": "#9a8a74", "武": "#d4a853", "令": "#c0392b" };
+  var SYMC = { "火": "#e8742c", "雷": "#8f7bff", "風": "#4ec87a", "石": "#9a8a74", "令": "#c0392b" };
   var SYMD = { "火": "弓兵射火箭", "雷": "法師落雷", "風": "全軍攻速", "石": "槍兵落石", "令": "萬用・三令請名將" };
+  var SPL = { "火": "fire", "雷": "thunder", "風": "wind", "石": "rock" };
   function S() { return SG._state; }
   var IMG = {};
   function img(src) { if (!IMG[src]) { var i = new Image(); i.src = src; IMG[src] = i; } return IMG[src]; }
   var G = null;
   M.cur = function () { return G; };   // 測試用
 
-  // ===== 大廳：選出征名單 =====
-  var pick = null;
+  // ===== 大廳：關卡、出征名單、守城榜 =====
+  var pick = null, lbData = null;
   UI.r_slot = function () {
     var st = S(), d = M.data(st), own = M.owned(st);
     if (!pick) pick = M.defaultList(st).map(function (c) { return c.gen; });
     var cnt = {}; pick.forEach(function (n) { var c = SG.GEN[n]; if (c) cnt[c.typ] = (cnt[c.typ] || 0) + 1; });
     var tips = [["弓", "火"], ["法", "雷"], ["槍", "石"]].map(function (x) { return '<span class="' + (cnt[x[0]] ? "" : "off") + '">「' + x[1] + '」要有' + SG.TYPES[x[0]].name + '</span>'; }).join("");
-    $("#s-slot").innerHTML = UI.strip("st-slot", "拉霸守城", "測試版・佈陣守城，拉霸用計") +
+    $("#s-slot").innerHTML = UI.strip("st-slot", "拉霸守城", "測試版・一關一關守下去") +
       '<div class="paper sl-lobby">' +
-      '<div class="sl-how"><b>玩法</b><p>黃巾軍分 ' + M.WAVES.length + ' 大波、從五個入口殺來，目標是城門；城門被打到三次就失守。開戰前先把 ' + M.START_DEPLOY + ' 位武將放到營寨（金框「要衝」每條路都打得到）。出征的 ' + M.ROSTER_MAX + ' 位武將會出現在拉霸上，連成一線就上陣，已上陣的就升星。殺敵得軍糧，拉一次 ' + M.SPIN_COST + ' 軍糧。</p>' +
-      '<div class="sl-syms">' + M.SYM.map(function (s) { return '<span><i style="background:' + SYMC[s] + '">' + s + '</i>' + SYMD[s] + '</span>'; }).join("") + '<span><i style="background:#8a96aa">將</i>武將頭像：上陣／升星</span></div></div>' +
+      '<div class="sl-stage"><small>目前關卡</small><b>第 ' + d.stage + ' 關</b><small>最高紀錄：第 ' + (d.top || 0) + ' 關</small></div>' +
+      '<div class="sl-how"><b>玩法</b><p>黃巾軍分「敵軍先鋒」（張寶領軍）與「敵軍本陣」（張角親征），從五個入口殺向城門；城門被打到三次就失守。守住就過關，下一關敵軍更強。開戰前先把 ' + M.START_DEPLOY + ' 位武將放到營寨（金框「要衝」每條路都打得到）。出征的 ' + M.ROSTER_MAX + ' 位武將會出現在拉霸上，連成一線就上陣，已上陣的就升星。殺敵得軍糧，拉一次 ' + M.SPIN_COST + ' 軍糧。</p>' +
+      '<p>每一局必定有一位 UR／SSR 名將會在「三令齊發」時前來助陣（50% 再來第二位，1% 第三位），沒擁有的武將優先。</p><div class="sl-syms">' + M.SYM.map(function (s) { return '<span><i style="background:' + SYMC[s] + '">' + s + '</i>' + SYMD[s] + '</span>'; }).join("") + '<span><i style="background:#8a96aa">將</i>武將頭像：上陣／升星</span></div></div>' +
       '<div class="sl-sec">出征名單 <small>' + pick.length + ' / ' + M.ROSTER_MAX + '・點武將加入或移出</small></div>' +
       '<div class="sl-tips">' + tips + '</div>' +
       '<div class="sl-own">' + own.map(function (c) {
         var i = pick.indexOf(c.gen), b = SG.best(st, c.id);
         return '<button class="sl-oc' + (i >= 0 ? ' on' : '') + '" data-g="' + c.gen + '"><span class="hd" style="--fc:' + FC[FV[c.fac]] + '"><img src="img/' + c.art + '_head.webp" alt="">' + (i >= 0 ? '<em>' + (i + 1) + '</em>' : '') + '</span><b>' + c.gen + '</b><small>' + SG.TYPES[c.typ].name + (b ? '・' + b.rar : '') + '</small></button>';
       }).join("") + '</div>' +
-      '<div class="sl-rec dim">最佳紀錄：第 ' + (d.best || 0) + ' 波・出征 ' + (d.runs || 0) + ' 次・勝利 ' + (d.wins || 0) + ' 次</div>' +
-      '<button class="plaq sl-start" id="sl-start"' + (pick.length ? '' : ' disabled') + '><span>出征</span></button></div>';
+      '<button class="plaq sl-start" id="sl-start"' + (pick.length ? '' : ' disabled') + '><span>出征 第 ' + d.stage + ' 關</span></button>' +
+      '<div class="sl-sec">守城榜 <small>前 20 名・' + P.esc(P.name()) + ' <button class="sm plain" id="sl-rename">改名</button></small></div><div id="sl-lb">' + P.boardHtml("slot", lbData) + '</div></div>';
     $$(".sl-oc").forEach(function (b) {
       b.onclick = function () {
         var n = b.dataset.g, i = pick.indexOf(n);
@@ -43,31 +45,37 @@
       d.list = pick.map(function (n) { return SG.GEN[n].id; }); SG.Store.save(st);
       start(pick.map(function (n) { return SG.GEN[n]; }));
     };
+    $("#sl-rename").onclick = function () {
+      P.ask(function () { if (d.top) P.lb("slot", { stage: d.top }).then(function (x) { x.at = Date.now(); lbData = x; UI.r_slot(); }).catch(function () { UI.r_slot(); }); else UI.r_slot(); }, true);
+    };
+    if (!lbData || Date.now() - (lbData.at || 0) > 20000) P.lb("slot").then(function (x) { x.at = Date.now(); lbData = x; var b = $("#sl-lb"); if (b) b.innerHTML = P.boardHtml("slot", x); })
+      .catch(function () { var b = $("#sl-lb"); if (b) b.innerHTML = P.boardHtml("slot", { err: 1 }); });
   };
 
   // ===== 對戰 =====
-  var raf = 0, last = 0, cv, cx, W = 0, H = 0, dpr = 1, view = { s: 1, ox: 0, oy: 0 }, anim = null, auto = false, sel = null, shake = 0, list0 = null, lastFx = 0;
+  var raf = 0, last = 0, cv, cx, W = 0, H = 0, dpr = 1, view = { s: 1, ox: 0, oy: 0 }, spinning = false, paused = false, auto = false, sel = null, shake = 0, list0 = null;
   function start(list) {
     list0 = list;
-    G = M.newGame(list, S());
-    sel = null; anim = null; lastFx = 0;
+    var d = M.data(S());
+    G = M.newGame(list, S(), null, d.stage);
+    sel = null; spinning = false; paused = false;
     UI.go("slotb");
-    var cells = ""; for (var i = 0; i < 9; i++) cells += '<div class="sl-cell" data-i="' + i + '"></div>';
     $("#s-slotb").innerHTML =
-      '<div class="sl-hud"><button class="sm plain" id="sl-quit">撤退</button><div class="sl-wv">第 <b id="sl-w">0</b>/' + M.WAVES.length + ' 大波</div>' +
+      '<div class="sl-hud"><button class="sm plain" id="sl-quit">撤退</button><div class="sl-wv"><small>第 ' + G.stage + ' 關</small><span id="sl-w">佈陣中</span></div>' +
       '<div class="sl-lives" id="sl-lives"></div><div class="sl-food">糧 <b id="sl-food"></b></div></div>' +
-      '<div class="sl-field"><canvas id="sl-cv"></canvas><div class="sl-ban" id="sl-ban"></div><div class="sl-buff" id="sl-buff"></div><div class="sl-tip" id="sl-tip"></div></div>' +
+      '<div class="sl-field" id="sl-field"><canvas id="sl-cv"></canvas><div class="sl-ban" id="sl-ban"></div><div class="sl-buff" id="sl-buff"></div><div class="sl-tip" id="sl-tip"></div></div>' +
       '<div class="sl-bot"><div class="sl-res" id="sl-res"></div>' +
-      '<div class="sl-mac"><div class="sl-grid">' + cells + '</div>' +
+      '<div class="sl-mac"><div class="sl-grid" id="sl-grid"></div>' +
       '<div class="sl-ctl"><button class="sl-spin" id="sl-spin"><span>開戰</span><small id="sl-cost"></small></button>' +
       '<div class="sl-row2"><button class="sm" id="sl-rep">修城門 ' + M.REPAIR_COST + '</button><label class="sl-auto"><input type="checkbox" id="sl-autob"' + (auto ? ' checked' : '') + '> 自動</label></div></div></div></div>';
     cv = $("#sl-cv"); cx = cv.getContext("2d"); fit();
-    drawGrid(G.grid); renderRes(); tip("佈陣：點下方武將，再點地圖上的營寨（可先放 " + M.START_DEPLOY + " 位；金框「要衝」每條路都打得到），然後按「開戰」");
+    F.build($("#sl-grid"), G.grid, symHtml);
+    renderRes(); tip("佈陣：點下方武將，再點地圖上的營寨（可先放 " + M.START_DEPLOY + " 位；金框「要衝」每條路都打得到），然後按「開戰」");
     $("#sl-spin").onclick = function () { if (G.phase === "deploy") { if (!M.startBattle(G)) tip("至少要放一位武將"); else { tip(""); renderRes(); } } else doSpin(); };
     $("#sl-autob").onchange = function () { auto = this.checked; };
     $("#sl-rep").onclick = function () { if (!M.repair(G)) tip(G.lives >= M.LIVES ? "城門完好" : "軍糧不足"); };
     $("#sl-quit").onclick = function () {
-      UI.modal('<h2>撤退</h2><p>現在撤退，這局就結束。</p><div class="row end"><button onclick="SG.UI.close()">繼續守城</button><button class="pri" id="sl-q2">撤退</button></div>');
+      UI.modal('<h2>撤退</h2><p>現在撤退，這局就結束（不算過關）。</p><div class="row end"><button onclick="SG.UI.close()">繼續守城</button><button class="pri" id="sl-q2">撤退</button></div>');
       $("#sl-q2").onclick = function () { UI.close(); G.over = true; G.quit = true; finish(); };
     };
     cv.addEventListener("click", onTap);
@@ -118,82 +126,74 @@
 
   function symHtml(s) {
     if (s >= M.GEN0) { var c = G.list[s - M.GEN0]; return '<span class="sl-sym gen"><img src="img/' + c.art + '_head.webp" alt=""></span>'; }
-    var n = M.SYM[s]; return '<span class="sl-sym" style="--sc:' + SYMC[n] + '">' + n + '</span>';
+    var n = M.SYM[s]; return '<span class="sl-sym' + (s === M.WILD ? ' wild' : '') + '" style="--sc:' + SYMC[n] + '">' + n + '</span>';
   }
-  function drawGrid(g) { $$(".sl-cell").forEach(function (el, i) { el.innerHTML = symHtml(g[i]); el.className = "sl-cell"; }); }
 
   function doSpin() {
-    if (!G || anim) return;
+    if (!G || spinning || paused) return;
     if (!M.canSpin(G)) { if (G.phase === "fight") tip("軍糧不足，殺敵可以得到軍糧"); return; }
-    var hits = M.spin(G);
-    if (SG.Audio) SG.Audio.sfx("flip", 1.3);
-    anim = { t0: performance.now(), fin: G.grid.slice(), hits: hits, stop: [360, 500, 640] };
-  }
-  function stepAnim(now) {
-    if (!anim) return;
-    var el = $$(".sl-cell"), dt = now - anim.t0, done = 0;
-    for (var i = 0; i < 9; i++) {
-      if (dt < anim.stop[i % 3]) { if (Math.random() < 0.5) el[i].innerHTML = symHtml(Math.floor(Math.random() * G.nsym)); el[i].classList.add("roll"); }
-      else { if (el[i].classList.contains("roll")) { el[i].classList.remove("roll"); el[i].innerHTML = symHtml(anim.fin[i]); } done++; }
-    }
-    if (done < 9) return;
-    var hits = anim.hits; anim = null;
-    if (!hits.length) return;
-    hits.forEach(function (h) { h.ln.forEach(function (i) { el[i].classList.add("hit"); }); });
-    var res = M.applyHits(G, hits), msg = [];
-    res.forEach(function (r) {
-      if (r.jackpot) msg.push(r.guests && r.guests.length ? "三令齊發！" + r.guests.join("、") + " 前來助陣" : "三令齊發！");
-      else if (r.none) msg.push("「" + r.sym + "」" + r.none);
-      else if (r.sym === "火") msg.push("火箭！");
-      else if (r.sym === "雷") msg.push("落雷！");
-      else if (r.sym === "石") msg.push("落石！");
-      else if (r.sym === "風") msg.push("疾風！攻速 ×" + M.WIND);
-      else if (r.up) msg.push(r.up + " 升到 " + r.star + "★");
-      else if (r.ready) msg.push(r.ready + (r.star ? " 上陣時 " + r.star + "★" : " 可以上陣"));
+    var old = G.grid.slice(), hits = M.spin(G), g0 = G;
+    spinning = true;
+    F.spin($("#sl-grid"), old, G.grid, symHtml, function () { return Math.floor(Math.random() * g0.nsym); }, M.WILD).then(function () {
+      spinning = false;
+      if (G !== g0 || !hits.length) return;
+      onHits(hits);
     });
-    showBan(msg.join("　"));
-    if (SG.Audio) SG.Audio.sfx(hits.length > 1 ? "sr" : "burst_n");
+  }
+  function onHits(hits) {
+    var res = M.applyHits(G, hits), msg = [], splash = [], cut = [], guests = [];
+    res.forEach(function (r) {
+      if (r.jackpot) { guests = guests.concat(r.guests || []); return; }
+      if (r.none) { msg.push("「" + r.sym + "」" + r.none); return; }
+      if (SPL[r.sym]) { splash.push(SPL[r.sym]); msg.push({ "火": "火箭！", "雷": "落雷！", "風": "疾風！攻速 ×" + M.WIND, "石": "落石！" }[r.sym]); return; }
+      var c = SG.GEN[r.up || r.ready]; if (!c) return;
+      cut.push({ art: c.art, name: c.gen, msg: r.up ? "升星 " + r.star + "★！" : r.star ? "待命・" + r.star + "★" : "出陣！" });
+    });
+    F.win($("#sl-grid"), $("#sl-field"), hits, { splash: splash, cut: cut });
+    if (msg.length) showBan(msg.join("　"));
     renderRes();
+    if (guests.length) {
+      paused = true;
+      var info = guests.map(function (n) { var r = G.reserve.find(function (x) { return x.c.gen === n; }), c = SG.GEN[n]; return { name: n, art: c.art, rar: r ? r.base.rar : "SSR", notOwn: r && r.notOwn }; });
+      setTimeout(function () { F.jackpot(info).then(function () { paused = false; last = performance.now(); renderRes(); tip("名將已在下方待命：點她，再點空營寨上陣"); }); }, 500);
+    }
   }
   function showBan(t, boss) { var b = $("#sl-ban"); if (!b) return; b.textContent = t; b.className = "sl-ban" + (boss ? " boss" : ""); void b.offsetWidth; b.classList.add("on"); }
 
   function loop(now) {
     if (!G || document.body.dataset.scr !== "slotb") return;
     var dt = Math.min(0.05, (now - last) / 1000); last = now;
-    if (!$("#modal").classList.contains("show")) {
+    if (!$("#modal").classList.contains("show") && !paused) {
       M.step(G, dt);
-      stepAnim(now);
-      if (auto && !anim && G.phase === "fight" && M.canSpin(G)) doSpin();
+      if (auto && !spinning && G.phase === "fight" && M.canSpin(G)) doSpin();
       if (G.phase === "tactic" && !G.offerShown) showTactics();
     }
-    if (lastFx > G.fx.length) lastFx = 0;
-    for (; lastFx < G.fx.length; lastFx++) {
-      var f = G.fx[lastFx];
-      if (f.seen) continue; f.seen = 1;
-      if (f.kind === "wave") showBan("第 " + f.wave + " 大波" + (M.WAVES[f.wave - 1].some(function (e) { return e[2] === "boss"; }) ? "・張角親征！" : ""));
-      else if (f.kind === "boss") { showBan("頭目 " + f.name + " 出現！", true); if (SG.Audio) SG.Audio.sfx("shake"); }
-      else if (f.kind === "gate") { shake = 1; if (SG.Audio) SG.Audio.sfx("shake"); }
-      else if (f.kind === "ready" || f.kind === "jackpot") renderRes();
-    }
+    G.fx.forEach(function (f) {
+      if (f.seen) return; f.seen = 1;
+      if (f.kind === "wave") showBan(M.WAVE_NAMES[f.wave - 1] + "來襲！");
+      else if (f.kind === "boss") { showBan((f.big ? "大將 " : "先鋒大將 ") + f.name + " 出陣！", true); F.snd.gong(); }
+      else if (f.kind === "gate") { shake = 1; F.snd.rock(); }
+      else if (f.kind === "ready") renderRes();
+    });
     hud(); draw();
-    if (G.over && !anim) { finish(); return; }
+    if (G.over && !spinning && !paused) { finish(); return; }
     raf = requestAnimationFrame(loop);
   }
   function hud() {
-    $("#sl-w").textContent = G.wave;
+    $("#sl-w").textContent = G.wave ? M.WAVE_NAMES[G.wave - 1] : "佈陣中";
     var le = $("#sl-lives");
     if (le.dataset.v !== String(G.lives)) { var lv = ""; for (var i = 0; i < M.LIVES; i++) lv += '<i class="' + (i < G.lives ? "on" : "") + '"></i>'; le.innerHTML = lv; le.dataset.v = G.lives; }
     $("#sl-food").textContent = G.food;
     var sp = $("#sl-spin");
     if (G.phase === "deploy") { sp.querySelector("span").textContent = "開戰"; $("#sl-cost").textContent = ""; sp.classList.toggle("ready", G.gens.length > 0); }
-    else { sp.querySelector("span").textContent = "拉"; $("#sl-cost").textContent = M.spinCost(G) + " 糧"; sp.classList.toggle("ready", M.canSpin(G) && !anim); sp.classList.toggle("poor", !M.canSpin(G)); }
+    else { sp.querySelector("span").textContent = "拉"; $("#sl-cost").textContent = M.spinCost(G) + " 糧"; sp.classList.toggle("ready", M.canSpin(G) && !spinning); sp.classList.toggle("poor", !M.canSpin(G)); }
     $("#sl-rep").disabled = G.lives >= M.LIVES || G.food < M.REPAIR_COST;
     var bf = []; if (G.fireT > 0) bf.push('<span class="f">火箭 ' + Math.ceil(G.fireT) + '</span>'); if (G.windT > 0) bf.push('<span class="w">疾風 ' + Math.ceil(G.windT) + '</span>');
     $("#sl-buff").innerHTML = bf.join("");
   }
   function showTactics() {
     G.offerShown = true;
-    UI.modal('<h2>第 ' + G.wave + ' 大波守住了！</h2><p class="dim">選一張軍略（軍糧 +30）</p><div class="sl-tacs">' +
+    UI.modal('<h2>擊退' + M.WAVE_NAMES[G.wave - 1] + '！</h2><p class="dim">選一張軍略（軍糧 +30）</p><div class="sl-tacs">' +
       G.offer.map(function (t) { return '<button class="sl-tac" data-t="' + t.id + '"><b>' + t.name + '</b><span>' + t.desc + '</span></button>'; }).join("") + '</div>');
     UI.back = function () { };   // 一定要選
     $$(".sl-tac").forEach(function (b) { b.onclick = function () { UI.back = null; UI.close(); G.offerShown = false; M.chooseTactic(G, b.dataset.t); renderRes(); }; });
@@ -264,8 +264,8 @@
   function drawEnemy(c, e) {
     var s = view.s, x = W2(e.x), y = H2(e.y);
     if (e.boss) {
-      var r = 24 * s; token(c, e.art, x, y, r, "#c0392b");
-      c.font = "700 " + Math.round(12 * s + 4) + "px 'LXGW WenKai TC', serif"; c.textAlign = "center"; c.fillStyle = "#ecd391"; c.fillText("頭目・" + e.name, x, y - r - 9);
+      var r = (e.big ? 26 : 21) * s; token(c, e.art, x, y, r, "#c0392b");
+      c.font = "700 " + Math.round(12 * s + 4) + "px 'LXGW WenKai TC', serif"; c.textAlign = "center"; c.fillStyle = "#ecd391"; c.fillText((e.big ? "大將・" : "先鋒・") + e.name, x, y - r - 9);
       bar(c, x, y - r - 7, 56 * s, e.hp / e.max, "#e05858");
     } else {
       var im = img("img/bf/" + e.img + ".webp"), h = (e.k === "cav" ? 38 : 32) * s, w = im.naturalWidth ? h * im.naturalWidth / im.naturalHeight : h / 2;
@@ -322,12 +322,18 @@
 
   function finish() {
     cancelAnimationFrame(raf);
-    var st = S(), d = M.data(st), cleared = G.won ? G.wave : G.wave - 1;
-    if (!G.quit) { d.runs++; if (G.won) d.wins++; d.best = Math.max(d.best, Math.max(0, cleared)); SG.Store.save(st); }
-    var g = G; G = null;
-    UI.modal('<h2>' + (g.won ? '守城成功！' : g.quit ? '撤退' : '城門失守') + '</h2>' +
-      '<p>守住 <b>' + Math.max(0, cleared) + '</b> / ' + M.WAVES.length + ' 大波・殺敵 ' + g.kills + '・拉霸 ' + g.spins + ' 次</p>' +
-      '<div class="row end"><button id="sl-back">返回大廳</button><button class="pri" id="sl-again">再來一局</button></div>');
+    var st = S(), d = M.data(st), g = G, played = g.stage;
+    if (!g.quit) {
+      d.runs++;
+      if (g.won) { d.wins++; d.top = Math.max(d.top || 0, played); d.stage = played + 1; }
+      SG.Store.save(st);
+      if (g.won) P.lb("slot", { stage: d.top }).then(function (x) { x.at = Date.now(); lbData = x; }).catch(function () { });
+    }
+    G = null;
+    UI.modal('<h2>' + (g.won ? '第 ' + played + ' 關 守城成功！' : g.quit ? '撤退' : '第 ' + played + ' 關 城門失守') + '</h2>' +
+      '<p>' + (g.won ? '先鋒、本陣全數擊退' : g.quit ? '這一關重新再來' : g.wave >= 2 ? '擊退先鋒，敗於本陣' : '敗於先鋒') + '・殺敵 ' + g.kills + '・拉霸 ' + g.spins + ' 次</p>' +
+      (g.won ? '<p>下一關：第 ' + d.stage + ' 關（敵軍更強）</p>' : '') +
+      '<div class="row end"><button id="sl-back">返回大廳</button><button class="pri" id="sl-again">' + (g.won ? '挑戰第 ' + d.stage + ' 關' : '再挑戰一次') + '</button></div>');
     UI.back = function () { $("#modal").classList.remove("show"); UI.go("slot"); };
     $("#sl-back").onclick = function () { UI.close(); };
     $("#sl-again").onclick = function () { UI.back = null; UI.close(); start(list0); };

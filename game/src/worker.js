@@ -27,6 +27,7 @@ export default {
     const m = url.pathname.match(/^\/api\/room\/(\d{4})$/);
     if (m) return env.ROOM.get(env.ROOM.idFromName(m[1])).fetch(req);
     if (url.pathname === "/api/match") return env.LOBBY.get(env.LOBBY.idFromName("main")).fetch(req);
+    if (/^\/api\/lb\/(slot|duel)$/.test(url.pathname)) return env.BOARD.get(env.BOARD.idFromName("main")).fetch(req);
     if (url.pathname.startsWith("/api/")) return new Response("not found", { status: 404 });
     return env.ASSETS.fetch(req);
   }
@@ -48,7 +49,7 @@ export class Lobby {
       let code = null;
       for (let i = 0; i < 8 && !code; i++) {
         const c = String(1000 + Math.floor(Math.random() * 9000));
-        const r = await this.env.ROOM.get(this.env.ROOM.idFromName(c)).fetch("https://room/claim");
+        const r = await this.env.ROOM.get(this.env.ROOM.idFromName(c)).fetch("https://room/claim?ranked=1");
         if (r.ok) code = c;
       }
       if (!code) { send(ws, { t: "err", msg: "配對失敗，請再試一次" }); ws.close(); this.waiting = w; return new Response(null, { status: 101, webSocket: client }); }
@@ -66,16 +67,16 @@ export class Lobby {
 
 // ===== 一個對戰房間 =====
 export class Room {
-  constructor(ctx, env) { this.reset(); }
+  constructor(ctx, env) { this.env = env; this.reset(); }
   reset() {
-    this.claimedAt = 0; this.seats = []; this.G = null; this.stage = "empty"; this.timers = {}; this.deadline = 0; this.pickDeadline = 0;
+    this.ranked = false; this.claimedAt = 0; this.seats = []; this.G = null; this.stage = "empty"; this.timers = {}; this.deadline = 0; this.pickDeadline = 0;
   }
   busy() { return this.stage !== "empty" && this.stage !== "over" && !(this.stage === "claimed" && Date.now() - this.claimedAt > 10 * 60000); }
   async fetch(req) {
     const url = new URL(req.url);
     if (url.pathname === "/claim") {
       if (this.busy()) return new Response("busy", { status: 409 });
-      this.clearTimers(); this.reset(); this.stage = "claimed"; this.claimedAt = Date.now();
+      this.clearTimers(); this.reset(); this.stage = "claimed"; this.claimedAt = Date.now(); this.ranked = url.searchParams.get("ranked") === "1";
       return new Response("ok");
     }
     if (req.headers.get("Upgrade") !== "websocket") return new Response("ws only", { status: 426 });
@@ -187,6 +188,11 @@ export class Room {
     if (this.G) this.G.winner = winner;
     this.stage = "over"; this.clearTimers();
     [0, 1].forEach((k) => { this.sync(k); send(this.seats[k] && this.seats[k].ws, { t: "over", win: winner === k, why }); });
+    // 隨機配對＝排位：由伺服器記錄雙方勝負（房間代碼的朋友對戰不算）
+    if (this.ranked && this.env && this.env.BOARD && this.seats[0] && this.seats[1] && winner >= 0) {
+      const rows = [0, 1].map((k) => ({ pid: this.seats[k].pid, name: this.seats[k].name, win: winner === k }));
+      this.env.BOARD.get(this.env.BOARD.idFromName("main")).fetch("https://board/api/lb/duel", { method: "POST", headers: { "x-room": "1" }, body: JSON.stringify({ rows }) }).catch(() => {});
+    }
   }
   sync(seat) {
     const s = this.seats[seat]; if (!s || !s.ws) return;
@@ -209,3 +215,60 @@ export class Room {
   timer(k, ms, fn) { clearTimeout(this.timers[k]); this.timers[k] = setTimeout(fn, Math.max(0, ms)); }
   clearTimers() { Object.keys(this.timers).forEach((k) => clearTimeout(this.timers[k])); this.timers = {}; }
 }
+
+// ===== 排行榜（拉霸守城：最高關卡；鬥將：排位） =====
+// ✅ Jay 2026-11-23：拉霸守城排「玩到最後面的關卡」前 20 名；鬥將做排位（勝場或傳說對決式段位）
+// ★ 開發先定：鬥將排位用軍階段位（7 階，每階 3 段，每段 3 星；贏 +1 星、輸 -1 星，不會掉出目前這一階），
+//   只有「隨機配對」（含等不到人改跟電腦打）算排位；成績由玩家端回報（拉霸、電腦對手）或伺服器回報（真人對戰）
+const TIERS = ["伍長", "什長", "百夫長", "校尉", "中郎將", "將軍", "大將軍"];
+function cleanName(n) { return String(n || "主公").replace(/[<>&"'\u0000-\u001f]/g, "").trim().slice(0, 8) || "主公"; }
+function cleanPid(p) { return String(p || "").replace(/[^a-z0-9]/gi, "").slice(0, 40); }
+function rankOf(pts) {
+  const t = Math.min(TIERS.length - 1, Math.floor(pts / 9));
+  if (t === TIERS.length - 1) return { tier: TIERS[t], div: "", star: pts - t * 9 };
+  const inT = pts - t * 9; return { tier: TIERS[t], div: ["III", "II", "I"][Math.floor(inT / 3)], star: inT % 3 };
+}
+export class Board {
+  constructor(ctx, env) { this.st = ctx.storage; this.mem = {}; }
+  async all(kind) {
+    if (!this.mem[kind]) { const m = await this.st.list({ prefix: kind + ":" }); this.mem[kind] = new Map(); m.forEach((v, k) => this.mem[kind].set(k.slice(kind.length + 1), v)); }
+    return this.mem[kind];
+  }
+  async put(kind, pid, row) { (await this.all(kind)).set(pid, row); await this.st.put(kind + ":" + pid, row); }
+  sorted(kind, map) {
+    const arr = Array.from(map.entries()).map(([pid, r]) => Object.assign({ pid }, r));
+    if (kind === "slot") arr.sort((a, b) => b.stage - a.stage || a.t - b.t);
+    else arr.sort((a, b) => b.pts - a.pts || b.w - a.w || a.t - b.t);
+    return arr;
+  }
+  view(kind, arr, pid) {
+    const pub = (r, i) => kind === "slot" ? { n: i + 1, name: r.name, stage: r.stage } : Object.assign({ n: i + 1, name: r.name, w: r.w, l: r.l, pts: r.pts }, rankOf(r.pts));
+    const me = arr.findIndex((r) => r.pid === pid);
+    return { top: arr.slice(0, 20).map(pub), me: me >= 0 ? pub(arr[me], me) : null, total: arr.length };
+  }
+  async fetch(req) {
+    const url = new URL(req.url), kind = url.pathname.endsWith("/slot") ? "slot" : "duel";
+    const map = await this.all(kind);
+    if (req.method === "POST") {
+      let b; try { b = await req.json(); } catch (e) { return new Response("bad", { status: 400 }); }
+      const now = Date.now();
+      if (kind === "slot") {
+        const pid = cleanPid(b.pid), stage = Math.floor(Number(b.stage)); if (!pid || !(stage >= 0 && stage < 1e6)) return new Response("bad", { status: 400 });
+        const old = map.get(pid);
+        if (!old || stage > old.stage || cleanName(b.name) !== old.name) await this.put(kind, pid, { name: cleanName(b.name), stage: Math.max(stage, old ? old.stage : 0), t: old && old.stage >= stage ? old.t : now });
+        return json(this.view(kind, this.sorted(kind, map), pid));
+      }
+      const rows = req.headers.get("x-room") === "1" && Array.isArray(b.rows) ? b.rows : [{ pid: b.pid, name: b.name, win: !!b.win }];
+      for (const r0 of rows.slice(0, 2)) {
+        const pid = cleanPid(r0.pid); if (!pid) continue;
+        const r = map.get(pid) || { name: "主公", pts: 0, w: 0, l: 0, t: now };
+        r.name = cleanName(r0.name); r.t = now;
+        if (r0.win) { r.w++; r.pts++; } else { r.l++; const floor = Math.min(TIERS.length - 1, Math.floor(r.pts / 9)) * 9; r.pts = Math.max(floor, r.pts - 1); }
+        await this.put(kind, pid, r);
+      }
+      return json(this.view(kind, this.sorted(kind, map), cleanPid(rows[0] && rows[0].pid)));
+    }
+    return json(this.view(kind, this.sorted(kind, map), cleanPid(url.searchParams.get("pid"))));
+  }
+}
+function json(o) { return new Response(JSON.stringify(o), { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } }); }
