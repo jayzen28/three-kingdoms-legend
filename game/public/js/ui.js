@@ -48,7 +48,7 @@
   UI.go = function (name) {
     $$(".screen").forEach(function (s) { s.classList.toggle("show", s.id === "s-" + name); });
     $$("#nav button").forEach(function (b) { b.classList.toggle("act", b.dataset.go === name); });
-    var full = name === "battle" || name === "duelb";   // 戰鬥畫面（戰棋、鬥將）不顯示上下列
+    var full = name === "battle" || name === "duelb" || name === "slotb";   // 戰鬥畫面（戰棋、鬥將）不顯示上下列
     $("#nav").style.display = full ? "none" : "";
     $("#top").style.display = full ? "none" : "";
     document.body.classList.toggle("on-duelb", name === "duelb");
@@ -374,6 +374,7 @@
       '<button class="orb" id="h-task"><img src="img/ui_ic_task.webp" alt=""><span>每日任務</span>' + (canClaim ? '<i class="badge"></i>' : '') + '</button>' +
       '<button class="orb" id="h-rec"><img src="img/ui_ic_tea.webp" alt=""><span>茶館招募</span></button>' +
       '<button class="orb" id="h-book"><img src="img/ui_ic_book.webp" alt=""><span>收集冊</span></button>' +
+      '<button class="orb sl-orb" id="h-slot"><b>拉</b><span>拉霸守城</span></button>' +
       '<button class="orb gear" id="h-set"><b>設</b><span>設定</span></button></div>' +
       '<div class="go">' + stat + '<button class="plaq" id="h-go"><span>出戰</span></button>' +
       '<div class="nxt">' + (next ? '下一戰　' + next.id + '　' + next.name : '第一章已全數通關') + '</div></div>' +
@@ -386,6 +387,7 @@
     $("#h-task").onclick = UI.tasks;
     $("#h-rec").onclick = function () { UI.go("recruit"); };
     $("#h-book").onclick = function () { UI.go("book"); };
+    $("#h-slot").onclick = function () { UI.go("slot"); };
     $("#h-set").onclick = function () {
       UI.modal('<h2>設定</h2><p class="dim">第一期試玩版：單機，進度存在這台裝置的瀏覽器。主城顯示的是隊伍第一位武將；元寶為測試用，到酒館可領。</p>' +
         '<div class="row end"><button class="sm plain" id="h-reset">重置進度</button><button onclick="SG.UI.close()">收起</button></div>');
